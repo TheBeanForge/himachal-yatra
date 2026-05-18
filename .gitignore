@@ -1,0 +1,17 @@
+# PHP config with credentials
+api/config.php
+
+# Uploads
+uploads/*
+!uploads/.htaccess
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# XAMPP logs
+*.log
