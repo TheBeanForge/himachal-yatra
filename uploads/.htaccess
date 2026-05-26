@@ -1,0 +1,5 @@
+# Allow images, block PHP execution
+Options -Indexes
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>

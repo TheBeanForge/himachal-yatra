@@ -5,13 +5,13 @@ require_once __DIR__ . '/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Method not allowed']);
+    echo json_encode(['ok' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
 if (!empty($_POST['website'] ?? '')) {
     // Honeypot tripped — pretend everything is fine.
-    echo json_encode(['ok' => true, 'success' => true]);
+    echo json_encode(['ok' => true]);
     exit;
 }
 
@@ -19,7 +19,7 @@ $postedToken    = $_POST['csrf_token'] ?? '';
 $sessionToken   = $_SESSION['lead_form_token'] ?? '';
 if ($sessionToken === '' || !hash_equals($sessionToken, $postedToken)) {
     http_response_code(419);
-    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Security token expired. Please refresh the page and try again.']);
+    echo json_encode(['ok' => false, 'error' => 'Security token expired. Please refresh the page and try again.']);
     exit;
 }
 
@@ -44,7 +44,7 @@ $message     = clean_text($_POST['message'] ?? '', 900);
 
 if (!$name || strlen($phone) < 8) {
     http_response_code(422);
-    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Name and phone are required.']);
+    echo json_encode(['ok' => false, 'error' => 'Name and phone are required.']);
     exit;
 }
 
@@ -67,13 +67,13 @@ if (time() - $rl['window_start'] > $window) {
 }
 if ($rl['count'] >= 5) {
     http_response_code(429);
-    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Too many requests. Please wait a few minutes and try again.']);
+    echo json_encode(['ok' => false, 'error' => 'Too many requests. Please wait a few minutes and try again.']);
     exit;
 }
 
 if (!$conn instanceof mysqli) {
     http_response_code(503);
-    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Database temporarily unavailable. Please continue on WhatsApp.']);
+    echo json_encode(['ok' => false, 'error' => 'Database temporarily unavailable. Please continue on WhatsApp.']);
     exit;
 }
 
@@ -83,7 +83,7 @@ $stmt = $conn->prepare(
 );
 if (!$stmt) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Could not prepare enquiry.']);
+    echo json_encode(['ok' => false, 'error' => 'Could not prepare enquiry.']);
     exit;
 }
 $stmt->bind_param('sssssssis', $name, $email, $phone, $pickup, $destination, $package, $date_val, $pax, $message);
@@ -93,10 +93,10 @@ if ($stmt->execute()) {
     $_SESSION['submit_rl'] = $rl;
     $wa = agency_whatsapp();
     $wa_msg = urlencode("Hi Himachal Yatra Travels! I just submitted an enquiry. Name: $name, Phone: $phone, Pickup: $pickup, Destination: $destination, Service: $package, Date: $travel_date");
-    echo json_encode(['ok' => true, 'success' => true, 'wa' => "https://wa.me/$wa?text=$wa_msg"]);
+    echo json_encode(['ok' => true, 'wa' => "https://wa.me/$wa?text=$wa_msg"]);
 } else {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Could not save your enquiry. Please try again.']);
+    echo json_encode(['ok' => false, 'error' => 'Could not save your enquiry. Please try again.']);
 }
 $stmt->close();
 $conn->close();
