@@ -602,7 +602,12 @@ if ($conn instanceof mysqli) {
               <input name="name" type="text" placeholder="Your Full Name" required>
               <input name="phone" type="tel" placeholder="Phone Number" required>
               <input name="email" type="email" placeholder="Email (optional)">
-              <input name="pickup" type="text" placeholder="Pickup City (e.g. Delhi)">
+              <select name="pickup" required style="appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22><path fill=%22%23c8a75d%22 d=%22M10 13l-5-5h10z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;background-size:20px;padding-right:32px">
+                <option value="">Select pickup city...</option>
+                <?php foreach ($pickup_locations as $loc): ?>
+                <option value="<?php echo h($loc['city']); ?>"><?php echo h($loc['city']); ?></option>
+                <?php endforeach; ?>
+              </select>
               <input name="destination" type="text" placeholder="Destination (e.g. Manali)">
               <input name="travel_date" type="date">
               <select name="package">
