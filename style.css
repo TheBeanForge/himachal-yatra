@@ -1103,61 +1103,42 @@ img { max-width: 100%; display: block; }
 .fs-btn-reset:hover { border-color: var(--muted); color: var(--charcoal); }
 
 /* FOOTER */
-.footer { background: #0d0d14; border-top: 1px solid var(--line); }
-.footer-top { padding: 60px 0 44px; }
-.footer-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 48px; }
-.footer-about-heading {
-  font-family: 'Montserrat','Poppins',sans-serif;
-  font-size: 18px; font-weight: 800;
-  color: var(--charcoal); margin: 16px 0 10px; line-height: 1.35;
+.footer { background: #0d0d14; border-top: 1px solid var(--line); padding: 40px 0; }
+.footer-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 40px; flex-wrap: wrap; margin-bottom: 28px;
 }
-.footer-about-heading::after {
-  content: ''; display: block; width: 36px; height: 3px;
-  background: var(--lime); border-radius: 2px; margin-top: 8px;
+.footer-logo-section { flex-shrink: 0; }
+.footer-logo-section a img { width: 160px; height: auto; display: block; }
+.footer-nav-section {
+  display: flex; align-items: center; gap: 28px; flex-wrap: wrap; flex: 1;
+  min-width: 300px;
 }
-.footer-logo-full {
-  display: inline-flex;
-  max-width: 260px;
+.footer-nav-section a {
+  color: rgba(255,255,255,.60); font-size: 14px; font-weight: 500;
+  transition: color .2s; text-decoration: none;
 }
-.footer-logo-full img {
-  width: 100%;
-  height: auto;
-  display: block;
+.footer-nav-section a:hover { color: var(--lime); }
+.footer-contact-section {
+  display: flex; align-items: center; gap: 20px; flex-shrink: 0;
+  flex-wrap: wrap; justify-content: flex-end;
 }
-.footer .brand-main { color: #fff; }
-.footer .brand-main span { color: var(--lime); }
-.footer .brand-sub { color: rgba(255,255,255,.40); }
-.footer-brand p {
-  color: rgba(255,255,255,.50); font-size: 14px;
-  line-height: 1.7; margin: 14px 0 20px;
+.contact-link {
+  display: flex; align-items: center; gap: 6px;
+  color: rgba(255,255,255,.60); font-size: 13px;
+  transition: color .2s; text-decoration: none;
 }
+.contact-link:hover { color: var(--lime); }
+.contact-link i { font-size: 14px; color: var(--lime); }
 .footer-social { display: flex; gap: 10px; }
 .footer-social a {
-  width: 38px; height: 38px;
-  background: rgba(255,255,255,.06); border-radius: 10px;
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,.08); border-radius: 8px;
   display: grid; place-items: center;
-  color: rgba(255,255,255,.55); font-size: 16px;
+  color: rgba(255,255,255,.55); font-size: 15px;
   transition: background .2s, color .2s;
 }
 .footer-social a:hover { background: var(--lime); color: #0d0d14; }
-.footer-col h3 {
-  font-size: 12px; font-weight: 700; color: rgba(255,255,255,.90);
-  margin-bottom: 16px; text-transform: uppercase; letter-spacing: .1em;
-}
-.footer-col a {
-  display: flex; align-items: center; gap: 7px;
-  color: rgba(255,255,255,.50); font-size: 14px;
-  margin-bottom: 11px; transition: color .2s, gap .2s;
-}
-.footer-col a:hover { color: var(--lime); gap: 11px; }
-.footer-col a i { font-size: 11px; }
-.footer-contact-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  color: rgba(255,255,255,.50); font-size: 14px; margin-bottom: 13px;
-}
-.footer-contact-item i { color: var(--lime); margin-top: 2px; font-size: 13px; }
-.footer-contact-item a { display: inline; color: rgba(255,255,255,.50); }
-.footer-contact-item a:hover { color: var(--lime); }
 .footer-bottom {
   border-top: 1px solid rgba(255,255,255,.07);
   padding: 20px 0;
@@ -1368,7 +1349,9 @@ img { max-width: 100%; display: block; }
   .why-grid { grid-template-columns: repeat(3,1fr); }
   .steps-grid { grid-template-columns: repeat(2,1fr); }
   .steps-grid::before { display: none; }
-  .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
+  .footer-row { gap: 20px; }
+  .footer-nav-section { gap: 16px; min-width: 250px; }
+  .contact-link { font-size: 12px; }
 }
 @media (max-width: 991px) {
   .booking-fields { grid-template-columns: 1fr 1fr; }
@@ -1419,7 +1402,10 @@ img { max-width: 100%; display: block; }
   #inquiryForm { grid-template-columns: 1fr; }
   #inquiryForm textarea, #inquiryForm select, .form-submit-row, .form-status { grid-column: auto; }
   .form-submit-row { grid-template-columns: 1fr 1fr; }
-  .footer-grid { grid-template-columns: 1fr; }
+  .footer-row { flex-direction: column; gap: 16px; }
+  .footer-logo-section, .footer-contact-section { width: 100%; }
+  .footer-nav-section { width: 100%; justify-content: flex-start; }
+  .footer-contact-section { justify-content: flex-start; }
   .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
   .wa-float { display: none; }
   .mobile-cta {
