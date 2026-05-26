@@ -80,6 +80,21 @@ CREATE TABLE IF NOT EXISTS photos (
   KEY idx_photos_dest (destination)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Pickup locations (origin cities for bookings)
+CREATE TABLE IF NOT EXISTS pickup_locations (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  city       VARCHAR(100) NOT NULL UNIQUE,
+  sort_order TINYINT DEFAULT 0,
+  active     TINYINT DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO pickup_locations (city, sort_order, active) VALUES
+  ('Delhi', 1, 1),
+  ('Chandigarh', 2, 1),
+  ('Shimla', 3, 1),
+  ('Manali', 4, 1);
+
 -- Customer reviews — submitted via public form, moderated by admin before publishing
 CREATE TABLE IF NOT EXISTS reviews (
   id            INT AUTO_INCREMENT PRIMARY KEY,

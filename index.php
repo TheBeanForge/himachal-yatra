@@ -13,6 +13,17 @@ if ($conn instanceof mysqli) {
         // table may not exist yet — fall through to seed data
     }
 }
+
+// Load pickup locations for booking modal dropdown
+$pickup_locations = [];
+if ($conn instanceof mysqli) {
+    try {
+        $res = $conn->query("SELECT city FROM pickup_locations WHERE active = 1 ORDER BY sort_order ASC");
+        if ($res) $pickup_locations = $res->fetch_all(MYSQLI_ASSOC);
+    } catch (mysqli_sql_exception) {
+        // table may not exist yet
+    }
+}
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -674,8 +685,12 @@ if ($conn instanceof mysqli) {
         <div class="mf-row">
           <div class="mf-group">
             <label class="mf-label"><i class="fa-solid fa-location-dot"></i> Pickup City</label>
-            <input class="mf-input" type="text" name="pickup"
-                   placeholder="Delhi, Chandigarh, Pathankot...">
+            <select class="mf-input" name="pickup" required>
+              <option value="">Select pickup city...</option>
+              <?php foreach ($pickup_locations as $loc): ?>
+              <option value="<?php echo h($loc['city']); ?>"><?php echo h($loc['city']); ?></option>
+              <?php endforeach; ?>
+            </select>
           </div>
           <div class="mf-group">
             <label class="mf-label"><i class="fa-solid fa-flag-checkered"></i> Destination</label>

@@ -59,6 +59,11 @@
         <i class="fas fa-star fa-fw"></i> Reviews
       </a>
     </li>
+    <li>
+      <a href="locations.php" class="sidebar-link <?= $cur==='locations.php'?'active':'' ?>">
+        <i class="fas fa-map-pin fa-fw"></i> Pickup Locations
+      </a>
+    </li>
   </ul>
 
   <?php if (($_SESSION['admin_user']['role'] ?? '') === 'superadmin'): ?>
