@@ -15,3 +15,6 @@ Thumbs.db
 
 # XAMPP logs
 *.log
+
+# Claude Code
+.claude/

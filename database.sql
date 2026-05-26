@@ -1,5 +1,6 @@
--- WanderVista Tours — database setup
+-- Himachal Yatra Travels — database setup
 -- Run this in phpMyAdmin or: mysql -u root -p < database.sql
+-- If upgrading an existing install, run the ALTER statements at the bottom of this file.
 
 CREATE DATABASE IF NOT EXISTS tourismsite CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE tourismsite;
@@ -9,13 +10,16 @@ CREATE TABLE IF NOT EXISTS bookings (
   name         VARCHAR(100) NOT NULL,
   email        VARCHAR(150) DEFAULT '',
   phone        VARCHAR(20)  NOT NULL,
+  pickup       VARCHAR(120) DEFAULT '',
   destination  VARCHAR(80)  DEFAULT '',
   package      ENUM('budget','classic','luxury') DEFAULT NULL,
   travel_date  DATE         DEFAULT NULL,
   pax          TINYINT      DEFAULT 1,
   message      TEXT,
   status       ENUM('new','contacted','confirmed','cancelled') DEFAULT 'new',
-  submitted_at DATETIME     DEFAULT CURRENT_TIMESTAMP
+  submitted_at DATETIME     DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_status (status),
+  KEY idx_submitted_at (submitted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS settings (
@@ -26,6 +30,67 @@ CREATE TABLE IF NOT EXISTS settings (
 
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
   ('agency_whatsapp', '919876543210'),
-  ('agency_name',     'India Yatra Travels'),
-  ('agency_email',    'info@indiayatratravels.com'),
+  ('agency_name',     'Himachal Yatra Travels'),
+  ('agency_email',    'info@himachalyatratravels.com'),
   ('agency_phone',    '+91 98765 43210');
+
+-- Admin users (multi-user login)
+CREATE TABLE IF NOT EXISTS admin_users (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  username      VARCHAR(50) UNIQUE NOT NULL,
+  full_name     VARCHAR(100) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role          ENUM('superadmin','admin','staff') DEFAULT 'staff',
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Default superadmin: username=admin  password=tour@123
+-- !! CHANGE THE PASSWORD IMMEDIATELY after first login (Admin → Users → Reset PW).
+-- This default is committed to the repo and is therefore public knowledge.
+INSERT IGNORE INTO admin_users (username, full_name, password_hash, role) VALUES
+  ('admin', 'Administrator', '$2y$10$9VJsilNVfDWJ8gGbfN2N0.HeFKVCLDjVzeZn33jXdFx0ZlTbJ3HC.', 'superadmin');
+
+-- Audit log
+CREATE TABLE IF NOT EXISTS audit_log (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT DEFAULT NULL,
+  username   VARCHAR(50) DEFAULT NULL,
+  action     VARCHAR(50) NOT NULL,
+  details    TEXT,
+  ip_address VARCHAR(45) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_audit_action (action),
+  KEY idx_audit_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Upgrade scripts for existing installs ──
+-- Run these if the DB already exists and tables were created without these columns:
+--   ALTER TABLE bookings ADD COLUMN pickup VARCHAR(120) DEFAULT '' AFTER phone;
+--   ALTER TABLE admin_users MODIFY COLUMN role ENUM('superadmin','admin','staff') DEFAULT 'staff';
+--   UPDATE admin_users SET role='superadmin' WHERE username='admin';
+
+-- Photos for destination galleries
+CREATE TABLE IF NOT EXISTS photos (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  destination VARCHAR(50) NOT NULL COMMENT 'manali|shimla|dharamshala|dalhousie|spiti|general',
+  caption     VARCHAR(200) DEFAULT '',
+  filename    VARCHAR(255) NOT NULL,
+  sort_order  TINYINT DEFAULT 0,
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_photos_dest (destination)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Customer reviews — submitted via public form, moderated by admin before publishing
+CREATE TABLE IF NOT EXISTS reviews (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(100) NOT NULL,
+  city          VARCHAR(80)  DEFAULT '',
+  route         VARCHAR(120) DEFAULT '',
+  rating        TINYINT      NOT NULL,
+  review_text   TEXT         NOT NULL,
+  photo         VARCHAR(255) DEFAULT '',
+  status        ENUM('pending','approved','rejected') DEFAULT 'pending',
+  submitted_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_reviews_status (status),
+  KEY idx_reviews_submitted (submitted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

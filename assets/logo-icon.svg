@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Himachal Yatra Travels">
+  <title>Himachal Yatra Travels</title>
+  <defs>
+    <linearGradient id="gold" x1="20" y1="12" x2="102" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0D891"/>
+      <stop offset="0.45" stop-color="#C8A75D"/>
+      <stop offset="1" stop-color="#8F7134"/>
+    </linearGradient>
+    <linearGradient id="ivory" x1="38" y1="24" x2="82" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF8DF"/>
+      <stop offset="1" stop-color="#D8C17A"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="60" cy="60" r="56" fill="#0B0D12"/>
+  <path d="M17 77C23 38 55 18 94 25" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="43" cy="39" r="10" fill="url(#gold)" opacity=".95"/>
+
+  <path d="M17 80 38 52 49 65 63 36 94 80Z" fill="#11151D"/>
+  <path d="M38 52 49 65 58 57 63 36 94 80 73 66 62 80 49 65 34 80Z" fill="url(#gold)"/>
+  <path d="M63 36 56 57 64 52 72 61Z" fill="url(#ivory)"/>
+  <path d="M38 52 34 66 43 61 49 65Z" fill="#F4EFE6" opacity=".88"/>
+
+  <path d="M19 91C39 83 62 79 96 81" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M29 96C49 88 71 87 103 92" fill="none" stroke="#F4EFE6" stroke-width="2.2" stroke-linecap="round" opacity=".78"/>
+  <path d="M54 88 61 86M73 86 81 86" stroke="#0B0D12" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+
+  <path d="M24 72c5-6 10-9 15-10" stroke="#C8A75D" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
+  <path d="M78 31c4-2 8-2 12 0" stroke="#C8A75D" stroke-width="2" stroke-linecap="round" opacity=".75"/>
+</svg>

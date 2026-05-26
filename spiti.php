@@ -2,6 +2,16 @@
 $base       = 'index.php';
 $activeDest = 'spiti';
 require_once 'includes/vars.php';
+require_once 'api/config.php';
+$db_photos = [];
+if ($conn instanceof mysqli) {
+    $stmt = $conn->prepare('SELECT filename, caption FROM photos WHERE destination = ? ORDER BY sort_order ASC, uploaded_at ASC');
+    $stmt->bind_param('s', $activeDest);
+    $stmt->execute();
+    $db_photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $conn->close();
+}
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -9,10 +19,10 @@ require_once 'includes/vars.php';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spiti Valley Tour &amp; Cab Booking | Himachal Yatra Travels</title>
   <meta name="description" content="Explore Spiti Valley with Himachal Yatra Travels. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.">
-  <meta name="theme-color" content="#166534">
+  <meta name="theme-color" content="#0d0d14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -27,7 +37,7 @@ require_once 'includes/vars.php';
     <div class="dest-hero-bg">
       <img src="https://images.unsplash.com/photo-1504457047772-27faf1c00561?auto=format&fit=crop&w=1920&q=90" alt="Spiti Valley high altitude Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
-    <div class="dest-hero-overlay" style="background:linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(22,101,52,0.35) 100%)"></div>
+    <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">
       <nav class="dest-breadcrumb" aria-label="breadcrumb">
         <a href="index.php">Home</a> <i class="fa-solid fa-chevron-right"></i>
@@ -109,12 +119,20 @@ require_once 'includes/vars.php';
         <h2 class="section-title">Spiti Valley in <span>Pictures</span></h2>
       </div>
       <div class="dest-gallery-grid reveal">
+        <?php if (!empty($db_photos)): ?>
+          <?php foreach ($db_photos as $i => $p): ?>
+          <div class="gallery-item<?= $i === 0 || $i === 4 ? ' gi-wide' : '' ?>">
+            <img src="uploads/photos/<?= h($p['filename']) ?>" alt="<?= h($p['caption'] ?: 'Spiti Valley') ?>" loading="lazy">
+          </div>
+          <?php endforeach; ?>
+        <?php else: ?>
         <div class="gallery-item gi-wide"><img src="https://images.unsplash.com/photo-1504457047772-27faf1c00561?auto=format&fit=crop&w=1200&q=85" alt="Spiti Valley high altitude" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=700&q=85" alt="Mountain pass Spiti" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=85" alt="Snow peaks Spiti Valley" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1548013584-24e97daa89c6?auto=format&fit=crop&w=700&q=85" alt="Mountain landscape Spiti" loading="lazy"></div>
         <div class="gallery-item gi-wide"><img src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=85" alt="Himalayan peaks Spiti area" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1547036967-23d11aacaee0?auto=format&fit=crop&w=700&q=85" alt="Remote valley Himachal" loading="lazy"></div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
@@ -190,7 +208,7 @@ require_once 'includes/vars.php';
           <ul>
             <li><strong>Road Open Season:</strong> June to September only. Roads close due to heavy snowfall in winter.</li>
             <li><strong>Inner Line Permit:</strong> Required for some areas near the China border. We assist with permit documentation.</li>
-            <li><strong>Altitude Sickness:</strong> Acclimatize in Manali or Kaza for 1–2 days before ascending further. Do not rush.</li>
+            <li><strong>Altitude Sickness:</strong> Acclimatize in Manali or Kaza for 1-2 days before ascending further. Do not rush.</li>
             <li><strong>4WD Vehicles:</strong> We use only suitable SUVs (Innova Crysta / Fortuner) for Spiti. No sedans.</li>
             <li><strong>Fuel:</strong> Fill up at Kaza — the last reliable petrol pump. Our drivers know every stop.</li>
           </ul>
@@ -204,12 +222,12 @@ require_once 'includes/vars.php';
     <div class="container mx-auto px-3">
       <div class="dest-cta-inner reveal">
         <div class="dest-cta-text">
-          <h2>Conquer <span>Spiti Valley?</span></h2>
-          <p>This is not an ordinary trip. Our Spiti specialists will plan every detail — permits, acclimatization, the right vehicle and experienced driver.</p>
+          <h2>Plan a Serious <span>Spiti Valley</span> Route</h2>
+          <p>This is not an ordinary hill trip. Our Spiti specialists plan the permits, acclimatization, vehicle choice and driver assignment carefully.</p>
         </div>
         <div class="dest-cta-btns">
           <a href="index.php#contact" class="btn orange-btn"><i class="fa-solid fa-calendar-check"></i> Plan My Spiti Trip</a>
-          <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo rawurlencode('Hi, I want to plan a Spiti Valley trip. Please share package details and availability.'); ?>" target="_blank" rel="noopener" class="btn wa-cta-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp Us</a>
+          <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo rawurlencode('Hi, I want to plan a private Spiti Valley trip. Please share route options and availability.'); ?>" target="_blank" rel="noopener" class="btn wa-cta-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp Concierge</a>
         </div>
       </div>
     </div>

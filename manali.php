@@ -2,6 +2,16 @@
 $base       = 'index.php';
 $activeDest = 'manali';
 require_once 'includes/vars.php';
+require_once 'api/config.php';
+$db_photos = [];
+if ($conn instanceof mysqli) {
+    $stmt = $conn->prepare('SELECT filename, caption FROM photos WHERE destination = ? ORDER BY sort_order ASC, uploaded_at ASC');
+    $stmt->bind_param('s', $activeDest);
+    $stmt->execute();
+    $db_photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $conn->close();
+}
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -9,10 +19,10 @@ require_once 'includes/vars.php';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manali Tour Packages &amp; Cab Booking | Himachal Yatra Travels</title>
   <meta name="description" content="Plan your Manali trip with Himachal Yatra Travels. Delhi to Manali cab from ₹9,999. Rohtang Pass, Solang Valley, Hadimba Temple — expert mountain drivers.">
-  <meta name="theme-color" content="#166534">
+  <meta name="theme-color" content="#0d0d14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -43,7 +53,7 @@ require_once 'includes/vars.php';
         <div class="dest-fact"><i class="fa-solid fa-route"></i><span>550 km from Delhi</span></div>
         <div class="dest-fact"><i class="fa-solid fa-temperature-half"></i><span>−2°C to 25°C</span></div>
       </div>
-      <a href="index.php#contact" class="dest-hero-btn"><i class="fa-brands fa-whatsapp"></i> Book Manali Trip</a>
+      <a href="index.php#contact" class="dest-hero-btn"><i class="fa-brands fa-whatsapp"></i> Plan Manali Trip</a>
     </div>
   </section>
 
@@ -108,12 +118,20 @@ require_once 'includes/vars.php';
         <h2 class="section-title">Manali in <span>Pictures</span></h2>
       </div>
       <div class="dest-gallery-grid reveal">
+        <?php if (!empty($db_photos)): ?>
+          <?php foreach ($db_photos as $i => $p): ?>
+          <div class="gallery-item<?= $i === 0 || $i === 4 ? ' gi-wide' : '' ?>">
+            <img src="uploads/photos/<?= h($p['filename']) ?>" alt="<?= h($p['caption'] ?: 'Manali') ?>" loading="lazy">
+          </div>
+          <?php endforeach; ?>
+        <?php else: ?>
         <div class="gallery-item gi-wide"><img src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=85" alt="Manali snow mountains" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=700&q=85" alt="Rohtang mountain road" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=85" alt="Snow peaks Manali" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1457530378978-8bac673b8062?auto=format&fit=crop&w=700&q=85" alt="Solang Valley Manali" loading="lazy"></div>
         <div class="gallery-item gi-wide"><img src="https://images.unsplash.com/photo-1547036967-23d11aacaee0?auto=format&fit=crop&w=1200&q=85" alt="Himalayan valley Manali" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=700&q=85" alt="Mountain lake Manali" loading="lazy"></div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
@@ -140,7 +158,7 @@ require_once 'includes/vars.php';
           </div>
           <div class="drc-bottom">
             <div class="drc-price">Starting ₹9,999</div>
-            <a href="index.php#contact" class="drc-btn">Book Now <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">
@@ -156,7 +174,7 @@ require_once 'includes/vars.php';
           </div>
           <div class="drc-bottom">
             <div class="drc-price">Starting ₹6,999</div>
-            <a href="index.php#contact" class="drc-btn">Book Now <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">
@@ -184,12 +202,12 @@ require_once 'includes/vars.php';
     <div class="container mx-auto px-3">
       <div class="dest-cta-inner reveal">
         <div class="dest-cta-text">
-          <h2>Ready to Explore <span>Manali?</span></h2>
-          <p>Get a free quote on WhatsApp in under 5 minutes. Our Himachal travel experts are online 24/7.</p>
+          <h2>Plan a Private <span>Manali</span> Journey</h2>
+          <p>Share your dates, guest count and hotel preferences. Our travel desk will respond with a clear route plan and quote.</p>
         </div>
         <div class="dest-cta-btns">
-          <a href="index.php#contact" class="btn orange-btn"><i class="fa-solid fa-calendar-check"></i> Book Now</a>
-          <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo rawurlencode('Hi, I want to book a trip to Manali. Please share a quote.'); ?>" target="_blank" rel="noopener" class="btn wa-cta-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp Us</a>
+          <a href="index.php#contact" class="btn orange-btn"><i class="fa-solid fa-calendar-check"></i> Request Quote</a>
+          <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo rawurlencode('Hi, I want a private Manali trip quote. Please help me plan the route.'); ?>" target="_blank" rel="noopener" class="btn wa-cta-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp Concierge</a>
         </div>
       </div>
     </div>

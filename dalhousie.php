@@ -2,6 +2,16 @@
 $base       = 'index.php';
 $activeDest = 'dalhousie';
 require_once 'includes/vars.php';
+require_once 'api/config.php';
+$db_photos = [];
+if ($conn instanceof mysqli) {
+    $stmt = $conn->prepare('SELECT filename, caption FROM photos WHERE destination = ? ORDER BY sort_order ASC, uploaded_at ASC');
+    $stmt->bind_param('s', $activeDest);
+    $stmt->execute();
+    $db_photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $conn->close();
+}
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -9,10 +19,10 @@ require_once 'includes/vars.php';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dalhousie Tour Packages &amp; Cab Booking | Himachal Yatra Travels</title>
   <meta name="description" content="Book Delhi to Dalhousie cab from ₹9,499. Khajjiar (mini Switzerland), Dainkund Peak, Chamera Lake — peaceful hill station with Himachal Yatra Travels.">
-  <meta name="theme-color" content="#166534">
+  <meta name="theme-color" content="#0d0d14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -43,7 +53,7 @@ require_once 'includes/vars.php';
         <div class="dest-fact"><i class="fa-solid fa-route"></i><span>560 km from Delhi</span></div>
         <div class="dest-fact"><i class="fa-solid fa-temperature-half"></i><span>−1°C to 24°C</span></div>
       </div>
-      <a href="index.php#contact" class="dest-hero-btn"><i class="fa-brands fa-whatsapp"></i> Book Dalhousie Trip</a>
+      <a href="index.php#contact" class="dest-hero-btn"><i class="fa-brands fa-whatsapp"></i> Plan Dalhousie Trip</a>
     </div>
   </section>
 
@@ -108,12 +118,20 @@ require_once 'includes/vars.php';
         <h2 class="section-title">Dalhousie in <span>Pictures</span></h2>
       </div>
       <div class="dest-gallery-grid reveal">
+        <?php if (!empty($db_photos)): ?>
+          <?php foreach ($db_photos as $i => $p): ?>
+          <div class="gallery-item<?= $i === 0 || $i === 4 ? ' gi-wide' : '' ?>">
+            <img src="uploads/photos/<?= h($p['filename']) ?>" alt="<?= h($p['caption'] ?: 'Dalhousie') ?>" loading="lazy">
+          </div>
+          <?php endforeach; ?>
+        <?php else: ?>
         <div class="gallery-item gi-wide"><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85" alt="Dalhousie mountain meadow" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=700&q=85" alt="Green hills Dalhousie" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=700&q=85" alt="Forest trail Khajjiar" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=700&q=85" alt="Deodar forest Dalhousie" loading="lazy"></div>
         <div class="gallery-item gi-wide"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=85" alt="Mountain road Dalhousie" loading="lazy"></div>
         <div class="gallery-item"><img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=85" alt="Snow peaks near Dalhousie" loading="lazy"></div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
@@ -140,7 +158,7 @@ require_once 'includes/vars.php';
           </div>
           <div class="drc-bottom">
             <div class="drc-price">Starting ₹9,499</div>
-            <a href="index.php#contact" class="drc-btn">Book Now <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">
@@ -156,7 +174,7 @@ require_once 'includes/vars.php';
           </div>
           <div class="drc-bottom">
             <div class="drc-price">Starting ₹2,200</div>
-            <a href="index.php#contact" class="drc-btn">Book Now <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">
@@ -172,7 +190,7 @@ require_once 'includes/vars.php';
           </div>
           <div class="drc-bottom">
             <div class="drc-price">Starting ₹4,999</div>
-            <a href="index.php#contact" class="drc-btn">Book Now <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
       </div>
@@ -185,11 +203,11 @@ require_once 'includes/vars.php';
       <div class="dest-cta-inner reveal">
         <div class="dest-cta-text">
           <h2>Escape to <span>Dalhousie?</span></h2>
-          <p>Get a free quote on WhatsApp in minutes. Visit Khajjiar, Chamera Lake and more — we handle the travel.</p>
+          <p>Share your dates and route preferences. We will shape a relaxed Dalhousie and Khajjiar plan with a clear quote.</p>
         </div>
         <div class="dest-cta-btns">
-          <a href="index.php#contact" class="btn orange-btn"><i class="fa-solid fa-calendar-check"></i> Book Now</a>
-          <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo rawurlencode('Hi, I want to book a trip to Dalhousie/Khajjiar. Please share a quote.'); ?>" target="_blank" rel="noopener" class="btn wa-cta-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp Us</a>
+          <a href="index.php#contact" class="btn orange-btn"><i class="fa-solid fa-calendar-check"></i> Request Quote</a>
+          <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo rawurlencode('Hi, I want a private Dalhousie/Khajjiar trip quote. Please help me plan the route.'); ?>" target="_blank" rel="noopener" class="btn wa-cta-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp Concierge</a>
         </div>
       </div>
     </div>

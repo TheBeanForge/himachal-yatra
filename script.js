@@ -10,6 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     nav?.classList.toggle('scrolled', window.scrollY > 60);
   }, { passive: true });
 
+  // ── Custom hamburger animation ──
+  const navHam  = document.getElementById('navHam');
+  const mainNav = document.getElementById('mainNav');
+  if (navHam && mainNav) {
+    mainNav.addEventListener('show.bs.collapse', () => navHam.classList.add('open'));
+    mainNav.addEventListener('hide.bs.collapse', () => navHam.classList.remove('open'));
+  }
+
   // ── Smooth scroll for anchor links ──
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener('click', (e) => {
@@ -71,80 +79,149 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-count]').forEach((el) => counterObserver.observe(el));
 
   // ── Booking widget tabs ──
+  // Track which service the hero tabs have selected; passed into the modal on open.
   const tabBtns = document.querySelectorAll('.booking-tab-btn');
+  let heroService = document.querySelector('.booking-tab-btn.active')?.dataset.tab || 'classic';
   tabBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
       tabBtns.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
+      heroService = btn.dataset.tab || 'classic';
     });
   });
 
-  // ── Hero "Book Trip" → pre-fills contact form & scrolls ──
-  document.getElementById('heroBookBtn')?.addEventListener('click', () => {
-    const from = document.getElementById('bookFrom')?.value.trim();
-    const to   = document.getElementById('bookTo')?.value.trim();
-    const date = document.getElementById('bookDate')?.value;
-    const passEl = document.getElementById('bookPassengers');
-    const service = passEl?.options[passEl.selectedIndex]?.value || 'classic';
-
-    if (form) {
-      const set = (name, val) => {
-        const el = form.querySelector(`[name="${name}"]`);
-        if (el && val) el.value = val;
-      };
-      set('pickup', from);
-      set('destination', to);
-      set('travel_date', date);
-      set('package', service);
-    }
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+  // heroBookBtn (booking widget quote button) is handled inside the modal block above
 
   // ── Booking Popup Modal ──
-  const modal    = document.getElementById('bookingModal');
-  const modalClose = document.querySelector('.modal-close');
-  let popupShown = sessionStorage.getItem('hyt_popup');
+  const modal = document.getElementById('bookingModal');
 
   const showPopup = () => {
-    if (popupShown || !modal) return;
+    if (!modal) return;
     modal.classList.add('active');
+    const scrollY = window.scrollY;
     document.body.style.overflow = 'hidden';
-    popupShown = '1';
-    sessionStorage.setItem('hyt_popup', '1');
+    document.body.style.top = `-${scrollY}px`;
+    document.body.dataset.scrollY = scrollY;
+    // focus first input for accessibility
+    setTimeout(() => modal.querySelector('.mf-input')?.focus({ preventScroll: true }), 350);
   };
-
   const hidePopup = () => {
     modal?.classList.remove('active');
+    const scrollY = parseInt(document.body.dataset.scrollY || '0');
     document.body.style.overflow = '';
+    document.body.style.top = '';
+    window.scrollTo({ top: scrollY, behavior: 'instant' });
+    // reset form and success state after animation finishes
+    setTimeout(() => {
+      const mForm = document.getElementById('modalForm');
+      const mSuccess = document.getElementById('modalSuccess');
+      const mTabs = modal?.querySelector('.modal-service-tabs');
+      const mNote = modal?.querySelector('.modal-note');
+      if (mForm)    { mForm.reset(); mForm.hidden = false; }
+      if (mSuccess) mSuccess.hidden = true;
+      if (mTabs)    mTabs.hidden = false;
+      if (mNote)    mNote.style.opacity = '';
+      document.getElementById('modalError')?.setAttribute('hidden', '');
+      const submitBtn = document.getElementById('modalSubmitBtn');
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Quote'; }
+    }, 350);
   };
 
-  // Show after 30% scroll
-  const onScroll = () => {
-    if (!popupShown) {
-      const scrolled = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-      if (scrolled > 0.30) showPopup();
-    }
+  // Open triggers
+  document.getElementById('openBookingModal')?.addEventListener('click', showPopup);
+  // Sync the modal's service tabs + hidden package input to the chosen service.
+  const setModalService = (service) => {
+    const input = document.getElementById('modalPackageInput');
+    if (input) input.value = service;
+    document.querySelectorAll('.mst-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.service === service);
+    });
   };
-  window.addEventListener('scroll', onScroll, { passive: true });
 
-  modalClose?.addEventListener('click', hidePopup);
+  document.getElementById('heroBookBtn')?.addEventListener('click', () => {
+    // pre-fill from booking widget — assign to .value so it overwrites any prior input
+    const from = document.getElementById('bookFrom')?.value.trim() || '';
+    const to   = document.getElementById('bookTo')?.value.trim() || '';
+    const date = document.getElementById('bookDate')?.value || '';
+    const pickupEl = modal?.querySelector('[name="pickup"]');
+    const destEl   = modal?.querySelector('[name="destination"]');
+    const dateEl   = modal?.querySelector('[name="travel_date"]');
+    if (pickupEl) pickupEl.value = from;
+    if (destEl)   destEl.value   = to;
+    if (dateEl)   dateEl.value   = date;
+    setModalService(heroService);
+    showPopup();
+  });
+
+  // Close triggers
+  document.getElementById('modalCloseBtn')?.addEventListener('click', hidePopup);
+  document.getElementById('modalSuccessClose')?.addEventListener('click', hidePopup);
   modal?.addEventListener('click', (e) => { if (e.target === modal) hidePopup(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePopup(); });
 
-  // Modal form → WhatsApp
-  document.getElementById('modalForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
+  // Service tabs
+  document.querySelectorAll('.mst-btn').forEach((btn) => {
+    btn.addEventListener('click', () => setModalService(btn.dataset.service));
+  });
+
+  // Build WA message from modal form data
+  const buildModalWaUrl = (fd) => {
+    const get = (k) => (fd.get(k) || '').toString().trim();
     const lines = [
-      'Hi Himachal Yatra Travels, I need a free quote.',
-      `Name: ${(fd.get('modal_name') || '').toString().trim()}`,
-      `Phone: ${(fd.get('modal_phone') || '').toString().trim()}`,
-      `From: ${(fd.get('modal_from') || '').toString().trim()}`,
-      `Destination: ${(fd.get('modal_to') || '').toString().trim()}`,
-      `Date: ${(fd.get('modal_date') || '').toString().trim()}`,
+      'Hi Himachal Yatra Travels, I would like a private Himachal trip quote.',
+      `Name: ${get('name')}`,
+      `Phone: ${get('phone')}`,
+      `Pickup: ${get('pickup')}`,
+      `Destination: ${get('destination')}`,
+      `Date: ${get('travel_date')}`,
+      `Passengers: ${get('pax')}`,
     ].filter((l) => !l.endsWith(': '));
-    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank', 'noopener');
-    hidePopup();
+    return `https://wa.me/${waNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
+  };
+
+  // WhatsApp direct button
+  document.getElementById('modalWaBtn')?.addEventListener('click', () => {
+    const fd = new FormData(document.getElementById('modalForm'));
+    window.open(buildModalWaUrl(fd), '_blank', 'noopener');
+  });
+
+  // Modal form submit → POST to API → show success
+  document.getElementById('modalForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('modalSubmitBtn');
+    const errorBox  = document.getElementById('modalError');
+    const fd = new FormData(e.target);
+    const name = (fd.get('name') || '').toString().trim();
+    const waUrl = buildModalWaUrl(fd);
+
+    errorBox.hidden = true;
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; }
+
+    try {
+      const res    = await fetch('api/submit.php', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+      const result = await res.json().catch(() => ({}));
+
+      if (res.ok && result.success) {
+        // show success state
+        const nameEl = document.getElementById('modalSuccessName');
+        const waLink = document.getElementById('modalSuccessWa');
+        if (nameEl) nameEl.textContent = name || 'there';
+        if (waLink) waLink.href = waUrl;
+        e.target.hidden = true;
+        modal.querySelector('.modal-service-tabs').hidden = true;
+        document.getElementById('modalSuccess').hidden = false;
+        // hide note
+        modal.querySelector('.modal-note').style.opacity = '0';
+      } else {
+        errorBox.textContent = result.error || 'Something went wrong. Please try again.';
+        errorBox.hidden = false;
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Quote'; }
+      }
+    } catch {
+      errorBox.textContent = 'Network error. Please use the WhatsApp button instead.';
+      errorBox.hidden = false;
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Quote'; }
+    }
   });
 
   // ── Horizontal Review Slider ──
@@ -154,14 +231,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const dotsRow  = document.getElementById('reviewDots');
 
   if (track) {
-    const cards = [...track.querySelectorAll('.review-card')];
-    const cardW = () => cards[0]?.offsetWidth + 20 || 360; // card + gap
+    const cards = [...track.querySelectorAll('.rv-card')];
+    const cardW = () => (cards[0]?.offsetWidth ?? 360) + 20; // card + gap
 
     // Build dots
     cards.forEach((_, i) => {
       const dot = document.createElement('button');
       dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
-      dot.addEventListener('click', () => scrollTo(i));
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-label', `Review ${i + 1}`);
+      dot.addEventListener('click', () => { scrollTo(i); stopAuto(); });
       dotsRow?.appendChild(dot);
     });
 
@@ -172,17 +251,49 @@ document.addEventListener('DOMContentLoaded', () => {
     prevBtn?.addEventListener('click', () => {
       const cur = Math.round(track.scrollLeft / cardW());
       scrollTo(Math.max(0, cur - 1));
+      stopAuto();
     });
     nextBtn?.addEventListener('click', () => {
       const cur = Math.round(track.scrollLeft / cardW());
       scrollTo(Math.min(cards.length - 1, cur + 1));
+      stopAuto();
     });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    track.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      stopAuto();
+    }, { passive: true });
+    track.addEventListener('touchend', (e) => {
+      const delta = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(delta) > 50) {
+        const cur = Math.round(track.scrollLeft / cardW());
+        scrollTo(delta > 0
+          ? Math.min(cards.length - 1, cur + 1)
+          : Math.max(0, cur - 1));
+      }
+      setTimeout(startAuto, 4000);
+    }, { passive: true });
 
     // Update dots on scroll
     track.addEventListener('scroll', () => {
       const idx = Math.round(track.scrollLeft / cardW());
       dotsRow?.querySelectorAll('.slider-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
     }, { passive: true });
+
+    // Auto-slide every 5.5 s, pause on hover / touch
+    let autoTimer;
+    const startAuto = () => {
+      autoTimer = setInterval(() => {
+        const cur = Math.round(track.scrollLeft / cardW());
+        scrollTo(cur >= cards.length - 1 ? 0 : cur + 1);
+      }, 5500);
+    };
+    const stopAuto = () => clearInterval(autoTimer);
+    startAuto();
+    track.addEventListener('mouseenter', stopAuto);
+    track.addEventListener('mouseleave', startAuto);
   }
 
   // ── Star Rating Input ──
@@ -218,31 +329,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if (label) label.textContent = file ? file.name : 'Upload Your Photo (optional)';
   });
 
-  // ── Write Review Form → WhatsApp ──
-  document.getElementById('writeReviewForm')?.addEventListener('submit', (e) => {
+  // ── Write Review Form → API → admin moderation queue ──
+  const wrForm = document.getElementById('writeReviewForm');
+  wrForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const rating = document.getElementById('selectedRating')?.value || '0';
-    if (rating === '0') { alert('Please select a star rating.'); return; }
-    const name  = document.getElementById('wrName')?.value.trim();
-    const city  = document.getElementById('wrCity')?.value.trim();
-    const trip  = document.getElementById('wrTrip')?.value.trim();
-    const text  = document.getElementById('wrText')?.value.trim();
-    const stars = '★'.repeat(Number(rating)) + '☆'.repeat(5 - Number(rating));
-    const lines = [
-      `New Review from ${name}`,
-      `Rating: ${stars} (${rating}/5)`,
-      `City: ${city}`,
-      `Trip: ${trip}`,
-      `Review: ${text}`,
-    ];
-    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank', 'noopener');
-    e.target.reset();
-    if (ratingInput) ratingInput.value = '0';
-    starSelector?.querySelectorAll('i').forEach((s) => { s.className = 'fa-regular fa-star'; s.classList.remove('active'); });
-    document.getElementById('photoLabel').textContent = 'Upload Your Photo (optional)';
+    const rating = Number(document.getElementById('selectedRating')?.value || 0);
+    const status = document.getElementById('wrStatus');
+    const submit = wrForm.querySelector('.wr-submit');
+
+    if (rating < 1) {
+      if (status) { status.textContent = 'Please select a star rating.'; status.style.color = '#fca5a5'; }
+      return;
+    }
+
+    const fd = new FormData(wrForm);
+    fd.append('rating', String(rating));
+    // Token shared with the lead form (vars.php)
+    if (!fd.get('csrf_token')) fd.set('csrf_token', document.querySelector('input[name="csrf_token"]')?.value || '');
+
+    if (submit) { submit.disabled = true; submit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…'; }
+    if (status) { status.textContent = ''; }
+
+    try {
+      const res  = await fetch('api/submit_review.php', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        wrForm.reset();
+        if (ratingInput) ratingInput.value = '0';
+        starSelector?.querySelectorAll('i').forEach((s) => { s.className = 'fa-regular fa-star'; s.classList.remove('active'); });
+        const lbl = document.getElementById('photoLabel');
+        if (lbl) lbl.textContent = 'Upload Photo (optional)';
+        if (status) { status.style.color = '#86efac'; status.textContent = 'Thanks! Your review is in the moderation queue and will appear soon.'; }
+      } else {
+        if (status) { status.style.color = '#fca5a5'; status.textContent = data.error || 'Could not submit. Please try again.'; }
+      }
+    } catch {
+      if (status) { status.style.color = '#fca5a5'; status.textContent = 'Network error. Please try again.'; }
+    } finally {
+      if (submit) { submit.disabled = false; submit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Review'; }
+    }
   });
 
-  // ── Contact form submit → WhatsApp ──
+  // ── Contact form: two-action buttons ──
   const getValue = (data, key) => String(data.get(key) || '').trim();
   const buildWaUrl = (data) => {
     const lines = [
@@ -258,30 +386,56 @@ document.addEventListener('DOMContentLoaded', () => {
     return `https://wa.me/${waNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
   };
 
+  // WhatsApp concierge button: open WA immediately with current form data, no API call
+  document.getElementById('waDirectBtn')?.addEventListener('click', () => {
+    window.open(buildWaUrl(new FormData(form)), '_blank', 'noopener');
+  });
+
+  // Request quote: POST to API, save lead to DB, show thank-you state
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!form.reportValidity()) return;
 
-    const btn = form.querySelector('button[type="submit"]');
-    const data = new FormData(form);
-    const fallbackUrl = buildWaUrl(data);
-    const originalHtml = btn?.innerHTML;
+    const submitBtn = form.querySelector('.btn-enquiry-submit');
+    const data      = new FormData(form);
+    const name      = getValue(data, 'name');
+    const waUrl     = buildWaUrl(data);
 
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...'; }
-    if (status) status.textContent = 'Sending your enquiry...';
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; }
+    if (status)    { status.textContent = ''; }
 
-    let nextUrl = fallbackUrl;
     try {
-      const res = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+      const res    = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
       const result = await res.json().catch(() => ({}));
-      if (res.ok && result.wa) nextUrl = result.wa;
-      if (status) status.textContent = res.ok ? 'Enquiry received! Opening WhatsApp...' : (result.error || 'Opening WhatsApp for your enquiry.');
-    } catch {
-      if (status) status.textContent = 'Opening WhatsApp for your enquiry.';
-    }
 
-    window.open(nextUrl, '_blank', 'noopener');
+      if (res.ok && result.success) {
+        // Populate and show success state
+        const fsName  = document.getElementById('fsName');
+        const fsWaBtn = document.getElementById('fsWaBtn');
+        if (fsName)  fsName.textContent = name || 'there';
+        if (fsWaBtn) fsWaBtn.href = waUrl;
+
+        form.hidden = true;
+        document.getElementById('formHeading')?.style.setProperty('display', 'none');
+        document.getElementById('formSuccess').hidden = false;
+      } else {
+        if (status)    status.textContent = result.error || 'Something went wrong. Please try again.';
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Private Quote'; }
+      }
+    } catch {
+      if (status)    status.textContent = 'Network error. Please use the WhatsApp button instead.';
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Private Quote'; }
+    }
+  });
+
+  // New enquiry button inside success state: reset everything
+  document.getElementById('fsResetBtn')?.addEventListener('click', () => {
     form.reset();
-    if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+    form.hidden = false;
+    document.getElementById('formHeading')?.style.removeProperty('display');
+    document.getElementById('formSuccess').hidden = true;
+    if (status) status.textContent = '';
+    const submitBtn = form.querySelector('.btn-enquiry-submit');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Private Quote'; }
   });
 });

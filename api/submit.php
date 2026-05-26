@@ -1,24 +1,25 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-header('X-Content-Type-Options: nosniff');
 require_once __DIR__ . '/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
 if (!empty($_POST['website'] ?? '')) {
-    echo json_encode(['success' => true]);
+    // Honeypot tripped — pretend everything is fine.
+    echo json_encode(['ok' => true, 'success' => true]);
     exit;
 }
 
-$postedToken = $_POST['csrf_token'] ?? '';
-if (!empty($_SESSION['lead_form_token']) && !hash_equals($_SESSION['lead_form_token'], $postedToken)) {
+$postedToken    = $_POST['csrf_token'] ?? '';
+$sessionToken   = $_SESSION['lead_form_token'] ?? '';
+if ($sessionToken === '' || !hash_equals($sessionToken, $postedToken)) {
     http_response_code(419);
-    echo json_encode(['error' => 'Security token expired. Please refresh the page and try again.']);
+    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Security token expired. Please refresh the page and try again.']);
     exit;
 }
 
@@ -43,14 +44,11 @@ $message     = clean_text($_POST['message'] ?? '', 900);
 
 if (!$name || strlen($phone) < 8) {
     http_response_code(422);
-    echo json_encode(['error' => 'Name and phone are required.']);
+    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Name and phone are required.']);
     exit;
 }
 
-$messageParts = [];
-if ($pickup) $messageParts[] = "Pickup: $pickup";
-if ($message) $messageParts[] = "Message: $message";
-$message = implode("\n", $messageParts);
+// $pickup is stored in its own column; keep $message as the user's note only
 
 $allowed_packages = ['budget', 'classic', 'luxury'];
 if ($package && !in_array($package, $allowed_packages)) $package = '';
@@ -61,30 +59,44 @@ if ($travel_date) {
     if ($d) $date_val = $d->format('Y-m-d');
 }
 
+// Rate limit: max 5 successful submissions per 15 minutes per session
+$rl     = $_SESSION['submit_rl'] ?? ['count' => 0, 'window_start' => time()];
+$window = 15 * 60;
+if (time() - $rl['window_start'] > $window) {
+    $rl = ['count' => 0, 'window_start' => time()];
+}
+if ($rl['count'] >= 5) {
+    http_response_code(429);
+    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Too many requests. Please wait a few minutes and try again.']);
+    exit;
+}
+
 if (!$conn instanceof mysqli) {
     http_response_code(503);
-    echo json_encode(['error' => 'Database temporarily unavailable. Please continue on WhatsApp.']);
+    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Database temporarily unavailable. Please continue on WhatsApp.']);
     exit;
 }
 
 $stmt = $conn->prepare(
-    'INSERT INTO bookings (name, email, phone, destination, package, travel_date, pax, message)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO bookings (name, email, phone, pickup, destination, package, travel_date, pax, message)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
 );
 if (!$stmt) {
     http_response_code(500);
-    echo json_encode(['error' => 'Could not prepare enquiry.']);
+    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Could not prepare enquiry.']);
     exit;
 }
-$stmt->bind_param('ssssssis', $name, $email, $phone, $destination, $package, $date_val, $pax, $message);
+$stmt->bind_param('sssssssis', $name, $email, $phone, $pickup, $destination, $package, $date_val, $pax, $message);
 
 if ($stmt->execute()) {
+    $rl['count']++;
+    $_SESSION['submit_rl'] = $rl;
     $wa = agency_whatsapp();
-    $wa_msg = urlencode("Hi India Yatra Travels, I need a quote. Name: $name, Phone: $phone, Pickup: $pickup, Destination: $destination, Vehicle/Service: $package, Date: $travel_date");
-    echo json_encode(['success' => true, 'wa' => "https://wa.me/$wa?text=$wa_msg"]);
+    $wa_msg = urlencode("Hi Himachal Yatra Travels! I just submitted an enquiry. Name: $name, Phone: $phone, Pickup: $pickup, Destination: $destination, Service: $package, Date: $travel_date");
+    echo json_encode(['ok' => true, 'success' => true, 'wa' => "https://wa.me/$wa?text=$wa_msg"]);
 } else {
     http_response_code(500);
-    echo json_encode(['error' => 'Could not save your enquiry. Please try again.']);
+    echo json_encode(['ok' => false, 'success' => false, 'error' => 'Could not save your enquiry. Please try again.']);
 }
 $stmt->close();
 $conn->close();

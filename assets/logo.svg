@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 96" role="img" aria-label="Himachal Yatra Travels">
+  <title>Himachal Yatra Travels</title>
+  <defs>
+    <linearGradient id="gold" x1="10" y1="8" x2="84" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0D891"/>
+      <stop offset="0.45" stop-color="#C8A75D"/>
+      <stop offset="1" stop-color="#8F7134"/>
+    </linearGradient>
+    <linearGradient id="ivory" x1="30" y1="16" x2="72" y2="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF8DF"/>
+      <stop offset="1" stop-color="#D8C17A"/>
+    </linearGradient>
+  </defs>
+
+  <g>
+    <circle cx="48" cy="48" r="44" fill="#0B0D12"/>
+    <path d="M14 62C19 31 45 14 76 20" fill="none" stroke="url(#gold)" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="35" cy="32" r="8" fill="url(#gold)" opacity=".95"/>
+    <path d="M14 64 31 42 40 52 51 29 76 64Z" fill="#11151D"/>
+    <path d="M31 42 40 52 47 47 51 29 76 64 59 53 50 64 40 52 28 64Z" fill="url(#gold)"/>
+    <path d="M51 29 46 47 52 43 58 50Z" fill="url(#ivory)"/>
+    <path d="M31 42 28 53 35 49 40 52Z" fill="#F4EFE6" opacity=".88"/>
+    <path d="M15 73C31 66 50 63 77 65" fill="none" stroke="url(#gold)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M24 77C40 71 58 70 82 74" fill="none" stroke="#F4EFE6" stroke-width="1.8" stroke-linecap="round" opacity=".78"/>
+  </g>
+
+  <text x="110" y="42"
+        font-family="Montserrat, Poppins, Arial, sans-serif"
+        font-size="26"
+        font-weight="900"
+        fill="#F4EFE6"
+        letter-spacing="1.4">HIMACHAL</text>
+  <text x="110" y="70"
+        font-family="Montserrat, Poppins, Arial, sans-serif"
+        font-size="25"
+        font-weight="900"
+        fill="#C8A75D"
+        letter-spacing="1.6">YATRA</text>
+  <text x="222" y="70"
+        font-family="Inter, Arial, sans-serif"
+        font-size="13"
+        font-weight="800"
+        fill="#D8C17A"
+        letter-spacing="5">TRAVELS</text>
+  <path d="M222 76H360" stroke="#C8A75D" stroke-width="1.5" stroke-linecap="round" opacity=".65"/>
+  <text x="110" y="88"
+        font-family="Inter, Arial, sans-serif"
+        font-size="9"
+        font-weight="700"
+        fill="#AEB6C2"
+        letter-spacing="4">PRIVATE HIMACHAL JOURNEYS</text>
+</svg>

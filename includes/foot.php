@@ -2,20 +2,19 @@
 $fBase = $base ?? '';
 $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
 ?>
-  <!-- ══ FOOTER ══ -->
+  <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-top">
       <div class="container mx-auto px-3">
         <div class="footer-grid">
+
+          <!-- About -->
           <div class="footer-brand">
-            <a class="logo" href="<?php echo $fBase ?: '#home'; ?>" aria-label="Himachal Yatra Travels">
-              <span class="logo-icon"><i class="fa-solid fa-mountain-sun"></i></span>
-              <span class="logo-text">
-                <span class="brand-main">HIMACHAL <span>YATRA</span></span>
-                <span class="brand-sub">TRAVELS</span>
-              </span>
+            <a class="footer-logo-full" href="<?php echo $fBase ?: '#home'; ?>" aria-label="Himachal Yatra Travels">
+              <img src="assets/logo.svg" alt="Himachal Yatra Travels" width="200" height="46" loading="lazy">
             </a>
-            <p>Himachal Pradesh's trusted travel partner. Reliable cabs, curated tour packages and group tempo travellers across all of Himachal — from Shimla to Spiti.</p>
+            <h3 class="footer-about-heading">Born in the Mountains.<br>Built for the Road.</h3>
+            <p>Founded by mountain-road specialists who have driven every major Himachal route in all seasons. Verified drivers, transparent fares and a travel desk that stays reachable from departure to drop. No middlemen — just us, you and the mountains.</p>
             <div class="footer-social">
               <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
               <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
@@ -23,14 +22,20 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
               <a href="https://wa.me/<?php echo h($whatsappNumber); ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
             </div>
           </div>
+
+          <!-- Quick Links -->
           <div class="footer-col">
             <h3>Quick Links</h3>
             <a href="<?php echo $fBase ?: '#home'; ?>"><i class="fa-solid fa-chevron-right"></i> Home</a>
-            <a href="<?php echo $fAl('about'); ?>"><i class="fa-solid fa-chevron-right"></i> About Us</a>
-            <a href="<?php echo $fAl('fleet'); ?>"><i class="fa-solid fa-chevron-right"></i> Our Fleet</a>
+
             <a href="<?php echo $fAl('routes'); ?>"><i class="fa-solid fa-chevron-right"></i> Popular Routes</a>
+            <a href="<?php echo $fAl('fleet'); ?>"><i class="fa-solid fa-chevron-right"></i> Our Fleet</a>
+            <a href="<?php echo $fAl('packages'); ?>"><i class="fa-solid fa-chevron-right"></i> Tour Packages</a>
+            <a href="<?php echo $fAl('reviews'); ?>"><i class="fa-solid fa-chevron-right"></i> Reviews</a>
             <a href="<?php echo $fAl('contact'); ?>"><i class="fa-solid fa-chevron-right"></i> Contact Us</a>
           </div>
+
+          <!-- Destinations -->
           <div class="footer-col">
             <h3>Destinations</h3>
             <a href="manali.php"><i class="fa-solid fa-chevron-right"></i> Manali</a>
@@ -39,11 +44,17 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
             <a href="dalhousie.php"><i class="fa-solid fa-chevron-right"></i> Dalhousie</a>
             <a href="spiti.php"><i class="fa-solid fa-chevron-right"></i> Spiti Valley</a>
           </div>
+
+          <!-- Contact -->
           <div class="footer-col">
-            <h3>Contact Us</h3>
+            <h3>Get In Touch</h3>
             <div class="footer-contact-item">
               <i class="fa-solid fa-phone"></i>
               <span><a href="tel:<?php echo h($phoneTel); ?>"><?php echo h($phoneDisplay); ?></a></span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span><a href="https://wa.me/<?php echo h($whatsappNumber); ?>" target="_blank" rel="noopener">WhatsApp Concierge</a></span>
             </div>
             <div class="footer-contact-item">
               <i class="fa-regular fa-envelope"></i>
@@ -54,9 +65,11 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
               <span>Shimla &amp; New Delhi, India</span>
             </div>
           </div>
+
         </div>
       </div>
     </div>
+
     <div class="container mx-auto px-3">
       <div class="footer-bottom">
         <span>&copy; <?php echo date('Y'); ?> Himachal Yatra Travels. All Rights Reserved.</span>
@@ -72,8 +85,8 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
 
   <!-- Mobile CTA -->
   <div class="mobile-cta">
-    <a href="tel:<?php echo h($phoneTel); ?>"><i class="fa-solid fa-phone"></i> Call Now</a>
-    <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+    <a href="tel:<?php echo h($phoneTel); ?>"><i class="fa-solid fa-phone"></i> Call</a>
+    <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Concierge</a>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
