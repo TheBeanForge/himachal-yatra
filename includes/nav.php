@@ -59,11 +59,11 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
             Destinations <i class="fa-solid fa-chevron-down nav-chevron"></i>
           </a>
           <ul class="dropdown-menu dest-dropdown">
-            <li><a class="dropdown-item <?php echo $activeDest==='manali'?'active':''; ?>" href="<?php echo $base; ?>manali.php"><i class="fa-solid fa-mountain-sun"></i> Manali</a></li>
-            <li><a class="dropdown-item <?php echo $activeDest==='shimla'?'active':''; ?>" href="<?php echo $base; ?>shimla.php"><i class="fa-solid fa-tree"></i> Shimla</a></li>
-            <li><a class="dropdown-item <?php echo $activeDest==='dharamshala'?'active':''; ?>" href="<?php echo $base; ?>dharamshala.php"><i class="fa-solid fa-om"></i> Dharamshala</a></li>
-            <li><a class="dropdown-item <?php echo $activeDest==='dalhousie'?'active':''; ?>" href="<?php echo $base; ?>dalhousie.php"><i class="fa-solid fa-cloud-sun"></i> Dalhousie</a></li>
-            <li><a class="dropdown-item <?php echo $activeDest==='spiti'?'active':''; ?>" href="<?php echo $base; ?>spiti.php"><i class="fa-solid fa-person-hiking"></i> Spiti Valley</a></li>
+            <li><a class="dropdown-item <?php echo $activeDest==='manali'?'active':''; ?>" href="manali.php"><i class="fa-solid fa-mountain-sun"></i> Manali</a></li>
+            <li><a class="dropdown-item <?php echo $activeDest==='shimla'?'active':''; ?>" href="shimla.php"><i class="fa-solid fa-tree"></i> Shimla</a></li>
+            <li><a class="dropdown-item <?php echo $activeDest==='dharamshala'?'active':''; ?>" href="dharamshala.php"><i class="fa-solid fa-om"></i> Dharamshala</a></li>
+            <li><a class="dropdown-item <?php echo $activeDest==='dalhousie'?'active':''; ?>" href="dalhousie.php"><i class="fa-solid fa-cloud-sun"></i> Dalhousie</a></li>
+            <li><a class="dropdown-item <?php echo $activeDest==='spiti'?'active':''; ?>" href="spiti.php"><i class="fa-solid fa-person-hiking"></i> Spiti Valley</a></li>
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('reviews'); ?>">Reviews</a></li>
