@@ -59,6 +59,23 @@ if (!move_uploaded_file($file['tmp_name'], $upload_dir . $filename)) {
     exit;
 }
 
+// Check photo limit (max 15 per destination)
+try {
+    $res = $conn->query("SELECT COUNT(*) as cnt FROM photos WHERE destination = '{$conn->real_escape_string($destination)}'");
+    $row = $res->fetch_assoc();
+    if ($row['cnt'] >= 15) {
+        // Delete uploaded file and return error
+        @unlink($upload_dir . $filename);
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'Maximum 15 photos per destination. Please delete older photos first.']);
+        exit;
+    }
+} catch (mysqli_sql_exception) {
+    @unlink($upload_dir . $filename);
+    echo json_encode(['ok' => false, 'error' => 'Database error']);
+    exit;
+}
+
 $stmt = $conn->prepare('INSERT INTO photos (destination, caption, filename) VALUES (?, ?, ?)');
 $stmt->bind_param('sss', $destination, $caption, $filename);
 $stmt->execute();

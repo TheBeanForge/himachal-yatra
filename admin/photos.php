@@ -6,6 +6,15 @@ require_once '../api/config.php';
 $dests = ['manali' => 'Manali', 'shimla' => 'Shimla', 'dharamshala' => 'Dharamshala', 'dalhousie' => 'Dalhousie', 'spiti' => 'Spiti Valley', 'general' => 'General / Homepage'];
 $filter_dest = $_GET['dest'] ?? '';
 
+// Get photo counts per destination
+$dest_counts = [];
+$res = $conn->query("SELECT destination, COUNT(*) as cnt FROM photos GROUP BY destination");
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
+        $dest_counts[$row['destination']] = (int)$row['cnt'];
+    }
+}
+
 $where = $filter_dest ? 'WHERE destination = ?' : '';
 $sql   = "SELECT * FROM photos $where ORDER BY uploaded_at DESC";
 $stmt  = $conn->prepare($sql);
@@ -75,11 +84,19 @@ $page_title = 'Photo Gallery';
         <form class="upload-form" id="uploadForm" enctype="multipart/form-data">
           <div class="form-field">
             <label>Destination</label>
-            <select name="destination" required>
+            <select name="destination" id="destSelect" required onchange="updatePhotoCount()">
               <?php foreach ($dests as $val => $lbl): ?>
-              <option value="<?= $val ?>"><?= $lbl ?></option>
+              <option value="<?= $val ?>" data-count="<?= $dest_counts[$val] ?? 0 ?>"><?= $lbl ?></option>
               <?php endforeach; ?>
             </select>
+          </div>
+          <div style="grid-column: 1 / -1; display: flex; gap: 20px; align-items: center;">
+            <div style="font-size: 13px; color: var(--ink);">
+              <strong id="photoCount">0</strong> / 15 photos
+              <span id="photoWarning" style="display: none; color: #fca5a5; margin-left: 12px;">
+                <i class="fas fa-exclamation-circle"></i> Limit reached. Delete photos to upload more.
+              </span>
+            </div>
           </div>
           <div class="form-field">
             <label>Caption (optional)</label>
@@ -150,6 +167,30 @@ const csrfHeader = { 'X-CSRF-Token': CSRF };
 function updateLabel(input) {
   document.getElementById('fileLabelText').textContent = input.files[0]?.name || 'Choose JPG/PNG/WebP (max 5MB)';
 }
+
+function updatePhotoCount() {
+  const select = document.getElementById('destSelect');
+  const count = parseInt(select.options[select.selectedIndex].dataset.count) || 0;
+  const countEl = document.getElementById('photoCount');
+  const warningEl = document.getElementById('photoWarning');
+
+  countEl.textContent = count;
+
+  if (count >= 15) {
+    warningEl.style.display = 'inline';
+    document.querySelector('.btn-upload').disabled = true;
+    document.querySelector('.btn-upload').style.opacity = '0.5';
+    document.querySelector('.btn-upload').style.cursor = 'not-allowed';
+  } else {
+    warningEl.style.display = 'none';
+    document.querySelector('.btn-upload').disabled = false;
+    document.querySelector('.btn-upload').style.opacity = '1';
+    document.querySelector('.btn-upload').style.cursor = 'pointer';
+  }
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', updatePhotoCount);
 
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
