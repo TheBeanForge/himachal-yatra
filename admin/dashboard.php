@@ -263,7 +263,7 @@ $pkg_labels    = ['budget' => 'Budget', 'classic' => 'Classic', 'luxury' => 'Lux
             <tr>
               <th>#</th>
               <th>Traveller</th>
-              <th>Route</th>
+              <th>Pickup → Destination</th>
               <th>Package</th>
               <th>Date</th>
               <th>Status</th>
@@ -289,10 +289,10 @@ $pkg_labels    = ['budget' => 'Budget', 'classic' => 'Classic', 'luxury' => 'Lux
                 <?php endif; ?>
               </td>
               <td>
-                <div style="color:var(--ink);font-weight:500"><?= htmlspecialchars($b['destination'] ?: '—') ?></div>
                 <?php if (!empty($b['pickup'])): ?>
-                <div class="td-meta"><i class="fas fa-location-dot" style="font-size:10px;margin-right:3px"></i>from <?= htmlspecialchars($b['pickup']) ?></div>
+                <div class="td-meta" style="margin-bottom:3px"><i class="fas fa-location-dot" style="color:var(--accent);font-size:10px;margin-right:3px"></i><span style="color:var(--ink);font-weight:600"><?= htmlspecialchars($b['pickup']) ?></span></div>
                 <?php endif; ?>
+                <div style="color:var(--muted);font-size:12px"><?= htmlspecialchars($b['destination'] ?: '—') ?></div>
               </td>
               <td>
                 <?php if ($b['package']): ?>
