@@ -344,20 +344,18 @@ if ($conn instanceof mysqli) {
               ['Sunita Yadav',     'New Delhi',  5, '#b45309', 'Manali 5 Days',    'Booked 5-day Manali package for me and my sister. Everything was arranged — pickup, hotel coordination, sightseeing. Driver was like a local guide, took us to Naggar Castle. Superb experience!', ''],
               ['Arjun Nair',       'Chandigarh', 5, '#1e40af', 'McLeodganj',       'Road trip to McLeodganj with college group. Tempo traveller was fully loaded with gear and still very comfortable. Driver was friendly, on time, and made the 5-hour drive feel short. Highly recommended!', ''],
             ];
-            // Normalise: turn DB rows into the same shape as seed rows so the render loop is one code path.
-            $reviewList = [];
-            if (!empty($db_reviews)) {
-              $palette = ['#166534','#b45309','#1e40af','#7c3aed','#0f766e','#be185d','#c2410c'];
-              foreach ($db_reviews as $i => $r) {
-                $reviewList[] = [
-                  $r['name'], $r['city'] ?: '-', (int)$r['rating'],
-                  $palette[$i % count($palette)], $r['route'] ?: 'Himachal Trip',
-                  $r['review_text'], $r['photo'] ?? '',
-                ];
-              }
-            } else {
-              $reviewList = $seedReviews;
+            // Normalise DB reviews into same shape as seed rows, then append after seed reviews.
+            $palette = ['#166534','#b45309','#1e40af','#7c3aed','#0f766e','#be185d','#c2410c'];
+            $dbList  = [];
+            foreach ($db_reviews as $i => $r) {
+              $dbList[] = [
+                $r['name'], $r['city'] ?: '-', (int)$r['rating'],
+                $palette[$i % count($palette)], $r['route'] ?: 'Himachal Trip',
+                $r['review_text'], $r['photo'] ?? '',
+              ];
             }
+            // Approved reviews appear first; seed reviews always show after
+            $reviewList = array_merge($dbList, $seedReviews);
             foreach ($reviewList as $review):
               $stars = $review[2];
               $bg    = ltrim($review[3], '#');
