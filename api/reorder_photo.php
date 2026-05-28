@@ -26,8 +26,8 @@ if (!$id || !in_array($direction, ['up', 'down'], true)) {
     exit;
 }
 
-// Fetch the target row
-$stmt = $conn->prepare('SELECT id, destination, sort_order, uploaded_at FROM photos WHERE id = ?');
+// Fetch all photos for this destination ordered by current sort
+$stmt = $conn->prepare('SELECT id, destination FROM photos WHERE id = ?');
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
@@ -40,45 +40,41 @@ if (!$row) {
 
 $dest = $row['destination'];
 
-// The gallery sort is `ORDER BY sort_order ASC, uploaded_at ASC` — so the "neighbour"
-// is the photo immediately before/after in that ordering within the same destination.
-$cmp = $direction === 'up'
-    ? '(sort_order < ? OR (sort_order = ? AND uploaded_at < ?))'
-    : '(sort_order > ? OR (sort_order = ? AND uploaded_at > ?))';
-$ord = $direction === 'up' ? 'DESC' : 'ASC';
-
-$sql = "SELECT id, sort_order FROM photos
-        WHERE destination = ? AND $cmp
-        ORDER BY sort_order $ord, uploaded_at $ord
-        LIMIT 1";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('siis', $dest, $row['sort_order'], $row['sort_order'], $row['uploaded_at']);
+// Get all photos for this destination in current order
+$stmt = $conn->prepare('SELECT id FROM photos WHERE destination = ? ORDER BY sort_order ASC, id ASC');
+$stmt->bind_param('s', $dest);
 $stmt->execute();
-$neighbour = $stmt->get_result()->fetch_assoc();
+$all = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-if (!$neighbour) {
-    // Already at the edge — no-op, not an error.
-    $conn->close();
+$ids  = array_column($all, 'id');
+$idx  = array_search($id, $ids);
+
+if ($idx === false) {
+    echo json_encode(['ok' => false, 'error' => 'Photo not found in list']);
+    exit;
+}
+
+// Find neighbour index
+$swap = $direction === 'up' ? $idx - 1 : $idx + 1;
+
+if ($swap < 0 || $swap >= count($ids)) {
+    // Already at edge
     echo json_encode(['ok' => true, 'changed' => false]);
     exit;
 }
 
-// If both have the same sort_order, bump the target to neighbour ± 1 so the swap takes effect
-// against the secondary `uploaded_at ASC` sort.
-$a = (int)$row['sort_order'];
-$b = (int)$neighbour['sort_order'];
-if ($a === $b) {
-    $b = $direction === 'up' ? max(0, $a - 1) : $a + 1;
-}
+// Swap the two IDs in the array
+[$ids[$idx], $ids[$swap]] = [$ids[$swap], $ids[$idx]];
 
+// Write back sequential sort_order 0,1,2,3... for ALL photos in destination
 $conn->begin_transaction();
 try {
     $u = $conn->prepare('UPDATE photos SET sort_order = ? WHERE id = ?');
-    $u->bind_param('ii', $b, $row['id']);
-    $u->execute();
-    $u->bind_param('ii', $a, $neighbour['id']);
-    $u->execute();
+    foreach ($ids as $order => $pid) {
+        $u->bind_param('ii', $order, $pid);
+        $u->execute();
+    }
     $u->close();
     $conn->commit();
 } catch (Throwable $e) {
@@ -88,6 +84,6 @@ try {
     exit;
 }
 
-audit_log('photo_reorder', "Photo #{$row['id']} moved $direction");
+audit_log('photo_reorder', "Photo #{$id} moved {$direction} in {$dest}");
 $conn->close();
 echo json_encode(['ok' => true, 'changed' => true]);
