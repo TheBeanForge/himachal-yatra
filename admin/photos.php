@@ -248,13 +248,29 @@ async function reorder(id, direction) {
   const fd = new FormData();
   fd.append('id', id);
   fd.append('direction', direction);
+
   const res  = await fetch('../api/reorder_photo.php', { method: 'POST', body: fd, headers: csrfHeader });
   const data = await res.json();
-  if (data.ok && data.changed) {
-    location.reload();
-  } else if (!data.ok) {
-    alert(data.error || 'Could not reorder.');
+
+  if (!data.ok) { alert(data.error || 'Could not reorder.'); return; }
+  if (!data.changed) return;
+
+  // Swap cards in the DOM without reloading
+  const grid    = document.getElementById('photoGrid');
+  const cards   = [...grid.querySelectorAll('.photo-card')];
+  const current = document.getElementById('photo-' + id);
+  const idx     = cards.indexOf(current);
+
+  if (direction === 'up' && idx > 0) {
+    grid.insertBefore(current, cards[idx - 1]);
+  } else if (direction === 'down' && idx < cards.length - 1) {
+    grid.insertBefore(cards[idx + 1], current);
   }
+
+  // Renumber all badges
+  [...grid.querySelectorAll('.photo-card')].forEach((card, i) => {
+    card.querySelector('.photo-num').textContent = i + 1;
+  });
 }
 </script>
 </body>
