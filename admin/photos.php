@@ -68,6 +68,15 @@ $page_title = 'Photo Gallery';
 .flash{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:20px}
 .flash.ok{background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.25)}
 .flash.err{background:rgba(185,28,28,.12);color:#fca5a5;border:1px solid rgba(185,28,28,.25)}
+.photo-num{
+  position:absolute;top:8px;left:8px;
+  width:26px;height:26px;border-radius:6px;
+  background:rgba(13,13,20,.75);backdrop-filter:blur(4px);
+  color:var(--accent);font-size:12px;font-weight:800;
+  display:grid;place-items:center;
+  border:1px solid rgba(201,168,76,.35);
+  pointer-events:none;
+}
 @media(max-width:768px){.upload-form{grid-template-columns:1fr}}
 </style>
 </head>
@@ -131,9 +140,12 @@ $page_title = 'Photo Gallery';
       <?php else: ?>
       <p style="color:var(--muted);font-size:12px;margin-bottom:12px"><i class="fas fa-circle-info"></i> Use the arrows to reorder photos within a destination — earlier photos appear first on the public gallery.</p>
       <div class="photo-grid" id="photoGrid">
-        <?php foreach ($photos as $p): ?>
+        <?php foreach ($photos as $i => $p): ?>
         <div class="photo-card" id="photo-<?= $p['id'] ?>">
-          <img src="../uploads/photos/<?= htmlspecialchars($p['filename']) ?>" alt="<?= htmlspecialchars($p['caption']) ?>" loading="lazy">
+          <div style="position:relative">
+            <img src="../uploads/photos/<?= htmlspecialchars($p['filename']) ?>" alt="<?= htmlspecialchars($p['caption']) ?>" loading="lazy">
+            <span class="photo-num"><?= $i + 1 ?></span>
+          </div>
           <div class="photo-card-body">
             <div style="min-width:0;flex:1">
               <div class="photo-caption"><?= htmlspecialchars($p['caption'] ?: 'No caption') ?></div>
