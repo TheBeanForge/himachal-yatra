@@ -46,6 +46,7 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
 
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav mx-auto align-items-lg-center">
+        <!-- theme toggle injected by JS -->
         <li class="nav-item">
           <a class="nav-link <?php echo !$activeDest && !$base ? 'active' : ''; ?>" href="<?php echo $home; ?>">Home</a>
         </li>
@@ -69,6 +70,20 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('reviews'); ?>">Reviews</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('contact'); ?>">Contact</a></li>
       </ul>
+
+      <!-- Theme Toggle -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-btn active" data-theme="dark" title="Dark Gold">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+        </button>
+        <button class="theme-btn" data-theme="light" title="Light">
+          <i class="fa-solid fa-sun"></i>
+        </button>
+        <button class="theme-btn" data-theme="blue" title="Dark Blue">
+          <i class="fa-solid fa-water"></i>
+        </button>
+      </div>
+
     </div>
 
   </div>

@@ -1,31 +1,82 @@
-:root {
-  /* Premium dark + antique gold palette */
+/* ── DARK GOLD (default) ── */
+:root,
+[data-theme="dark"] {
   --lime:       #c8a75d;
   --lime-2:     #aa8845;
   --lime-3:     #e4cc83;
   --gold-light: rgba(201,168,76,.12);
-
-  /* Dark theme text palette */
   --charcoal:   #f4efe6;
   --text-2:     #c8d0db;
   --muted:      #aeb6c2;
   --line:       rgba(255,255,255,.10);
-
-  --shadow-sm:    0 1px 6px rgba(0,0,0,.32);
-  --shadow:       0 10px 34px rgba(0,0,0,.36);
-  --shadow-lg:    0 24px 70px rgba(0,0,0,.48);
-  --radius:       10px;
-  --radius-sm:    8px;
-
-  /* Dark surface tokens */
+  --shadow-sm:  0 1px 6px rgba(0,0,0,.32);
+  --shadow:     0 10px 34px rgba(0,0,0,.36);
+  --shadow-lg:  0 24px 70px rgba(0,0,0,.48);
+  --radius:     10px;
+  --radius-sm:  8px;
   --surf-1: #0b0d12;
   --surf-2: #141821;
   --surf-3: #1b202b;
   --surf-4: #0f1219;
-
-  /* Compat aliases used by destination pages */
   --cream:       #141821;
   --green-light: rgba(201,168,76,.12);
+}
+
+/* ── LIGHT ── */
+[data-theme="light"] {
+  --lime:       #a8893d;
+  --lime-2:     #8a7030;
+  --lime-3:     #c9a84c;
+  --gold-light: rgba(168,137,61,.10);
+  --charcoal:   #1a1a2e;
+  --text-2:     #3d3d5c;
+  --muted:      #6b7280;
+  --line:       rgba(0,0,0,.09);
+  --shadow-sm:  0 1px 6px rgba(0,0,0,.08);
+  --shadow:     0 10px 34px rgba(0,0,0,.12);
+  --shadow-lg:  0 24px 70px rgba(0,0,0,.16);
+  --radius:     10px;
+  --radius-sm:  8px;
+  --surf-1: #f5f5f0;
+  --surf-2: #ffffff;
+  --surf-3: #eeeee8;
+  --surf-4: #f0f0ea;
+  --cream:       #ffffff;
+  --green-light: rgba(168,137,61,.10);
+}
+[data-theme="light"] body { color: var(--charcoal); background: var(--surf-1); }
+[data-theme="light"] .top-strip { background: #1a1a2e; border-bottom: 1px solid rgba(0,0,0,.12); }
+[data-theme="light"] .site-nav { background: rgba(245,245,240,.92); border-bottom: 1px solid var(--line); }
+[data-theme="light"] .nav-link { color: #3d3d5c !important; }
+[data-theme="light"] .nav-link:hover, [data-theme="light"] .nav-link.active { color: var(--lime) !important; }
+[data-theme="light"] .navbar-brand .brand-main { color: #1a1a2e; }
+[data-theme="light"] .dest-dropdown { background: #fff; border: 1px solid var(--line); }
+[data-theme="light"] .dest-dropdown .dropdown-item { color: #3d3d5c; }
+[data-theme="light"] .dest-dropdown .dropdown-item:hover { background: var(--gold-light); color: var(--lime); }
+[data-theme="light"] .footer { background: #1a1a2e; }
+[data-theme="light"] .section-label { color: var(--lime); }
+
+/* ── DARK BLUE ── */
+[data-theme="blue"] {
+  --lime:       #3b82f6;
+  --lime-2:     #2563eb;
+  --lime-3:     #60a5fa;
+  --gold-light: rgba(59,130,246,.12);
+  --charcoal:   #f0f4ff;
+  --text-2:     #c8d5f0;
+  --muted:      #94a3b8;
+  --line:       rgba(255,255,255,.08);
+  --shadow-sm:  0 1px 6px rgba(0,0,0,.32);
+  --shadow:     0 10px 34px rgba(0,0,0,.36);
+  --shadow-lg:  0 24px 70px rgba(0,0,0,.48);
+  --radius:     10px;
+  --radius-sm:  8px;
+  --surf-1: #0f172a;
+  --surf-2: #1e293b;
+  --surf-3: #263548;
+  --surf-4: #162032;
+  --cream:       #1e293b;
+  --green-light: rgba(59,130,246,.12);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -216,6 +267,31 @@ img { max-width: 100%; display: block; }
 .nav-ham.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
 .nav-ham.open span:nth-child(2) { opacity: 0; width: 0; }
 .nav-ham.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* THEME SWITCHER */
+.theme-switcher {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 30px; padding: 4px;
+  margin-left: 12px;
+}
+.theme-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: none; background: transparent;
+  color: rgba(255,255,255,.40); font-size: 13px;
+  cursor: pointer; display: grid; place-items: center;
+  transition: all .2s;
+}
+.theme-btn:hover { color: var(--lime); background: rgba(255,255,255,.08); }
+.theme-btn.active { background: var(--lime); color: #0d0d14; }
+[data-theme="light"] .theme-switcher {
+  background: rgba(0,0,0,.06);
+  border-color: rgba(0,0,0,.12);
+}
+[data-theme="light"] .theme-btn { color: rgba(0,0,0,.40); }
+[data-theme="light"] .theme-btn:hover { color: var(--lime); background: rgba(0,0,0,.06); }
+[data-theme="light"] .theme-btn.active { background: var(--lime); color: #fff; }
 
 /* Right-side actions */
 /* HERO */

@@ -1,8 +1,27 @@
+// ── Theme switcher (runs before DOMContentLoaded to avoid flash) ──
+(function () {
+  const saved = localStorage.getItem('site-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   const body = document.body;
   const form = document.querySelector('#inquiryForm');
   const status = document.querySelector('#formStatus');
   const waNumber = (body.dataset.wa || '919876543210').replace(/\D/g, '');
+
+  // ── Theme switcher ──
+  const currentTheme = localStorage.getItem('site-theme') || 'dark';
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    if (btn.dataset.theme === currentTheme) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('site-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
 
   // ── Navbar scroll shadow ──
   const nav = document.querySelector('.site-nav');
