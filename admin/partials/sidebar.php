@@ -66,9 +66,10 @@
     </li>
   </ul>
 
-  <?php if (($_SESSION['admin_user']['role'] ?? '') === 'superadmin'): ?>
+  <?php if (in_array($_SESSION['admin_user']['role'] ?? '', ['superadmin','admin'])): ?>
   <div class="sidebar-section-label">ADMIN</div>
   <ul class="sidebar-nav">
+    <?php if (($_SESSION['admin_user']['role'] ?? '') === 'superadmin'): ?>
     <li>
       <a href="users.php" class="sidebar-link <?= $cur==='users.php'?'active':'' ?>">
         <i class="fas fa-users-gear fa-fw"></i> User Management
@@ -77,6 +78,12 @@
     <li>
       <a href="audit.php" class="sidebar-link <?= $cur==='audit.php'?'active':'' ?>">
         <i class="fas fa-clipboard-list fa-fw"></i> Audit Log
+      </a>
+    </li>
+    <?php endif; ?>
+    <li>
+      <a href="settings.php" class="sidebar-link <?= $cur==='settings.php'?'active':'' ?>">
+        <i class="fas fa-sliders fa-fw"></i> Settings
       </a>
     </li>
   </ul>

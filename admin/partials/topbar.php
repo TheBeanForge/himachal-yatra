@@ -1,3 +1,7 @@
+<?php
+$_theme = admin_theme();
+echo "<script>document.documentElement.setAttribute('data-theme','" . htmlspecialchars($_theme, ENT_QUOTES) . "');</script>";
+?>
 <header class="topbar">
   <button class="topbar-ham d-lg-none" onclick="openSidebar()">
     <i class="fas fa-bars"></i>
