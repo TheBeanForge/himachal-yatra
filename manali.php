@@ -35,7 +35,8 @@ if ($conn instanceof mysqli) {
   <!-- DEST HERO -->
   <section class="dest-hero">
     <div class="dest-hero-bg">
-      <img src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1920&q=90" alt="Manali snow mountains Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
+      <?php $heroImg = !empty($db_photos[0]) ? 'uploads/photos/' . h($db_photos[0]['filename']) : 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1920&q=90'; ?>
+      <img src="<?= $heroImg ?>" alt="Manali snow mountains Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
     <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">

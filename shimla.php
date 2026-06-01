@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $base       = 'index.php';
 $activeDest = 'shimla';
 require_once 'includes/vars.php';
@@ -35,7 +35,8 @@ if ($conn instanceof mysqli) {
   <!-- DEST HERO -->
   <section class="dest-hero">
     <div class="dest-hero-bg">
-      <img src="https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=1920&q=90" alt="Shimla Queen of Hills Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
+      <?php $heroImg = !empty($db_photos[0]) ? 'uploads/photos/' . h($db_photos[0]['filename']) : 'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=1920&q=90'; ?>
+      <img src="<?= $heroImg ?>" alt="Shimla Queen of Hills Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
     <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">
@@ -254,3 +255,4 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
