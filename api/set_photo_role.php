@@ -12,7 +12,7 @@ require_admin_csrf();
 $id   = (int)($_POST['id'] ?? 0);
 $role = $_POST['role'] ?? '';
 
-if (!$id || !in_array($role, ['hero','about','gallery'], true)) {
+if (!$id || !in_array($role, ['hero','about','route','gallery'], true)) {
     http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid input']); exit;
 }
 

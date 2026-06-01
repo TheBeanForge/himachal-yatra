@@ -14,6 +14,15 @@ if ($conn instanceof mysqli) {
     }
 }
 
+// Load route card photos per destination
+$route_photos = [];
+if ($conn instanceof mysqli) {
+    try {
+        $res = $conn->query("SELECT destination, filename FROM photos WHERE role = 'route'");
+        if ($res) foreach ($res->fetch_all(MYSQLI_ASSOC) as $r) $route_photos[$r['destination']] = $r['filename'];
+    } catch (mysqli_sql_exception) {}
+}
+
 // Load pickup locations for booking modal dropdown
 $pickup_locations = [];
 if ($conn instanceof mysqli) {
@@ -167,33 +176,30 @@ if ($conn instanceof mysqli) {
         <div class="route-grid">
           <?php
           $routes = [
-            // [name, type, km, hrs, badge, image, dest_page]
-            ['Delhi to Manali',      'One Way | Round Trip', '550 km', '12-14 hrs', 'Private Family Route', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90', 'manali.php'],
-            ['Delhi to Shimla',      'One Way | Round Trip', '350 km', '8-9 hrs',   'Weekend Escape',       'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90', 'shimla.php'],
-            ['Delhi to Dharamshala', 'One Way | Round Trip', '480 km', '10-12 hrs', 'McLeodganj Retreat',   'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=90', 'dharamshala.php'],
-            ['Delhi to Dalhousie',   'One Way | Round Trip', '560 km', '11-13 hrs', 'Heritage Hill Stay',   'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=90', 'dalhousie.php'],
-            ['Chandigarh to Manali', 'One Way | Round Trip', '300 km', '8-9 hrs',   'Comfort Transfer',     'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=90', 'manali.php'],
-            ['Chandigarh to Shimla', 'One Way | Round Trip', '115 km', '3-4 hrs',   'Quick Mountain Run',   'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=90', 'shimla.php'],
+            // [name, km, hrs, badge, fallback_img, dest_key, dest_page]
+            ['Delhi to Manali',      '550 km', '12-14 hrs', 'Popular Route',     'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90', 'manali',      'manali.php'],
+            ['Delhi to Shimla',      '350 km', '8-9 hrs',   'Weekend Escape',    'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90', 'shimla',      'shimla.php'],
+            ['Delhi to Dharamshala', '480 km', '10-12 hrs', 'McLeodganj Retreat','https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=90', 'dharamshala', 'dharamshala.php'],
+            ['Delhi to Dalhousie',   '560 km', '11-13 hrs', 'Heritage Hills',    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=90', 'dalhousie',   'dalhousie.php'],
+            ['Chandigarh to Manali', '300 km', '8-9 hrs',   'Comfort Transfer',  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=90', 'manali',      'manali.php'],
+            ['Chandigarh to Shimla', '115 km', '3-4 hrs',   'Quick Mountain Run','https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=90', 'shimla',      'shimla.php'],
           ];
-          foreach ($routes as $route): ?>
+          foreach ($routes as $route):
+            $img = isset($route_photos[$route[5]]) ? 'uploads/photos/' . h($route_photos[$route[5]]) : $route[4];
+          ?>
           <article class="route-card reveal">
-            <div class="route-card-img">
-              <img src="<?php echo h($route[5]); ?>" alt="<?php echo h($route[0]); ?> cab booking Himachal" loading="lazy" decoding="async" width="900" height="540">
-              <span class="route-badge"><?php echo h($route[4]); ?></span>
-              <div class="route-img-info">
-                <span class="route-img-name"><?php echo h($route[0]); ?></span>
-              </div>
-            </div>
-            <div class="route-card-body">
-              <p class="route-type"><?php echo h($route[1]); ?></p>
-              <div class="route-meta">
-                <span><i class="fa-solid fa-route"></i> <?php echo h($route[2]); ?></span>
-                <span><i class="fa-regular fa-clock"></i> <?php echo h($route[3]); ?></span>
-              </div>
-              <div class="route-cta">
-                <div class="route-cta-btns">
-                  <a href="<?php echo h($route[6]); ?>" class="route-explore-link">Explore <i class="fa-solid fa-circle-info"></i></a>
-                  <a href="#contact" class="route-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
+            <img src="<?= $img ?>" alt="<?= h($route[0]) ?> cab booking Himachal" loading="lazy" decoding="async" width="900" height="600">
+            <div class="rc-overlay">
+              <span class="rc-badge"><?= h($route[3]) ?></span>
+              <div class="rc-bottom">
+                <h3 class="rc-name"><?= h($route[0]) ?></h3>
+                <div class="rc-meta">
+                  <span><i class="fa-solid fa-route"></i> <?= h($route[1]) ?></span>
+                  <span><i class="fa-regular fa-clock"></i> <?= h($route[2]) ?></span>
+                </div>
+                <div class="rc-actions">
+                  <a href="<?= h($route[6]) ?>" class="rc-btn-outline">Explore</a>
+                  <a href="#contact" class="rc-btn-fill">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
               </div>
             </div>

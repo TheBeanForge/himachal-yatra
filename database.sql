@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS photos (
   caption     VARCHAR(200) DEFAULT '',
   filename    VARCHAR(255) NOT NULL,
   sort_order  TINYINT DEFAULT 0,
-  role        ENUM('gallery','hero','about') NOT NULL DEFAULT 'gallery',
+  role        ENUM('gallery','hero','about','route') NOT NULL DEFAULT 'gallery',
   uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   KEY idx_photos_dest (destination)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

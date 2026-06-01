@@ -95,6 +95,8 @@ $page_title = 'Photo Gallery';
 .btn-role:hover { border-color:var(--accent);color:var(--accent); }
 .btn-role.active-hero  { background:rgba(201,168,76,.15);color:var(--accent);border-color:var(--accent); }
 .btn-role.active-about { background:rgba(59,130,246,.15);color:#60a5fa;border-color:rgba(59,130,246,.5); }
+.btn-role.active-route { background:rgba(34,197,94,.15);color:#4ade80;border-color:rgba(34,197,94,.5); }
+.role-badge.route { background:rgba(34,197,94,.9);color:#0d0d14; }
 @media(max-width:768px){.upload-form{grid-template-columns:1fr}}
 </style>
 </head>
@@ -164,7 +166,7 @@ $page_title = 'Photo Gallery';
             <img src="../uploads/photos/<?= htmlspecialchars($p['filename']) ?>" alt="<?= htmlspecialchars($p['caption']) ?>" loading="lazy">
             <span class="photo-num"><?= $i + 1 ?></span>
             <?php if ($p['role'] !== 'gallery'): ?>
-            <span class="role-badge <?= $p['role'] ?>"><?= $p['role'] === 'hero' ? '🖼 Hero' : '📄 About' ?></span>
+            <span class="role-badge <?= $p['role'] ?>"><?= match($p['role']) { 'hero'=>'🖼 Hero','about'=>'📄 About','route'=>'🗺 Route', default=>'' } ?></span>
             <?php endif; ?>
           </div>
           <div class="photo-card-body">
@@ -172,10 +174,11 @@ $page_title = 'Photo Gallery';
               <div class="photo-caption"><?= htmlspecialchars($p['caption'] ?: 'No caption') ?></div>
               <div class="photo-dest"><?= htmlspecialchars($dests[$p['destination']] ?? $p['destination']) ?></div>
               <div class="role-btns">
-                <button class="btn-role <?= $p['role']==='hero'?'active-hero':'' ?>" onclick="setRole(<?= $p['id'] ?>,'hero',this)" title="Use as hero background">Hero</button>
-                <button class="btn-role <?= $p['role']==='about'?'active-about':'' ?>" onclick="setRole(<?= $p['id'] ?>,'about',this)" title="Use in about section">About</button>
+                <button class="btn-role <?= $p['role']==='hero'?'active-hero':'' ?>" onclick="setRole(<?= $p['id'] ?>,'hero',this)">Hero</button>
+                <button class="btn-role <?= $p['role']==='about'?'active-about':'' ?>" onclick="setRole(<?= $p['id'] ?>,'about',this)">About</button>
+                <button class="btn-role <?= $p['role']==='route'?'active-route':'' ?>" onclick="setRole(<?= $p['id'] ?>,'route',this)">Route</button>
                 <?php if ($p['role'] !== 'gallery'): ?>
-                <button class="btn-role" onclick="setRole(<?= $p['id'] ?>,'gallery',this)" title="Move back to gallery">Gallery</button>
+                <button class="btn-role" onclick="setRole(<?= $p['id'] ?>,'gallery',this)">Gallery</button>
                 <?php endif; ?>
               </div>
             </div>
