@@ -167,22 +167,21 @@ if ($conn instanceof mysqli) {
         <div class="route-grid">
           <?php
           $routes = [
-            // [name, type, km, hrs, badge, price, image, dest_page]
-            ['Delhi to Manali',      'One Way | Round Trip', '550 km', '12-14 hrs', 'Private Family Route', '9,999', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90', 'manali.php'],
-            ['Delhi to Shimla',      'One Way | Round Trip', '350 km', '8-9 hrs',   'Weekend Escape',       '7,499', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90', 'shimla.php'],
-            ['Delhi to Dharamshala', 'One Way | Round Trip', '480 km', '10-12 hrs', 'McLeodganj Retreat',   '8,999', 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=90', 'dharamshala.php'],
-            ['Delhi to Dalhousie',   'One Way | Round Trip', '560 km', '11-13 hrs', 'Heritage Hill Stay',   '9,499', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=90', 'dalhousie.php'],
-            ['Chandigarh to Manali', 'One Way | Round Trip', '300 km', '8-9 hrs',   'Comfort Transfer',     '6,999', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=90', 'manali.php'],
-            ['Chandigarh to Shimla', 'One Way | Round Trip', '115 km', '3-4 hrs',   'Quick Mountain Run',   '3,499', 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=90', 'shimla.php'],
+            // [name, type, km, hrs, badge, image, dest_page]
+            ['Delhi to Manali',      'One Way | Round Trip', '550 km', '12-14 hrs', 'Private Family Route', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90', 'manali.php'],
+            ['Delhi to Shimla',      'One Way | Round Trip', '350 km', '8-9 hrs',   'Weekend Escape',       'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90', 'shimla.php'],
+            ['Delhi to Dharamshala', 'One Way | Round Trip', '480 km', '10-12 hrs', 'McLeodganj Retreat',   'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=90', 'dharamshala.php'],
+            ['Delhi to Dalhousie',   'One Way | Round Trip', '560 km', '11-13 hrs', 'Heritage Hill Stay',   'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=90', 'dalhousie.php'],
+            ['Chandigarh to Manali', 'One Way | Round Trip', '300 km', '8-9 hrs',   'Comfort Transfer',     'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=90', 'manali.php'],
+            ['Chandigarh to Shimla', 'One Way | Round Trip', '115 km', '3-4 hrs',   'Quick Mountain Run',   'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=90', 'shimla.php'],
           ];
           foreach ($routes as $route): ?>
           <article class="route-card reveal">
             <div class="route-card-img">
-              <img src="<?php echo h($route[6]); ?>" alt="<?php echo h($route[0]); ?> cab booking Himachal" loading="lazy" decoding="async" width="900" height="540">
+              <img src="<?php echo h($route[5]); ?>" alt="<?php echo h($route[0]); ?> cab booking Himachal" loading="lazy" decoding="async" width="900" height="540">
               <span class="route-badge"><?php echo h($route[4]); ?></span>
               <div class="route-img-info">
                 <span class="route-img-name"><?php echo h($route[0]); ?></span>
-                <span class="route-img-price">&#8377;<?php echo h($route[5]); ?></span>
               </div>
             </div>
             <div class="route-card-body">
@@ -192,12 +191,8 @@ if ($conn instanceof mysqli) {
                 <span><i class="fa-regular fa-clock"></i> <?php echo h($route[3]); ?></span>
               </div>
               <div class="route-cta">
-                <div>
-                  <div class="route-price-label">Indicative fare from</div>
-                  <div class="route-price">&#8377;<?php echo h($route[5]); ?></div>
-                </div>
                 <div class="route-cta-btns">
-                  <a href="<?php echo h($route[7]); ?>" class="route-explore-link">Explore <i class="fa-solid fa-circle-info"></i></a>
+                  <a href="<?php echo h($route[6]); ?>" class="route-explore-link">Explore <i class="fa-solid fa-circle-info"></i></a>
                   <a href="#contact" class="route-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
               </div>

@@ -558,20 +558,12 @@ img { max-width: 100%; display: block; }
   color: #fff; font-size: 17px; font-weight: 800;
   line-height: 1.2; text-shadow: 0 2px 8px rgba(0,0,0,.5);
 }
-.route-img-price {
-  background: rgba(0,0,0,.35); backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.18);
-  color: #fff; padding: 4px 10px; border-radius: 8px;
-  font-size: 14px; font-weight: 800; white-space: nowrap;
-}
 .route-card-body { padding: 18px 20px 20px; background: var(--surf-3); }
 .route-type { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
 .route-meta { display: flex; gap: 20px; margin-bottom: 16px; }
 .route-meta span { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); font-weight: 500; }
 .route-meta i { color: var(--lime); font-size: 12px; }
-.route-cta { display: flex; align-items: center; justify-content: space-between; }
-.route-price-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
-.route-price { font-size: 22px; font-weight: 800; color: var(--charcoal); line-height: 1; }
+.route-cta { display: flex; align-items: center; justify-content: flex-end; }
 .route-btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 9px 16px;
@@ -1710,7 +1702,6 @@ img { max-width: 100%; display: block; }
   font: 700 11px 'Inter', sans-serif;
 }
 .drc-bottom { display: flex; align-items: center; justify-content: space-between; }
-.drc-price { font: 800 18px 'Poppins', sans-serif; color: var(--charcoal); }
 .drc-btn {
   display: inline-flex; align-items: center; gap: 6px;
   height: 38px; padding: 0 16px; border-radius: 8px;

@@ -28,7 +28,7 @@ if ($conn instanceof mysqli) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dharamshala &amp; McLeodganj Tour | Himachal Yatra Travels</title>
-  <meta name="description" content="Book Delhi to Dharamshala cab from ₹8,999. McLeodganj, Triund Trek, Bhagsu Waterfall, Dalai Lama Temple — expert Kangra Valley travel with Himachal Yatra Travels.">
+  <meta name="description" content="Book Delhi to Dharamshala. McLeodganj, Triund Trek, Bhagsu Waterfall, Dalai Lama Temple — expert Kangra Valley travel with Himachal Yatra Travels.">
   <meta name="theme-color" content="#0d0d14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,7 +167,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">McLeodganj Special</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹8,999</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -183,7 +183,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Kangra Package</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹5,499</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -199,7 +199,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Airport Transfer</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹2,499</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -264,6 +264,7 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
 
 
 

@@ -28,7 +28,7 @@ if ($conn instanceof mysqli) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shimla Tour Packages &amp; Cab Booking | Himachal Yatra Travels</title>
-  <meta name="description" content="Book Shimla cab from Delhi from ₹7,499. Mall Road, Jakhu Temple, Kufri, Chail — experience the Queen of Hills with Himachal Yatra Travels.">
+  <meta name="description" content="Book Shimla cab from Delhi. Mall Road, Jakhu Temple, Kufri, Chail — experience the Queen of Hills with Himachal Yatra Travels.">
   <meta name="theme-color" content="#0d0d14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,7 +167,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Weekend Package</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹7,499</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -183,7 +183,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Express Package</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹3,499</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -199,7 +199,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Custom Package</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Get Quote</div>
+            
             <a href="index.php#contact" class="drc-btn">Enquire <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -264,6 +264,7 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
 
 
 

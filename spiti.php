@@ -168,7 +168,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Adventure Route</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Get Custom Quote</div>
+            
             <a href="index.php#contact" class="drc-btn">Enquire <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -184,7 +184,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Kinnaur Circuit</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Get Custom Quote</div>
+            
             <a href="index.php#contact" class="drc-btn">Enquire <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -200,7 +200,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">All-Inclusive</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Best Value</div>
+            
             <a href="index.php#contact" class="drc-btn">Get Package <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -248,6 +248,7 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
 
 
 

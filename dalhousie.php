@@ -28,7 +28,7 @@ if ($conn instanceof mysqli) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dalhousie Tour Packages &amp; Cab Booking | Himachal Yatra Travels</title>
-  <meta name="description" content="Book Delhi to Dalhousie cab from ₹9,499. Khajjiar (mini Switzerland), Dainkund Peak, Chamera Lake — peaceful hill station with Himachal Yatra Travels.">
+  <meta name="description" content="Book Delhi to Dalhousie. Khajjiar (mini Switzerland), Dainkund Peak, Chamera Lake — peaceful hill station with Himachal Yatra Travels.">
   <meta name="theme-color" content="#0d0d14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,7 +167,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Hill Escape Package</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹9,499</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -183,7 +183,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Airport Transfer</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹2,200</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -199,7 +199,7 @@ if ($conn instanceof mysqli) {
             <span class="drc-badge">Punjab Combo</span>
           </div>
           <div class="drc-bottom">
-            <div class="drc-price">Starting ₹4,999</div>
+            
             <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
@@ -264,6 +264,7 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
 
 
 
