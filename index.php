@@ -177,7 +177,6 @@ if ($conn instanceof mysqli) {
         </div>
         <div class="route-grid">
           <?php
-          <?php
           $fallbacks = [
             'manali'      => 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90',
             'shimla'      => 'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90',
