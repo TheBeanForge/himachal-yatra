@@ -1586,7 +1586,7 @@ img { max-width: 100%; display: block; }
   .why-grid { grid-template-columns: repeat(3,1fr); }
   .steps-grid { grid-template-columns: repeat(2,1fr); }
   .steps-grid::before { display: none; }
-  .footer-grid { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 30px; }
+  .footer-grid { grid-template-columns: 1fr 1fr 1fr 1fr ; gap: 30px; }
 }
 @media (max-width: 991px) {
   .booking-fields { grid-template-columns: 1fr 1fr; }
