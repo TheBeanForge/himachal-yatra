@@ -60,6 +60,11 @@
       </a>
     </li>
     <li>
+      <a href="routes.php" class="sidebar-link <?= $cur==='routes.php'?'active':'' ?>">
+        <i class="fas fa-road fa-fw"></i> Route Photos
+      </a>
+    </li>
+    <li>
       <a href="locations.php" class="sidebar-link <?= $cur==='locations.php'?'active':'' ?>">
         <i class="fas fa-map-pin fa-fw"></i> Pickup Locations
       </a>

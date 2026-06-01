@@ -81,6 +81,27 @@ CREATE TABLE IF NOT EXISTS photos (
   KEY idx_photos_dest (destination)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Routes with per-route photo assignment
+CREATE TABLE IF NOT EXISTS routes (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(100) NOT NULL,
+  km         VARCHAR(20)  DEFAULT '',
+  duration   VARCHAR(30)  DEFAULT '',
+  badge      VARCHAR(60)  DEFAULT '',
+  dest_key   VARCHAR(30)  DEFAULT '',
+  dest_page  VARCHAR(50)  DEFAULT '',
+  photo_id   INT          DEFAULT NULL,
+  sort_order TINYINT      DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO routes (id, name, km, duration, badge, dest_key, dest_page, sort_order) VALUES
+(1,'Delhi to Manali','550 km','12-14 hrs','Popular Route','manali','manali.php',1),
+(2,'Delhi to Shimla','350 km','8-9 hrs','Weekend Escape','shimla','shimla.php',2),
+(3,'Delhi to Dharamshala','480 km','10-12 hrs','McLeodganj Retreat','dharamshala','dharamshala.php',3),
+(4,'Delhi to Dalhousie','560 km','11-13 hrs','Heritage Hills','dalhousie','dalhousie.php',4),
+(5,'Chandigarh to Manali','300 km','8-9 hrs','Comfort Transfer','manali','manali.php',5),
+(6,'Chandigarh to Shimla','115 km','3-4 hrs','Quick Mountain Run','shimla','shimla.php',6);
+
 -- Pickup locations (origin cities for bookings)
 CREATE TABLE IF NOT EXISTS pickup_locations (
   id         INT AUTO_INCREMENT PRIMARY KEY,

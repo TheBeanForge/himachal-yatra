@@ -84,19 +84,17 @@ $page_title = 'Photo Gallery';
 }
 .role-badge.hero  { background:rgba(201,168,76,.9);color:#0d0d14; }
 .role-badge.about { background:rgba(59,130,246,.9);color:#fff; }
-.role-btns { display:flex;gap:4px;margin-top:6px;flex-wrap:wrap; }
-.btn-role {
-  flex:1;padding:4px 0;font-size:10.5px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.05em;
-  border-radius:5px;border:1px solid var(--border);
-  background:transparent;cursor:pointer;color:var(--muted);
-  transition:all .2s;font-family:inherit;
-}
-.btn-role:hover { border-color:var(--accent);color:var(--accent); }
-.btn-role.active-hero  { background:rgba(201,168,76,.15);color:var(--accent);border-color:var(--accent); }
-.btn-role.active-about { background:rgba(59,130,246,.15);color:#60a5fa;border-color:rgba(59,130,246,.5); }
-.btn-role.active-route { background:rgba(34,197,94,.15);color:#4ade80;border-color:rgba(34,197,94,.5); }
 .role-badge.route { background:rgba(34,197,94,.9);color:#0d0d14; }
+.role-select {
+  margin-top:6px;width:100%;height:30px;padding:0 8px;
+  font-size:11.5px;font-family:inherit;font-weight:600;
+  border-radius:6px;border:1.5px solid var(--border);
+  background:var(--surface-2);color:var(--muted);
+  cursor:pointer;outline:none;transition:border-color .2s,color .2s;
+}
+.role-select:focus { border-color:var(--accent); }
+.role-select-hero  { border-color:rgba(201,168,76,.5);color:var(--accent); }
+.role-select-about { border-color:rgba(59,130,246,.4);color:#60a5fa; }
 @media(max-width:768px){.upload-form{grid-template-columns:1fr}}
 </style>
 </head>
@@ -173,14 +171,11 @@ $page_title = 'Photo Gallery';
             <div style="min-width:0;flex:1">
               <div class="photo-caption"><?= htmlspecialchars($p['caption'] ?: 'No caption') ?></div>
               <div class="photo-dest"><?= htmlspecialchars($dests[$p['destination']] ?? $p['destination']) ?></div>
-              <div class="role-btns">
-                <button class="btn-role <?= $p['role']==='hero'?'active-hero':'' ?>" onclick="setRole(<?= $p['id'] ?>,'hero',this)">Hero</button>
-                <button class="btn-role <?= $p['role']==='about'?'active-about':'' ?>" onclick="setRole(<?= $p['id'] ?>,'about',this)">About</button>
-                <button class="btn-role <?= $p['role']==='route'?'active-route':'' ?>" onclick="setRole(<?= $p['id'] ?>,'route',this)">Route</button>
-                <?php if ($p['role'] !== 'gallery'): ?>
-                <button class="btn-role" onclick="setRole(<?= $p['id'] ?>,'gallery',this)">Gallery</button>
-                <?php endif; ?>
-              </div>
+              <select class="role-select role-select-<?= $p['role'] ?>" onchange="setRole(<?= $p['id'] ?>, this.value, this)">
+                <option value="gallery" <?= $p['role']==='gallery'?'selected':'' ?>>Gallery</option>
+                <option value="hero"    <?= $p['role']==='hero'   ?'selected':'' ?>>🖼 Hero Background</option>
+                <option value="about"   <?= $p['role']==='about'  ?'selected':'' ?>>📄 About Section</option>
+              </select>
             </div>
             <div class="photo-actions">
               <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'up')" title="Move earlier"><i class="fas fa-arrow-up"></i></button>
@@ -260,19 +255,38 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
 });
 
-async function setRole(id, role, btn) {
+async function setRole(id, role, el) {
   const fd = new FormData();
   fd.append('id', id);
   fd.append('role', role);
+  el.disabled = true;
   try {
     const res  = await fetch('../api/set_photo_role.php', { method: 'POST', body: fd, headers: csrfHeader });
     const data = await res.json();
     if (data.ok) {
-      location.reload();
+      // Update select styling + badge without full reload
+      const card = document.getElementById('photo-' + id);
+      el.className = `role-select role-select-${role}`;
+      // Update badge
+      const badge = card.querySelector('.role-badge');
+      const labels = { hero:'🖼 Hero', about:'📄 About', gallery:'' };
+      if (role === 'gallery') {
+        if (badge) badge.remove();
+      } else {
+        if (badge) { badge.className = `role-badge ${role}`; badge.textContent = labels[role]; }
+        else {
+          const b = document.createElement('span');
+          b.className = `role-badge ${role}`; b.textContent = labels[role];
+          card.querySelector('.photo-num').after(b);
+        }
+      }
     } else {
+      el.value = el.dataset.prev || 'gallery';
       alert(data.error || 'Could not update role.');
     }
   } catch { alert('Network error.'); }
+  el.disabled = false;
+  el.dataset.prev = role;
 }
 
 async function deletePhoto(id) {

@@ -14,12 +14,14 @@ if ($conn instanceof mysqli) {
     }
 }
 
-// Load route card photos per destination
+// Load per-route photos from routes table
 $route_photos = [];
 if ($conn instanceof mysqli) {
     try {
-        $res = $conn->query("SELECT destination, filename FROM photos WHERE role = 'route'");
-        if ($res) foreach ($res->fetch_all(MYSQLI_ASSOC) as $r) $route_photos[$r['destination']] = $r['filename'];
+        $res = $conn->query("SELECT r.id, r.name, r.km, r.duration, r.badge, r.dest_key, r.dest_page, p.filename
+                             FROM routes r LEFT JOIN photos p ON r.photo_id = p.id
+                             ORDER BY r.sort_order ASC");
+        if ($res) $route_photos = $res->fetch_all(MYSQLI_ASSOC);
     } catch (mysqli_sql_exception) {}
 }
 
@@ -175,30 +177,38 @@ if ($conn instanceof mysqli) {
         </div>
         <div class="route-grid">
           <?php
-          $routes = [
-            // [name, km, hrs, badge, fallback_img, dest_key, dest_page]
-            ['Delhi to Manali',      '550 km', '12-14 hrs', 'Popular Route',     'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90', 'manali',      'manali.php'],
-            ['Delhi to Shimla',      '350 km', '8-9 hrs',   'Weekend Escape',    'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90', 'shimla',      'shimla.php'],
-            ['Delhi to Dharamshala', '480 km', '10-12 hrs', 'McLeodganj Retreat','https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=90', 'dharamshala', 'dharamshala.php'],
-            ['Delhi to Dalhousie',   '560 km', '11-13 hrs', 'Heritage Hills',    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=90', 'dalhousie',   'dalhousie.php'],
-            ['Chandigarh to Manali', '300 km', '8-9 hrs',   'Comfort Transfer',  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=90', 'manali',      'manali.php'],
-            ['Chandigarh to Shimla', '115 km', '3-4 hrs',   'Quick Mountain Run','https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=90', 'shimla',      'shimla.php'],
+          <?php
+          $fallbacks = [
+            'manali'      => 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90',
+            'shimla'      => 'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90',
+            'dharamshala' => 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=90',
+            'dalhousie'   => 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=90',
+            'spiti'       => 'https://images.unsplash.com/photo-1504457047772-27faf1c00561?auto=format&fit=crop&w=900&q=90',
           ];
-          foreach ($routes as $route):
-            $img = isset($route_photos[$route[5]]) ? 'uploads/photos/' . h($route_photos[$route[5]]) : $route[4];
+          // Use DB routes if available, else static fallback
+          $routes_list = !empty($route_photos) ? $route_photos : [
+            ['name'=>'Delhi to Manali',     'km'=>'550 km','duration'=>'12-14 hrs','badge'=>'Popular Route',    'dest_key'=>'manali',     'dest_page'=>'manali.php',     'filename'=>null],
+            ['name'=>'Delhi to Shimla',     'km'=>'350 km','duration'=>'8-9 hrs',  'badge'=>'Weekend Escape',   'dest_key'=>'shimla',     'dest_page'=>'shimla.php',     'filename'=>null],
+            ['name'=>'Delhi to Dharamshala','km'=>'480 km','duration'=>'10-12 hrs','badge'=>'McLeodganj Retreat','dest_key'=>'dharamshala','dest_page'=>'dharamshala.php','filename'=>null],
+            ['name'=>'Delhi to Dalhousie',  'km'=>'560 km','duration'=>'11-13 hrs','badge'=>'Heritage Hills',   'dest_key'=>'dalhousie',  'dest_page'=>'dalhousie.php',  'filename'=>null],
+            ['name'=>'Chandigarh to Manali','km'=>'300 km','duration'=>'8-9 hrs',  'badge'=>'Comfort Transfer', 'dest_key'=>'manali',     'dest_page'=>'manali.php',     'filename'=>null],
+            ['name'=>'Chandigarh to Shimla','km'=>'115 km','duration'=>'3-4 hrs',  'badge'=>'Quick Mountain Run','dest_key'=>'shimla',    'dest_page'=>'shimla.php',     'filename'=>null],
+          ];
+          foreach ($routes_list as $route):
+            $img = $route['filename'] ? 'uploads/photos/' . h($route['filename']) : ($fallbacks[$route['dest_key']] ?? '');
           ?>
           <article class="route-card reveal">
-            <img src="<?= $img ?>" alt="<?= h($route[0]) ?> cab booking Himachal" loading="lazy" decoding="async" width="900" height="600">
+            <img src="<?= $img ?>" alt="<?= h($route['name']) ?> cab booking Himachal" loading="lazy" decoding="async" width="900" height="600">
             <div class="rc-overlay">
-              <span class="rc-badge"><?= h($route[3]) ?></span>
+              <span class="rc-badge"><?= h($route['badge']) ?></span>
               <div class="rc-bottom">
-                <h3 class="rc-name"><?= h($route[0]) ?></h3>
+                <h3 class="rc-name"><?= h($route['name']) ?></h3>
                 <div class="rc-meta">
-                  <span><i class="fa-solid fa-route"></i> <?= h($route[1]) ?></span>
-                  <span><i class="fa-regular fa-clock"></i> <?= h($route[2]) ?></span>
+                  <span><i class="fa-solid fa-route"></i> <?= h($route['km']) ?></span>
+                  <span><i class="fa-regular fa-clock"></i> <?= h($route['duration']) ?></span>
                 </div>
                 <div class="rc-actions">
-                  <a href="<?= h($route[6]) ?>" class="rc-btn-outline">Explore</a>
+                  <a href="<?= h($route['dest_page']) ?>" class="rc-btn-outline">Explore</a>
                   <a href="#contact" class="rc-btn-fill">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
               </div>
