@@ -76,7 +76,8 @@ if ($conn instanceof mysqli) {
           </div>
         </div>
         <div class="dest-about-img reveal">
-          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=85" alt="Spiti Valley high altitude landscape" loading="lazy" decoding="async" width="800" height="600">
+          <?php $aboutImg = !empty($db_photos[1]) ? 'uploads/photos/' . h($db_photos[1]['filename']) : (!empty($db_photos[0]) ? 'uploads/photos/' . h($db_photos[0]['filename']) : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=85'); ?>
+          <img src="<?= $aboutImg ?>" alt="Spiti Valley high altitude landscape" loading="lazy" decoding="async" width="800" height="600">
         </div>
       </div>
     </div>
@@ -239,4 +240,5 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
 
