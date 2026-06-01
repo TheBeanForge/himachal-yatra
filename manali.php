@@ -1,15 +1,25 @@
-<?php
+﻿<?php
 $base       = 'index.php';
 $activeDest = 'manali';
 require_once 'includes/vars.php';
 require_once 'api/config.php';
-$db_photos = [];
+$db_photos = []; $hero_photo = null; $about_photo = null;
 if ($conn instanceof mysqli) {
-    $stmt = $conn->prepare('SELECT filename, caption FROM photos WHERE destination = ? ORDER BY sort_order ASC, uploaded_at ASC');
-    $stmt->bind_param('s', $activeDest);
-    $stmt->execute();
-    $db_photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    try {
+        $stmt = $conn->prepare("SELECT filename, caption, role FROM photos WHERE destination = ? ORDER BY sort_order ASC");
+        $stmt->bind_param('s', $activeDest);
+        $stmt->execute();
+        $all_photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        foreach ($all_photos as $p) {
+            if ($p['role'] === 'hero')        $hero_photo  = $p;
+            elseif ($p['role'] === 'about')   $about_photo = $p;
+            else                              $db_photos[] = $p;
+        }
+        // Fallback: if no role set, use first/second photo
+        if (!$hero_photo  && !empty($all_photos))    $hero_photo  = $all_photos[0];
+        if (!$about_photo && count($all_photos) > 1) $about_photo = $all_photos[1];
+    } catch (mysqli_sql_exception) {}
     $conn->close();
 }
 ?><!doctype html>
@@ -35,8 +45,7 @@ if ($conn instanceof mysqli) {
   <!-- DEST HERO -->
   <section class="dest-hero">
     <div class="dest-hero-bg">
-      <?php $heroImg = !empty($db_photos[0]) ? 'uploads/photos/' . h($db_photos[0]['filename']) : 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1920&q=90'; ?>
-      <img src="<?= $heroImg ?>" alt="Manali snow mountains Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
+      <img src="<?= $hero_photo ? 'uploads/photos/' . h($hero_photo['filename']) : '' ?>" alt="Manali snow mountains Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
     <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">
@@ -75,8 +84,7 @@ if ($conn instanceof mysqli) {
           </div>
         </div>
         <div class="dest-about-img reveal">
-          <?php $aboutImg = !empty($db_photos[1]) ? 'uploads/photos/' . h($db_photos[1]['filename']) : (!empty($db_photos[0]) ? 'uploads/photos/' . h($db_photos[0]['filename']) : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=85'); ?>
-          <img src="<?= $aboutImg ?>" alt="Manali valley Himalaya" loading="lazy" decoding="async" width="800" height="600">
+          <img src="<?= $about_photo ? 'uploads/photos/' . h($about_photo['filename']) : '' ?>" alt="Manali valley Himalaya" loading="lazy" decoding="async" width="800" height="600">
         </div>
       </div>
     </div>
@@ -256,3 +264,6 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
+
+

@@ -16,7 +16,7 @@ if ($res) {
 }
 
 $where = $filter_dest ? 'WHERE destination = ?' : '';
-$sql   = "SELECT * FROM photos $where ORDER BY uploaded_at DESC";
+$sql   = "SELECT * FROM photos $where ORDER BY destination, sort_order ASC";
 $stmt  = $conn->prepare($sql);
 if ($filter_dest) $stmt->bind_param('s', $filter_dest);
 $stmt->execute();
@@ -77,6 +77,24 @@ $page_title = 'Photo Gallery';
   border:1px solid rgba(201,168,76,.35);
   pointer-events:none;
 }
+.role-badge {
+  position:absolute;top:8px;right:8px;
+  padding:3px 8px;border-radius:5px;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;pointer-events:none;
+}
+.role-badge.hero  { background:rgba(201,168,76,.9);color:#0d0d14; }
+.role-badge.about { background:rgba(59,130,246,.9);color:#fff; }
+.role-btns { display:flex;gap:4px;margin-top:6px;flex-wrap:wrap; }
+.btn-role {
+  flex:1;padding:4px 0;font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.05em;
+  border-radius:5px;border:1px solid var(--border);
+  background:transparent;cursor:pointer;color:var(--muted);
+  transition:all .2s;font-family:inherit;
+}
+.btn-role:hover { border-color:var(--accent);color:var(--accent); }
+.btn-role.active-hero  { background:rgba(201,168,76,.15);color:var(--accent);border-color:var(--accent); }
+.btn-role.active-about { background:rgba(59,130,246,.15);color:#60a5fa;border-color:rgba(59,130,246,.5); }
 @media(max-width:768px){.upload-form{grid-template-columns:1fr}}
 </style>
 </head>
@@ -145,18 +163,26 @@ $page_title = 'Photo Gallery';
           <div style="position:relative">
             <img src="../uploads/photos/<?= htmlspecialchars($p['filename']) ?>" alt="<?= htmlspecialchars($p['caption']) ?>" loading="lazy">
             <span class="photo-num"><?= $i + 1 ?></span>
+            <?php if ($p['role'] !== 'gallery'): ?>
+            <span class="role-badge <?= $p['role'] ?>"><?= $p['role'] === 'hero' ? '🖼 Hero' : '📄 About' ?></span>
+            <?php endif; ?>
           </div>
           <div class="photo-card-body">
             <div style="min-width:0;flex:1">
               <div class="photo-caption"><?= htmlspecialchars($p['caption'] ?: 'No caption') ?></div>
               <div class="photo-dest"><?= htmlspecialchars($dests[$p['destination']] ?? $p['destination']) ?></div>
+              <div class="role-btns">
+                <button class="btn-role <?= $p['role']==='hero'?'active-hero':'' ?>" onclick="setRole(<?= $p['id'] ?>,'hero',this)" title="Use as hero background">Hero</button>
+                <button class="btn-role <?= $p['role']==='about'?'active-about':'' ?>" onclick="setRole(<?= $p['id'] ?>,'about',this)" title="Use in about section">About</button>
+                <?php if ($p['role'] !== 'gallery'): ?>
+                <button class="btn-role" onclick="setRole(<?= $p['id'] ?>,'gallery',this)" title="Move back to gallery">Gallery</button>
+                <?php endif; ?>
+              </div>
             </div>
             <div class="photo-actions">
               <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'up')" title="Move earlier"><i class="fas fa-arrow-up"></i></button>
               <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'down')" title="Move later"><i class="fas fa-arrow-down"></i></button>
-              <button class="btn-del" onclick="deletePhoto(<?= $p['id'] ?>)" title="Delete photo">
-                <i class="fas fa-trash"></i>
-              </button>
+              <button class="btn-del" onclick="deletePhoto(<?= $p['id'] ?>)" title="Delete photo"><i class="fas fa-trash"></i></button>
             </div>
           </div>
         </div>
@@ -230,6 +256,21 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
 });
+
+async function setRole(id, role, btn) {
+  const fd = new FormData();
+  fd.append('id', id);
+  fd.append('role', role);
+  try {
+    const res  = await fetch('../api/set_photo_role.php', { method: 'POST', body: fd, headers: csrfHeader });
+    const data = await res.json();
+    if (data.ok) {
+      location.reload();
+    } else {
+      alert(data.error || 'Could not update role.');
+    }
+  } catch { alert('Network error.'); }
+}
 
 async function deletePhoto(id) {
   if (!confirm('Delete this photo? This cannot be undone.')) return;
