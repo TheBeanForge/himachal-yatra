@@ -9,43 +9,39 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_
 require_once 'config.php';
 require_admin_csrf();
 
-$id   = (int)($_POST['id'] ?? 0);
-$role = $_POST['role'] ?? '';
+$id    = (int)($_POST['id'] ?? 0);
+$field = $_POST['field'] ?? '';   // 'is_hero' or 'is_about'
+$val   = (int)(bool)($_POST['value'] ?? 0);  // 0 or 1
 
-if (!$id || !in_array($role, ['hero','about','route','gallery'], true)) {
+if (!$id || !in_array($field, ['is_hero','is_about'], true)) {
     http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid input']); exit;
 }
 
-// Get destination of this photo
 $stmt = $conn->prepare('SELECT destination FROM photos WHERE id = ?');
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-
 if (!$row) { echo json_encode(['ok'=>false,'error'=>'Photo not found']); exit; }
 
 $dest = $row['destination'];
 
 $conn->begin_transaction();
 try {
-    // Unset the same role from all other photos in this destination
-    if ($role !== 'gallery') {
-        $u = $conn->prepare("UPDATE photos SET role = 'gallery' WHERE destination = ? AND role = ?");
-        $u->bind_param('ss', $dest, $role);
-        $u->execute();
-        $u->close();
+    // If turning ON, unset the same flag from all others in this destination
+    if ($val === 1) {
+        $u = $conn->prepare("UPDATE photos SET {$field} = 0 WHERE destination = ? AND id != ?");
+        $u->bind_param('si', $dest, $id);
+        $u->execute(); $u->close();
     }
-    // Set the new role on this photo
-    $u = $conn->prepare('UPDATE photos SET role = ? WHERE id = ?');
-    $u->bind_param('si', $role, $id);
-    $u->execute();
-    $u->close();
+    $u = $conn->prepare("UPDATE photos SET {$field} = ? WHERE id = ?");
+    $u->bind_param('ii', $val, $id);
+    $u->execute(); $u->close();
     $conn->commit();
 } catch (Throwable) {
     $conn->rollback();
-    echo json_encode(['ok'=>false,'error'=>'Could not update role']); exit;
+    echo json_encode(['ok'=>false,'error'=>'Could not update']); exit;
 }
 
-audit_log('photo_role', "Photo #{$id} set as {$role} for {$dest}");
+audit_log('photo_role', "Photo #{$id} {$field}=" . ($val?'on':'off') . " for {$dest}");
 echo json_encode(['ok'=>true]);

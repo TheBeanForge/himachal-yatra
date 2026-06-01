@@ -54,14 +54,27 @@ $page_title = 'Photo Gallery';
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
 .photo-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .photo-card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
-.photo-card-body{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.photo-caption{font-size:12px;color:var(--ink);font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.photo-dest{font-size:11px;color:var(--muted)}
-.photo-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.btn-move{background:rgba(201,168,76,.10);color:#e0c46a;border:1px solid rgba(201,168,76,.25);border-radius:6px;width:24px;height:24px;cursor:pointer;display:grid;place-items:center;font-size:10px;transition:background .2s}
+.photo-card-body{padding:9px 11px;display:flex;flex-direction:column;gap:7px}
+.photo-caption{font-size:12px;color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.photo-dest{font-size:10.5px;color:var(--muted)}
+/* Bottom row: chips on left, actions on right — all same height */
+.photo-footer{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.photo-chips{display:flex;align-items:center;gap:4px}
+.chip{height:24px;padding:0 9px;border-radius:5px;font-size:10.5px;font-weight:700;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.chip-on-hero {background:rgba(201,168,76,.15);color:var(--accent);border-color:var(--accent)}
+.chip.chip-on-about{background:rgba(59,130,246,.15);color:#60a5fa;border-color:rgba(59,130,246,.45)}
+.photo-actions{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.btn-move{background:rgba(201,168,76,.08);color:#e0c46a;border:1px solid rgba(201,168,76,.20);
+  border-radius:5px;width:24px;height:24px;cursor:pointer;display:grid;place-items:center;
+  font-size:10px;transition:background .2s}
 .btn-move:hover{background:rgba(201,168,76,.22)}
 .btn-move:disabled{opacity:.35;cursor:not-allowed}
-.btn-del{background:rgba(185,28,28,.15);color:#fca5a5;border:1px solid rgba(185,28,28,.25);border-radius:6px;width:28px;height:28px;cursor:pointer;display:grid;place-items:center;font-size:12px;flex-shrink:0;transition:background .2s}
+.btn-del{background:rgba(185,28,28,.12);color:#fca5a5;border:1px solid rgba(185,28,28,.22);
+  border-radius:5px;width:24px;height:24px;cursor:pointer;display:grid;place-items:center;
+  font-size:11px;flex-shrink:0;transition:background .2s}
 .btn-del:hover{background:rgba(185,28,28,.30)}
 .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
 .empty-state i{font-size:36px;opacity:.4;display:block;margin-bottom:12px}
@@ -85,16 +98,6 @@ $page_title = 'Photo Gallery';
 .role-badge.hero  { background:rgba(201,168,76,.9);color:#0d0d14; }
 .role-badge.about { background:rgba(59,130,246,.9);color:#fff; }
 .role-badge.route { background:rgba(34,197,94,.9);color:#0d0d14; }
-.role-select {
-  margin-top:6px;width:100%;height:30px;padding:0 8px;
-  font-size:11.5px;font-family:inherit;font-weight:600;
-  border-radius:6px;border:1.5px solid var(--border);
-  background:var(--surface-2);color:var(--muted);
-  cursor:pointer;outline:none;transition:border-color .2s,color .2s;
-}
-.role-select:focus { border-color:var(--accent); }
-.role-select-hero  { border-color:rgba(201,168,76,.5);color:var(--accent); }
-.role-select-about { border-color:rgba(59,130,246,.4);color:#60a5fa; }
 @media(max-width:768px){.upload-form{grid-template-columns:1fr}}
 </style>
 </head>
@@ -163,24 +166,26 @@ $page_title = 'Photo Gallery';
           <div style="position:relative">
             <img src="../uploads/photos/<?= htmlspecialchars($p['filename']) ?>" alt="<?= htmlspecialchars($p['caption']) ?>" loading="lazy">
             <span class="photo-num"><?= $i + 1 ?></span>
-            <?php if ($p['role'] !== 'gallery'): ?>
-            <span class="role-badge <?= $p['role'] ?>"><?= match($p['role']) { 'hero'=>'🖼 Hero','about'=>'📄 About','route'=>'🗺 Route', default=>'' } ?></span>
-            <?php endif; ?>
+            <?php if ($p['is_hero']): ?><span class="role-badge hero" style="top:8px;right:8px;left:auto">Hero</span><?php endif; ?>
+            <?php if ($p['is_about']): ?><span class="role-badge about" style="top:<?= $p['is_hero']?'34px':'8px' ?>;right:8px;left:auto">About</span><?php endif; ?>
           </div>
           <div class="photo-card-body">
-            <div style="min-width:0;flex:1">
-              <div class="photo-caption"><?= htmlspecialchars($p['caption'] ?: 'No caption') ?></div>
-              <div class="photo-dest"><?= htmlspecialchars($dests[$p['destination']] ?? $p['destination']) ?></div>
-              <select class="role-select role-select-<?= $p['role'] ?>" onchange="setRole(<?= $p['id'] ?>, this.value, this)">
-                <option value="gallery" <?= $p['role']==='gallery'?'selected':'' ?>>Gallery</option>
-                <option value="hero"    <?= $p['role']==='hero'   ?'selected':'' ?>>🖼 Hero Background</option>
-                <option value="about"   <?= $p['role']==='about'  ?'selected':'' ?>>📄 About Section</option>
-              </select>
-            </div>
-            <div class="photo-actions">
-              <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'up')" title="Move earlier"><i class="fas fa-arrow-up"></i></button>
-              <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'down')" title="Move later"><i class="fas fa-arrow-down"></i></button>
-              <button class="btn-del" onclick="deletePhoto(<?= $p['id'] ?>)" title="Delete photo"><i class="fas fa-trash"></i></button>
+            <div class="photo-caption"><?= htmlspecialchars($p['caption'] ?: 'No caption') ?></div>
+            <div class="photo-dest"><?= htmlspecialchars($dests[$p['destination']] ?? $p['destination']) ?></div>
+            <div class="photo-footer">
+              <div class="photo-chips">
+                <button class="chip <?= $p['is_hero'] ?'chip-on-hero':'' ?>"
+                  onclick="toggleRole(<?= $p['id'] ?>,'is_hero',this)"
+                  title="Use as hero background">Hero</button>
+                <button class="chip <?= $p['is_about']?'chip-on-about':'' ?>"
+                  onclick="toggleRole(<?= $p['id'] ?>,'is_about',this)"
+                  title="Use in about section">About</button>
+              </div>
+              <div class="photo-actions">
+                <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'up')" title="Move earlier"><i class="fas fa-arrow-up"></i></button>
+                <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'down')" title="Move later"><i class="fas fa-arrow-down"></i></button>
+                <button class="btn-del" onclick="deletePhoto(<?= $p['id'] ?>)" title="Delete"><i class="fas fa-trash"></i></button>
+              </div>
             </div>
           </div>
         </div>
@@ -255,38 +260,29 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
 });
 
-async function setRole(id, role, el) {
+async function toggleRole(id, field, btn) {
+  const isOn  = btn.classList.contains('chip-on-hero') || btn.classList.contains('chip-on-about');
+  const newVal = isOn ? 0 : 1;
   const fd = new FormData();
-  fd.append('id', id);
-  fd.append('role', role);
-  el.disabled = true;
+  fd.append('id', id); fd.append('field', field); fd.append('value', newVal);
+  btn.disabled = true;
   try {
-    const res  = await fetch('../api/set_photo_role.php', { method: 'POST', body: fd, headers: csrfHeader });
+    const res  = await fetch('../api/set_photo_role.php', { method:'POST', body:fd, headers:csrfHeader });
     const data = await res.json();
     if (data.ok) {
-      // Update select styling + badge without full reload
-      const card = document.getElementById('photo-' + id);
-      el.className = `role-select role-select-${role}`;
-      // Update badge
-      const badge = card.querySelector('.role-badge');
-      const labels = { hero:'🖼 Hero', about:'📄 About', gallery:'' };
-      if (role === 'gallery') {
-        if (badge) badge.remove();
+      const cls = field === 'is_hero' ? 'chip-on-hero' : 'chip-on-about';
+      if (newVal) {
+        // Turn off same role on sibling cards
+        document.querySelectorAll('.chip-on-' + (field==='is_hero'?'hero':'about')).forEach(c => {
+          c.classList.remove('chip-on-hero','chip-on-about');
+        });
+        btn.classList.add(cls);
       } else {
-        if (badge) { badge.className = `role-badge ${role}`; badge.textContent = labels[role]; }
-        else {
-          const b = document.createElement('span');
-          b.className = `role-badge ${role}`; b.textContent = labels[role];
-          card.querySelector('.photo-num').after(b);
-        }
+        btn.classList.remove(cls);
       }
-    } else {
-      el.value = el.dataset.prev || 'gallery';
-      alert(data.error || 'Could not update role.');
-    }
+    } else { alert(data.error || 'Could not update.'); }
   } catch { alert('Network error.'); }
-  el.disabled = false;
-  el.dataset.prev = role;
+  btn.disabled = false;
 }
 
 async function deletePhoto(id) {

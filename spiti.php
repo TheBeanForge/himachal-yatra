@@ -6,14 +6,14 @@ require_once 'api/config.php';
 $db_photos = []; $hero_photo = null; $about_photo = null;
 if ($conn instanceof mysqli) {
     try {
-        $stmt = $conn->prepare("SELECT filename, caption, role FROM photos WHERE destination = ? ORDER BY sort_order ASC");
+        $stmt = $conn->prepare("SELECT filename, caption, role, is_hero, is_about FROM photos WHERE destination = ? ORDER BY sort_order ASC");
         $stmt->bind_param('s', $activeDest);
         $stmt->execute();
         $all_photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
         foreach ($all_photos as $p) {
-            if ($p['role'] === 'hero')        $hero_photo  = $p;
-            elseif ($p['role'] === 'about')   $about_photo = $p;
+            if (!empty($p['is_hero']))        $hero_photo  = $p;
+            elseif (!empty($p['is_about']))   $about_photo = $p;
             else                              $db_photos[] = $p;
         }
         // Fallback: if no role set, use first/second photo
@@ -248,6 +248,7 @@ if ($conn instanceof mysqli) {
 <?php require 'includes/foot.php'; ?>
 </body>
 </html>
+
 
 
 
