@@ -20,29 +20,53 @@
 
   <div class="sidebar-section-label">LEADS</div>
   <ul class="sidebar-nav">
+    <?php
+      // Single lead inbox = booking_enquiries (shown by enquiries.php).
+      $__leadNav = [
+        ''          => ['All Leads', 'fa-list'],
+        'new'       => ['New',       'fa-bell'],
+        'contacted' => ['Contacted', 'fa-phone'],
+        'quoted'    => ['Quoted',    'fa-file-invoice-dollar'],
+        'confirmed' => ['Confirmed', 'fa-circle-check'],
+        'closed'    => ['Closed',    'fa-box-archive'],
+      ];
+      $__curStatus = $_GET['status'] ?? '';
+      foreach ($__leadNav as $__sk => [$__lbl, $__ic]):
+        $__active = $cur === 'enquiries.php' && $__curStatus === $__sk;
+    ?>
     <li>
-      <a href="dashboard.php" class="sidebar-link <?= $cur==='dashboard.php' && empty($_GET['status'])?'active':'' ?>">
-        <i class="fas fa-list fa-fw"></i> All Leads
+      <a href="enquiries.php<?= $__sk ? '?status='.$__sk : '' ?>" class="sidebar-link <?= $__active ? 'active' : '' ?>">
+        <i class="fas <?= $__ic ?> fa-fw"></i> <?= $__lbl ?>
+      </a>
+    </li>
+    <?php endforeach; ?>
+  </ul>
+
+  <div class="sidebar-section-label">QUOTE CALCULATOR</div>
+  <ul class="sidebar-nav">
+    <li>
+      <a href="packages.php" class="sidebar-link <?= $cur==='packages.php'?'active':'' ?>">
+        <i class="fas fa-suitcase-rolling fa-fw"></i> Tour Packages
       </a>
     </li>
     <li>
-      <a href="dashboard.php?status=new" class="sidebar-link <?= ($cur==='dashboard.php' && ($_GET['status']??'')==='new')?'active':'' ?>">
-        <i class="fas fa-bell fa-fw"></i> New
+      <a href="destinations.php" class="sidebar-link <?= $cur==='destinations.php'?'active':'' ?>">
+        <i class="fas fa-mountain fa-fw"></i> Destinations
       </a>
     </li>
     <li>
-      <a href="dashboard.php?status=contacted" class="sidebar-link <?= ($cur==='dashboard.php' && ($_GET['status']??'')==='contacted')?'active':'' ?>">
-        <i class="fas fa-phone fa-fw"></i> Contacted
+      <a href="vehicles.php" class="sidebar-link <?= $cur==='vehicles.php'?'active':'' ?>">
+        <i class="fas fa-car-side fa-fw"></i> Vehicles
       </a>
     </li>
     <li>
-      <a href="dashboard.php?status=confirmed" class="sidebar-link <?= ($cur==='dashboard.php' && ($_GET['status']??'')==='confirmed')?'active':'' ?>">
-        <i class="fas fa-circle-check fa-fw"></i> Confirmed
+      <a href="locations.php" class="sidebar-link <?= $cur==='locations.php'?'active':'' ?>">
+        <i class="fas fa-map-pin fa-fw"></i> Pickup Locations
       </a>
     </li>
     <li>
-      <a href="dashboard.php?status=cancelled" class="sidebar-link <?= ($cur==='dashboard.php' && ($_GET['status']??'')==='cancelled')?'active':'' ?>">
-        <i class="fas fa-ban fa-fw"></i> Cancelled
+      <a href="pricing.php" class="sidebar-link <?= $cur==='pricing.php'?'active':'' ?>">
+        <i class="fas fa-tags fa-fw"></i> Pricing Rules
       </a>
     </li>
   </ul>
@@ -62,11 +86,6 @@
     <li>
       <a href="routes.php" class="sidebar-link <?= $cur==='routes.php'?'active':'' ?>">
         <i class="fas fa-road fa-fw"></i> Route Photos
-      </a>
-    </li>
-    <li>
-      <a href="locations.php" class="sidebar-link <?= $cur==='locations.php'?'active':'' ?>">
-        <i class="fas fa-map-pin fa-fw"></i> Pickup Locations
       </a>
     </li>
   </ul>

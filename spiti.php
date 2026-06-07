@@ -29,7 +29,13 @@ if ($conn instanceof mysqli) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spiti Valley Tour &amp; Cab Booking | Himachal Yatra Travels</title>
   <meta name="description" content="Explore Spiti Valley with Himachal Yatra Travels. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.">
-  <meta name="theme-color" content="#0d0d14">
+  <?php
+    $seoTitle = 'Spiti Valley Tour & Cab Booking | Himachal Yatra Travels';
+    $seoDesc  = 'Explore Spiti Valley with Himachal Yatra Travels. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.';
+    $seoPath  = 'spiti.php';
+    $seoCrumb = 'Spiti Valley';
+    include __DIR__ . '/includes/seo_head.php';
+  ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -64,7 +70,7 @@ if ($conn instanceof mysqli) {
         <div class="dest-fact"><i class="fa-solid fa-temperature-half"></i><span>−30°C to 15°C</span></div>
       </div>
       <div class="dest-hero-warning"><i class="fa-solid fa-triangle-exclamation"></i> High altitude destination — expert drivers mandatory. We specialise in Spiti routes.</div>
-      <a href="index.php#contact" class="dest-hero-btn"><i class="fa-brands fa-whatsapp"></i> Plan Spiti Trip</a>
+      <a href="index.php?calc=spiti" class="dest-hero-btn"><i class="fa-solid fa-calculator"></i> Plan Spiti Trip</a>
     </div>
   </section>
 
@@ -169,7 +175,7 @@ if ($conn instanceof mysqli) {
           </div>
           <div class="drc-bottom">
             
-            <a href="index.php#contact" class="drc-btn">Enquire <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php?calc=spiti" class="drc-btn">Plan My Trip <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">
@@ -185,7 +191,7 @@ if ($conn instanceof mysqli) {
           </div>
           <div class="drc-bottom">
             
-            <a href="index.php#contact" class="drc-btn">Enquire <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php?calc=spiti" class="drc-btn">Plan My Trip <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">

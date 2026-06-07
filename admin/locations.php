@@ -3,7 +3,7 @@ session_start();
 require_once '../api/config.php';
 
 // Check admin auth
-if (empty($_SESSION['admin_id'])) {
+if (empty($_SESSION['admin_user'])) {
     http_response_code(302);
     header('Location: login.php');
     exit;

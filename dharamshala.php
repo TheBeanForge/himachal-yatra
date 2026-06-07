@@ -29,7 +29,12 @@ if ($conn instanceof mysqli) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dharamshala &amp; McLeodganj Tour | Himachal Yatra Travels</title>
   <meta name="description" content="Book Delhi to Dharamshala. McLeodganj, Triund Trek, Bhagsu Waterfall, Dalai Lama Temple — expert Kangra Valley travel with Himachal Yatra Travels.">
-  <meta name="theme-color" content="#0d0d14">
+  <?php
+    $seoTitle = 'Dharamshala & McLeodganj Tour | Himachal Yatra Travels';
+    $seoDesc  = 'Book Delhi to Dharamshala. McLeodganj, Triund Trek, Bhagsu Waterfall, Dalai Lama Temple — expert Kangra Valley travel with Himachal Yatra Travels.';
+    $seoPath  = 'dharamshala.php';
+    include __DIR__ . '/includes/seo_head.php';
+  ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -63,7 +68,7 @@ if ($conn instanceof mysqli) {
         <div class="dest-fact"><i class="fa-solid fa-route"></i><span>480 km from Delhi</span></div>
         <div class="dest-fact"><i class="fa-solid fa-temperature-half"></i><span>5°C to 28°C</span></div>
       </div>
-      <a href="index.php#contact" class="dest-hero-btn"><i class="fa-brands fa-whatsapp"></i> Plan Dharamshala Trip</a>
+      <a href="index.php?calc=dharamshala" class="dest-hero-btn"><i class="fa-solid fa-calculator"></i> Plan Dharamshala Trip</a>
     </div>
   </section>
 
@@ -168,7 +173,7 @@ if ($conn instanceof mysqli) {
           </div>
           <div class="drc-bottom">
             
-            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php?calc=dharamshala" class="drc-btn">Plan My Trip <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">
@@ -184,7 +189,7 @@ if ($conn instanceof mysqli) {
           </div>
           <div class="drc-bottom">
             
-            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php?calc=dharamshala" class="drc-btn">Plan My Trip <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
         <div class="dest-route-card reveal">
@@ -200,7 +205,7 @@ if ($conn instanceof mysqli) {
           </div>
           <div class="drc-bottom">
             
-            <a href="index.php#contact" class="drc-btn">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php?calc=dharamshala" class="drc-btn">Plan My Trip <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
       </div>
@@ -216,7 +221,7 @@ if ($conn instanceof mysqli) {
           <p>Share your travel dates and pickup city. We will plan a clear Kangra Valley route with the right vehicle and driver.</p>
         </div>
         <div class="dest-cta-btns">
-          <a href="index.php#contact" class="btn orange-btn"><i class="fa-solid fa-calendar-check"></i> Request Quote</a>
+          <a href="index.php?calc=dharamshala" class="btn orange-btn"><i class="fa-solid fa-calculator"></i> Plan My Trip</a>
           <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo rawurlencode('Hi, I want a private Dharamshala/McLeodganj trip quote. Please help me plan the route.'); ?>" target="_blank" rel="noopener" class="btn wa-cta-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp Concierge</a>
         </div>
       </div>

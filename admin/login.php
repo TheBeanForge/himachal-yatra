@@ -5,29 +5,43 @@ if (!empty($_SESSION['admin_user'])) { header('Location: dashboard.php'); exit; 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once '../api/config.php';
-    $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
-    if ($username && $password) {
-        $stmt = $conn->prepare('SELECT id, full_name, password_hash, role FROM admin_users WHERE username = ? LIMIT 1');
-        $stmt->bind_param('s', $username);
-        $stmt->execute();
-        $user = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        if ($user && password_verify($password, $user['password_hash'])) {
-            $_SESSION['admin_user'] = [
-                'id'        => $user['id'],
-                'username'  => $username,
-                'full_name' => $user['full_name'],
-                'role'      => $user['role'],
-            ];
-            audit_log('login', 'Logged in');
-            $conn->close();
-            header('Location: dashboard.php');
-            exit;
+
+    // Brute-force throttle: max 5 failed attempts per 15-minute window per session
+    $lock = $_SESSION['login_throttle'] ?? ['count' => 0, 'start' => time()];
+    if (time() - $lock['start'] > 900) $lock = ['count' => 0, 'start' => time()];
+
+    if ($lock['count'] >= 5) {
+        $error = 'Too many attempts. Please wait a few minutes and try again.';
+    } else {
+        $username = trim($_POST['username'] ?? '');
+        $password = trim($_POST['password'] ?? '');
+        if ($username && $password) {
+            $stmt = $conn->prepare('SELECT id, full_name, password_hash, role FROM admin_users WHERE username = ? LIMIT 1');
+            $stmt->bind_param('s', $username);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if ($user && password_verify($password, $user['password_hash'])) {
+                session_regenerate_id(true);          // prevent session fixation
+                unset($_SESSION['login_throttle']);
+                $_SESSION['admin_user'] = [
+                    'id'        => $user['id'],
+                    'username'  => $username,
+                    'full_name' => $user['full_name'],
+                    'role'      => $user['role'],
+                ];
+                audit_log('login', 'Logged in');
+                $conn->close();
+                header('Location: dashboard.php');
+                exit;
+            }
         }
+        $lock['count']++;
+        $_SESSION['login_throttle'] = $lock;
+        audit_log('login_failed', 'Failed login for "' . $username . '"');
+        $error = 'Incorrect username or password.';
     }
     $conn->close();
-    $error = 'Incorrect username or password.';
 }
 ?><!DOCTYPE html>
 <html lang="en">
@@ -373,13 +387,13 @@ body{
     <div class="err-box"><i class="fas fa-circle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form method="POST" autocomplete="off">
+    <form method="POST">
       <div class="form-group">
         <label class="form-label">Username</label>
         <div class="inp-wrap">
           <i class="inp-icon fas fa-user"></i>
           <input class="inp" type="text" name="username" placeholder="Enter your username" autofocus required
-                 value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
+                 autocomplete="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
         </div>
       </div>
 
@@ -387,7 +401,7 @@ body{
         <label class="form-label">Password</label>
         <div class="inp-wrap">
           <i class="inp-icon fas fa-lock"></i>
-          <input class="inp" type="password" name="password" id="pwField" placeholder="Enter your password" required>
+          <input class="inp" type="password" name="password" id="pwField" placeholder="Enter your password" required autocomplete="current-password">
           <button type="button" class="pw-toggle" id="pwToggle" tabindex="-1" aria-label="Toggle password visibility">
             <i class="fas fa-eye" id="pwIcon"></i>
           </button>

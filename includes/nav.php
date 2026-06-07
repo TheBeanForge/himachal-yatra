@@ -6,25 +6,7 @@ $activeDest = $activeDest ?? '';
 $home       = $base ?: '#home';
 $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
 ?>
-<div class="top-strip">
-  <div class="container mx-auto px-3 ts-inner">
-    <div class="ts-trust">
-      <span><i class="fa-solid fa-shield-halved"></i> Verified Drivers</span>
-      <span class="ts-dot" aria-hidden="true"></span>
-      <span><i class="fa-solid fa-headset"></i> 24/7 Support</span>
-    </div>
-    <div class="ts-contact">
-      <a href="tel:<?php echo h($phoneTel); ?>" class="ts-phone">
-        <i class="fa-solid fa-phone"></i> <?php echo h($phoneDisplay); ?>
-      </a>
-      <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo $defaultMessage; ?>"
-         class="ts-wa" target="_blank" rel="noopener" aria-label="WhatsApp">
-        <i class="fa-brands fa-whatsapp"></i>
-      </a>
-    </div>
-  </div>
-</div>
-
+<a class="skip-link" href="#home">Skip to content</a>
 <nav class="navbar navbar-expand-lg site-nav sticky-top">
   <div class="container mx-auto px-3">
 
@@ -52,7 +34,6 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
         </li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('about'); ?>">About</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('routes'); ?>">Routes</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?php echo $al('packages'); ?>">Packages</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('fleet'); ?>">Fleet</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle <?php echo $activeDest ? 'active' : ''; ?>"
@@ -72,15 +53,12 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
       </ul>
 
       <!-- Theme Toggle -->
-      <div class="theme-switcher" id="themeSwitcher">
-        <button class="theme-btn active" data-theme="dark" title="Dark Gold">
-          <i class="fa-solid fa-circle-half-stroke"></i>
+      <div class="theme-switcher" id="themeSwitcher" role="group" aria-label="Colour theme">
+        <button class="theme-btn active" data-theme="dark" title="Dark" aria-label="Dark theme" aria-pressed="true">
+          <i class="fa-solid fa-moon" aria-hidden="true"></i>
         </button>
-        <button class="theme-btn" data-theme="light" title="Light">
-          <i class="fa-solid fa-sun"></i>
-        </button>
-        <button class="theme-btn" data-theme="blue" title="Dark Blue">
-          <i class="fa-solid fa-water"></i>
+        <button class="theme-btn" data-theme="light" title="Light" aria-label="Light theme" aria-pressed="false">
+          <i class="fa-solid fa-sun" aria-hidden="true"></i>
         </button>
       </div>
 

@@ -1,55 +1,40 @@
 /* Himachal Yatra Travels — Admin CSS */
 
-/* ── DARK GOLD (default) ── */
+/* ── ALPINE FROST DARK (default) ──
+   Selector covers legacy keys (dark-gold/dark-blue) so any previously
+   stored value renders as the single frost dark theme. */
 :root,
-[data-theme="dark-gold"] {
-  --bg:        #0d0d14;
-  --sidebar:   #0d0d14;
-  --surface:   #161623;
-  --surface-2: #1e1e2e;
-  --border:    #2a2a3e;
-  --accent:    #c9a84c;
-  --accent-d:  #a8893d;
-  --accent-l:  #e0c46a;
-  --ink:       #f5f0e8;
-  --ink-2:     #c8d0db;
-  --muted:     #9ca3af;
-  --sidebar-w: 240px;
-  --bs-body-bg:         #0d0d14;
-  --bs-body-color:      #f5f0e8;
-  --bs-border-color:    #2a2a3e;
-  --bs-secondary-color: #9ca3af;
-}
-
-/* ── DARK BLUE ── */
+[data-theme="dark"],
+[data-theme="dark-gold"],
 [data-theme="dark-blue"] {
-  --bg:        #0f172a;
-  --sidebar:   #0f172a;
-  --surface:   #1e293b;
-  --surface-2: #263548;
-  --border:    #334155;
-  --accent:    #3b82f6;
-  --accent-d:  #2563eb;
-  --accent-l:  #60a5fa;
-  --ink:       #f1f5f9;
-  --ink-2:     #cbd5e1;
-  --muted:     #94a3b8;
-  --bs-body-bg:         #0f172a;
-  --bs-body-color:      #f1f5f9;
-  --bs-border-color:    #334155;
-  --bs-secondary-color: #94a3b8;
+  --bg:        #0F172A;
+  --sidebar:   #0B1220;
+  --surface:   #16233B;
+  --surface-2: #1E2D49;
+  --border:    #2A3B57;
+  --accent:    #38BDF8;
+  --accent-d:  #0EA5E9;
+  --accent-l:  #7DD3FC;
+  --ink:       #F1F5F9;
+  --ink-2:     #CBD5E1;
+  --muted:     #94A3B8;
+  --sidebar-w: 240px;
+  --bs-body-bg:         #0F172A;
+  --bs-body-color:      #F1F5F9;
+  --bs-border-color:    #2A3B57;
+  --bs-secondary-color: #94A3B8;
 }
 
 /* ── LIGHT ── */
 [data-theme="light"] {
   --bg:        #f8fafc;
-  --sidebar:   #1e293b;
+  --sidebar:   #0F172A;
   --surface:   #ffffff;
   --surface-2: #f1f5f9;
   --border:    #e2e8f0;
-  --accent:    #c9a84c;
-  --accent-d:  #a8893d;
-  --accent-l:  #e0c46a;
+  --accent:    #0EA5E9;
+  --accent-d:  #0284C7;
+  --accent-l:  #38BDF8;
   --ink:       #0f172a;
   --ink-2:     #334155;
   --muted:     #64748b;
@@ -63,6 +48,27 @@
 [data-theme="light"] .sidebar-link:hover { color: var(--accent); }
 [data-theme="light"] .brand-tagline { color: #94a3b8; }
 [data-theme="light"] .brand-name { color: #f1f5f9; }
+
+/* ── FIX: make Bootstrap table & emphasis text follow the admin theme ──
+   Bootstrap's .table sets color:var(--bs-table-color) → var(--bs-emphasis-color),
+   which defaults to #000. The admin theme set --bs-body-color but not these, so
+   any <td>/<th> without an explicit color rendered near-black on the dark
+   surface (the "invisible text" bug). Binding them to --ink makes every cell,
+   card and dropdown flip correctly between dark and light. */
+:root, [data-theme="dark"], [data-theme="dark-gold"], [data-theme="dark-blue"] {
+  --bs-emphasis-color: #F1F5F9; --bs-emphasis-color-rgb: 241,245,249;
+}
+[data-theme="light"] { --bs-emphasis-color: #0F172A; --bs-emphasis-color-rgb: 15,23,42; }
+.table {
+  --bs-table-color:         var(--ink);
+  --bs-table-bg:            transparent;
+  --bs-table-border-color:  var(--border);
+  --bs-table-striped-color: var(--ink);
+  --bs-table-hover-color:   var(--ink);
+  --bs-table-active-color:  var(--ink);
+  color: var(--ink);
+}
+.card, .modal-content, .dropdown-menu, .list-group-item { color: var(--ink); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {

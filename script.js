@@ -1,26 +1,47 @@
 // ── Theme switcher (runs before DOMContentLoaded to avoid flash) ──
+// Only two themes are supported: 'dark' and 'light'. Anything else
+// (e.g. a legacy 'blue' value) falls back to 'dark'.
+const ALLOWED_THEMES = ['dark', 'light'];
 (function () {
-  const saved = localStorage.getItem('site-theme') || 'dark';
+  let saved = localStorage.getItem('site-theme');
+  if (!ALLOWED_THEMES.includes(saved)) { saved = 'dark'; localStorage.setItem('site-theme', 'dark'); }
   document.documentElement.setAttribute('data-theme', saved);
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
-  const body = document.body;
-  const form = document.querySelector('#inquiryForm');
-  const status = document.querySelector('#formStatus');
-  const waNumber = (body.dataset.wa || '919876543210').replace(/\D/g, '');
 
   // ── Theme switcher ──
-  const currentTheme = localStorage.getItem('site-theme') || 'dark';
+  let currentTheme = localStorage.getItem('site-theme');
+  if (!ALLOWED_THEMES.includes(currentTheme)) currentTheme = 'dark';
+  const syncThemeButtons = (active) => {
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      const on = b.dataset.theme === active;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  };
+  syncThemeButtons(currentTheme);
   document.querySelectorAll('.theme-btn').forEach(btn => {
-    if (btn.dataset.theme === currentTheme) btn.classList.add('active');
     btn.addEventListener('click', () => {
       const theme = btn.dataset.theme;
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('site-theme', theme);
-      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      syncThemeButtons(theme);
     });
+  });
+
+  // ── Bright-background header contrast ──
+  // Flip the header to dark text + a frosted light panel whenever a bright
+  // background image is active behind it. Drive it however you like:
+  //   • call window.setHeaderTheme(true / false) from your bg-switch handler, or
+  //   • add `data-bright-toggle` to any button to flip it on click.
+  function setHeaderTheme(bright) {
+    document.body.classList.toggle('bright-bg', !!bright);
+  }
+  window.setHeaderTheme = setHeaderTheme;
+  document.querySelectorAll('[data-bright-toggle]').forEach(el => {
+    el.addEventListener('click', () =>
+      setHeaderTheme(!document.body.classList.contains('bright-bg')));
   });
 
   // ── Navbar scroll shadow ──
@@ -97,150 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: 0.55 });
   document.querySelectorAll('[data-count]').forEach((el) => counterObserver.observe(el));
 
-  // ── Booking widget tabs ──
-  // Track which service the hero tabs have selected; passed into the modal on open.
-  const tabBtns = document.querySelectorAll('.booking-tab-btn');
-  let heroService = document.querySelector('.booking-tab-btn.active')?.dataset.tab || 'classic';
-  tabBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      tabBtns.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      heroService = btn.dataset.tab || 'classic';
-    });
-  });
+  // Quote calculator modal is handled by includes/calc_modal.php (window.openCalcModal)
 
-  // heroBookBtn (booking widget quote button) is handled inside the modal block above
-
-  // ── Booking Popup Modal ──
-  const modal = document.getElementById('bookingModal');
-
-  const showPopup = () => {
-    if (!modal) return;
-    modal.classList.add('active');
-    const scrollY = window.scrollY;
-    document.body.style.overflow = 'hidden';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.dataset.scrollY = scrollY;
-    // focus first input for accessibility
-    setTimeout(() => modal.querySelector('.mf-input')?.focus({ preventScroll: true }), 350);
-  };
-  const hidePopup = () => {
-    modal?.classList.remove('active');
-    const scrollY = parseInt(document.body.dataset.scrollY || '0');
-    document.body.style.overflow = '';
-    document.body.style.top = '';
-    window.scrollTo({ top: scrollY, behavior: 'instant' });
-    // reset form and success state after animation finishes
-    setTimeout(() => {
-      const mForm = document.getElementById('modalForm');
-      const mSuccess = document.getElementById('modalSuccess');
-      const mTabs = modal?.querySelector('.modal-service-tabs');
-      const mNote = modal?.querySelector('.modal-note');
-      if (mForm)    { mForm.reset(); mForm.hidden = false; }
-      if (mSuccess) mSuccess.hidden = true;
-      if (mTabs)    mTabs.hidden = false;
-      if (mNote)    mNote.style.opacity = '';
-      document.getElementById('modalError')?.setAttribute('hidden', '');
-      const submitBtn = document.getElementById('modalSubmitBtn');
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Quote'; }
-    }, 350);
-  };
-
-  // Open triggers
-  document.getElementById('openBookingModal')?.addEventListener('click', showPopup);
-  // Sync the modal's service tabs + hidden package input to the chosen service.
-  const setModalService = (service) => {
-    const input = document.getElementById('modalPackageInput');
-    if (input) input.value = service;
-    document.querySelectorAll('.mst-btn').forEach((b) => {
-      b.classList.toggle('active', b.dataset.service === service);
-    });
-  };
-
-  document.getElementById('heroBookBtn')?.addEventListener('click', () => {
-    // pre-fill from booking widget — assign to .value so it overwrites any prior input
-    const from = document.getElementById('bookFrom')?.value.trim() || '';
-    const to   = document.getElementById('bookTo')?.value.trim() || '';
-    const date = document.getElementById('bookDate')?.value || '';
-    const pickupEl = modal?.querySelector('[name="pickup"]');
-    const destEl   = modal?.querySelector('[name="destination"]');
-    const dateEl   = modal?.querySelector('[name="travel_date"]');
-    if (pickupEl) pickupEl.value = from;
-    if (destEl)   destEl.value   = to;
-    if (dateEl)   dateEl.value   = date;
-    setModalService(heroService);
-    showPopup();
-  });
-
-  // Close triggers
-  document.getElementById('modalCloseBtn')?.addEventListener('click', hidePopup);
-  document.getElementById('modalSuccessClose')?.addEventListener('click', hidePopup);
-  modal?.addEventListener('click', (e) => { if (e.target === modal) hidePopup(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePopup(); });
-
-  // Service tabs
-  document.querySelectorAll('.mst-btn').forEach((btn) => {
-    btn.addEventListener('click', () => setModalService(btn.dataset.service));
-  });
-
-  // Build WA message from modal form data
-  const buildModalWaUrl = (fd) => {
-    const get = (k) => (fd.get(k) || '').toString().trim();
-    const lines = [
-      'Hi Himachal Yatra Travels, I would like a private Himachal trip quote.',
-      `Name: ${get('name')}`,
-      `Phone: ${get('phone')}`,
-      `Pickup: ${get('pickup')}`,
-      `Destination: ${get('destination')}`,
-      `Date: ${get('travel_date')}`,
-      `Passengers: ${get('pax')}`,
-    ].filter((l) => !l.endsWith(': '));
-    return `https://wa.me/${waNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
-  };
-
-  // WhatsApp direct button
-  document.getElementById('modalWaBtn')?.addEventListener('click', () => {
-    const fd = new FormData(document.getElementById('modalForm'));
-    window.open(buildModalWaUrl(fd), '_blank', 'noopener');
-  });
-
-  // Modal form submit → POST to API → show success
-  document.getElementById('modalForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const submitBtn = document.getElementById('modalSubmitBtn');
-    const errorBox  = document.getElementById('modalError');
-    const fd = new FormData(e.target);
-    const name = (fd.get('name') || '').toString().trim();
-    const waUrl = buildModalWaUrl(fd);
-
-    errorBox.hidden = true;
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; }
-
-    try {
-      const res    = await fetch('api/submit.php', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
-      const result = await res.json().catch(() => ({}));
-
-      if (res.ok && result.success) {
-        // show success state
-        const nameEl = document.getElementById('modalSuccessName');
-        const waLink = document.getElementById('modalSuccessWa');
-        if (nameEl) nameEl.textContent = name || 'there';
-        if (waLink) waLink.href = waUrl;
-        e.target.hidden = true;
-        modal.querySelector('.modal-service-tabs').hidden = true;
-        document.getElementById('modalSuccess').hidden = false;
-        // hide note
-        modal.querySelector('.modal-note').style.opacity = '0';
-      } else {
-        errorBox.textContent = result.error || 'Something went wrong. Please try again.';
-        errorBox.hidden = false;
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Quote'; }
-      }
-    } catch {
-      errorBox.textContent = 'Network error. Please use the WhatsApp button instead.';
-      errorBox.hidden = false;
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Quote'; }
-    }
+  // Hero "Plan My Journey" button opens the quote calculator modal
+  document.getElementById('openBookingModal')?.addEventListener('click', () => {
+    if (typeof window.openCalcModal === 'function') window.openCalcModal('');
   });
 
   // ── Horizontal Review Slider ──
@@ -366,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Token shared with the lead form (vars.php)
     if (!fd.get('csrf_token')) fd.set('csrf_token', document.querySelector('input[name="csrf_token"]')?.value || '');
 
-    if (submit) { submit.disabled = true; submit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…'; }
+    if (submit) { submit.disabled = true; submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting…'; }
     if (status) { status.textContent = ''; }
 
     try {
@@ -389,72 +271,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── Contact form: two-action buttons ──
-  const getValue = (data, key) => String(data.get(key) || '').trim();
-  const buildWaUrl = (data) => {
-    const lines = [
-      'Hi Himachal Yatra Travels, I need a travel quote.',
-      `Name: ${getValue(data, 'name')}`,
-      `Phone: ${getValue(data, 'phone')}`,
-      `Pickup: ${getValue(data, 'pickup')}`,
-      `Destination: ${getValue(data, 'destination')}`,
-      `Journey Date: ${getValue(data, 'travel_date')}`,
-      `Service: ${getValue(data, 'package')}`,
-      `Message: ${getValue(data, 'message')}`,
-    ].filter((line) => !line.endsWith(': '));
-    return `https://wa.me/${waNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
-  };
-
-  // WhatsApp concierge button: open WA immediately with current form data, no API call
-  document.getElementById('waDirectBtn')?.addEventListener('click', () => {
-    window.open(buildWaUrl(new FormData(form)), '_blank', 'noopener');
-  });
-
-  // Request quote: POST to API, save lead to DB, show thank-you state
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!form.reportValidity()) return;
-
-    const submitBtn = form.querySelector('.btn-enquiry-submit');
-    const data      = new FormData(form);
-    const name      = getValue(data, 'name');
-    const waUrl     = buildWaUrl(data);
-
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…'; }
-    if (status)    { status.textContent = ''; }
-
-    try {
-      const res    = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
-      const result = await res.json().catch(() => ({}));
-
-      if (res.ok && result.success) {
-        // Populate and show success state
-        const fsName  = document.getElementById('fsName');
-        const fsWaBtn = document.getElementById('fsWaBtn');
-        if (fsName)  fsName.textContent = name || 'there';
-        if (fsWaBtn) fsWaBtn.href = waUrl;
-
-        form.hidden = true;
-        document.getElementById('formHeading')?.style.setProperty('display', 'none');
-        document.getElementById('formSuccess').hidden = false;
-      } else {
-        if (status)    status.textContent = result.error || 'Something went wrong. Please try again.';
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Private Quote'; }
-      }
-    } catch {
-      if (status)    status.textContent = 'Network error. Please use the WhatsApp button instead.';
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Private Quote'; }
-    }
-  });
-
-  // New enquiry button inside success state: reset everything
-  document.getElementById('fsResetBtn')?.addEventListener('click', () => {
-    form.reset();
-    form.hidden = false;
-    document.getElementById('formHeading')?.style.removeProperty('display');
-    document.getElementById('formSuccess').hidden = true;
-    if (status) status.textContent = '';
-    const submitBtn = form.querySelector('.btn-enquiry-submit');
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Request Private Quote'; }
-  });
 });

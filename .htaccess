@@ -1,0 +1,9 @@
+# Block raw SQL dumps and VCS/IDE metadata from being served.
+Options -Indexes
+
+<FilesMatch "\.(sql|sql\.gz|md|example\.php)$">
+    Require all denied
+</FilesMatch>
+
+RedirectMatch 404 ^/\.git
+RedirectMatch 404 ^/\.idea

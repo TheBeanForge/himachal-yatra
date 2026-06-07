@@ -1,0 +1,3 @@
+# Setup/migration scripts must never be reachable over the web.
+Options -Indexes
+Require all denied

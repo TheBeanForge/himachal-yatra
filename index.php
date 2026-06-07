@@ -44,7 +44,12 @@ if ($conn instanceof mysqli) {
   <meta name="description" content="Plan private Himachal journeys with Himachal Yatra Travels. Premium cabs, verified mountain drivers, Shimla-Manali packages, Spiti Valley expeditions and tempo travellers.">
   <meta name="keywords" content="Himachal Yatra Travels, Delhi to Manali cab, Delhi to Shimla taxi, Himachal tour package, Spiti Valley trip, tempo traveller Himachal, Dharamshala cab booking">
   <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#0d0d14">
+  <?php
+    $seoTitle = 'Himachal Yatra Travels | Private Himachal Cab & Tour Packages';
+    $seoDesc  = 'Plan private Himachal journeys with Himachal Yatra Travels. Premium cabs, verified mountain drivers, Shimla-Manali packages, Spiti Valley expeditions and tempo travellers.';
+    $seoPath  = '';
+    include __DIR__ . '/includes/seo_head.php';
+  ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -88,46 +93,6 @@ if ($conn instanceof mysqli) {
           </a>
         </div>
 
-        <div class="booking-widget reveal reveal-delay-3">
-          <div class="booking-tabs">
-            <button class="booking-tab-btn active" data-tab="classic">
-              <i class="fa-solid fa-car-side"></i> Private Cab
-            </button>
-            <button class="booking-tab-btn" data-tab="budget">
-              <i class="fa-solid fa-map-marked-alt"></i> Custom Tour
-            </button>
-            <button class="booking-tab-btn" data-tab="luxury">
-              <i class="fa-solid fa-van-shuttle"></i> Group Travel
-            </button>
-          </div>
-          <div class="booking-fields">
-            <div class="booking-field">
-              <label><i class="fa-solid fa-location-dot"></i> From</label>
-              <input type="text" id="bookFrom" placeholder="Delhi, Chandigarh, Pathankot...">
-            </div>
-            <div class="booking-field">
-              <label><i class="fa-solid fa-flag-checkered"></i> To</label>
-              <input type="text" id="bookTo" placeholder="Manali, Shimla, Dharamshala...">
-            </div>
-            <div class="booking-field">
-              <label><i class="fa-regular fa-calendar"></i> Travel Date</label>
-              <input type="date" id="bookDate">
-            </div>
-            <div class="booking-field">
-              <label><i class="fa-regular fa-user"></i> Vehicle</label>
-              <select id="bookPassengers">
-                <option value="sedan">1-3 Passengers (Sedan)</option>
-                <option value="innova">4-6 Passengers (Innova)</option>
-                <option value="tempo12">7-12 (Tempo 12 Seater)</option>
-                <option value="tempo17">13+ (Tempo 17 Seater)</option>
-              </select>
-            </div>
-            <button class="booking-search-btn" id="heroBookBtn">
-              <i class="fa-solid fa-paper-plane"></i> Request Quote
-            </button>
-          </div>
-        </div>
-
         <div class="hero-trust reveal">
           <span><i class="fa-solid fa-circle-check"></i> Verified Drivers</span>
           <span><i class="fa-solid fa-circle-check"></i> Transparent Quotes</span>
@@ -142,7 +107,7 @@ if ($conn instanceof mysqli) {
           <defs>
             <path id="spinCircle" d="M 60,60 m -42,0 a 42,42 0 1,1 84,0 a 42,42 0 1,1 -84,0"/>
           </defs>
-          <text fill="rgba(201,168,76,.80)" font-size="11.5" font-family="Inter,sans-serif" font-weight="700" letter-spacing="3">
+          <text fill="rgba(56,189,248,.80)" font-size="11.5" font-family="Inter,sans-serif" font-weight="700" letter-spacing="3">
             <textPath href="#spinCircle">ADVENTURE · HIMACHAL · TRAVEL · COMFORT · </textPath>
           </text>
         </svg>
@@ -208,7 +173,7 @@ if ($conn instanceof mysqli) {
                 </div>
                 <div class="rc-actions">
                   <a href="<?= h($route['dest_page']) ?>" class="rc-btn-outline">Explore</a>
-                  <a href="#contact" class="rc-btn-fill">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
+                  <a href="javascript:void(0)" onclick="openCalcModal('')" class="rc-btn-fill">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
               </div>
             </div>
@@ -455,15 +420,15 @@ if ($conn instanceof mysqli) {
               <input class="hp-field" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
               <div class="wr-row">
                 <div class="wr-field">
-                  <input type="text" id="wrName" name="name" placeholder="Your Full Name *" required>
+                  <input type="text" id="wrName" name="name" placeholder="Your Full Name *" required aria-label="Your full name">
                 </div>
                 <div class="wr-field">
-                  <input type="text" id="wrCity" name="city" placeholder="Your City *" required>
+                  <input type="text" id="wrCity" name="city" placeholder="Your City *" required aria-label="Your city">
                 </div>
               </div>
               <div class="wr-row">
                 <div class="wr-field">
-                  <input type="text" id="wrTrip" name="route" placeholder="Route Travelled (e.g. Delhi-Manali)" required>
+                  <input type="text" id="wrTrip" name="route" placeholder="Route Travelled (e.g. Delhi-Manali)" required aria-label="Route travelled">
                 </div>
                 <div class="wr-field">
                   <label class="photo-upload-label" for="wrPhoto">
@@ -473,7 +438,7 @@ if ($conn instanceof mysqli) {
                   </label>
                 </div>
               </div>
-              <textarea id="wrText" name="text" placeholder="Tell us about your driver, the cab, the route and the real experience... *" required rows="4"></textarea>
+              <textarea id="wrText" name="text" placeholder="Tell us about your driver, the cab, the route and the real experience... *" required rows="4" aria-label="Your review"></textarea>
               <p id="wrStatus" class="form-status" role="status" aria-live="polite"></p>
               <button type="submit" class="wr-submit">
                 <i class="fa-solid fa-paper-plane"></i> Submit Review
@@ -524,55 +489,6 @@ if ($conn instanceof mysqli) {
       </div>
     </section>
 
-    <!-- PACKAGES -->
-    <section id="packages" class="packages-area section-pad">
-      <div class="container mx-auto px-3">
-        <div class="section-header reveal">
-          <div class="section-tag"><i class="fa-solid fa-map-marked-alt"></i> Tour Packages</div>
-          <h2 class="section-title">Curated Himachal <span>Packages</span></h2>
-          <p class="section-desc">Private itineraries for couples, families, groups and travellers who want comfort without losing the mountain experience.</p>
-        </div>
-        <div class="package-grid">
-          <article class="package-card reveal">
-            <div class="package-card-bg">
-              <img src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=90" alt="Shimla Manali Honeymoon Package" loading="lazy">
-            </div>
-            <div class="package-icon"><i class="fa-solid fa-heart"></i></div>
-            <span class="package-duration">6 Nights / 7 Days</span>
-            <div class="package-card-body">
-              <h3>Shimla-Manali Honeymoon</h3>
-              <p>Private cab, scenic pacing, couple-friendly hotels and sightseeing across Shimla, Kullu, Manali and Solang Valley.</p>
-              <a href="#contact" class="package-link">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
-            </div>
-          </article>
-          <article class="package-card reveal reveal-delay-1">
-            <div class="package-card-bg">
-              <img src="https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=90" alt="Himachal Family Tour" loading="lazy">
-            </div>
-            <div class="package-icon"><i class="fa-solid fa-people-roof"></i></div>
-            <span class="package-duration">5 Nights / 6 Days</span>
-            <div class="package-card-body">
-              <h3>Himachal Family Tour</h3>
-              <p>Family-friendly routing with reliable vehicles, practical halt planning and comfortable sightseeing days.</p>
-              <a href="#contact" class="package-link">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
-            </div>
-          </article>
-          <article class="package-card reveal reveal-delay-2">
-            <div class="package-card-bg">
-              <img src="https://images.unsplash.com/photo-1504457047772-27faf1c00561?auto=format&fit=crop&w=900&q=90" alt="Spiti Valley Adventure" loading="lazy">
-            </div>
-            <div class="package-icon"><i class="fa-solid fa-person-hiking"></i></div>
-            <span class="package-duration">8 Nights / 9 Days</span>
-            <div class="package-card-body">
-              <h3>Spiti Valley Adventure</h3>
-              <p>Kaza, Chandratal Lake, Pin Valley and Key Monastery with drivers experienced on high-altitude routes.</p>
-              <a href="#contact" class="package-link">Request Quote <i class="fa-solid fa-arrow-right"></i></a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <!-- CONTACT -->
     <section id="contact" class="contact-strip section-pad">
       <div class="container mx-auto px-3">
@@ -601,173 +517,15 @@ if ($conn instanceof mysqli) {
               </div>
             </div>
           </div>
-          <div class="contact-form-wrap">
-            <h3 id="formHeading">Share Your Travel Details</h3>
-            <form id="inquiryForm" action="api/submit.php" method="post">
-              <input type="hidden" name="csrf_token" value="<?php echo h($_SESSION['lead_form_token']); ?>">
-              <input type="hidden" name="pax" value="1">
-              <input class="hp-field" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-              <input name="name" type="text" placeholder="Your Full Name" required>
-              <input name="phone" type="tel" placeholder="Phone Number" required>
-              <input name="email" type="email" placeholder="Email (optional)">
-              <select name="pickup" required style="appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22><path fill=%22%23c8a75d%22 d=%22M10 13l-5-5h10z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;background-size:20px;padding-right:32px">
-                <option value="">Select pickup city...</option>
-                <?php foreach ($pickup_locations as $loc): ?>
-                <option value="<?php echo h($loc['city']); ?>"><?php echo h($loc['city']); ?></option>
-                <?php endforeach; ?>
-              </select>
-              <input name="destination" type="text" placeholder="Destination (e.g. Manali)">
-              <input name="travel_date" type="date">
-              <select name="package">
-                <option value="classic">Private Cab</option>
-                <option value="budget">Custom Tour Package</option>
-                <option value="luxury">Group / Tempo Traveller</option>
-              </select>
-              <textarea name="message" placeholder="Any additional requirements, group size, hotel preferences..."></textarea>
-              <div class="form-submit-row">
-                <button type="submit" class="btn-enquiry-submit">
-                  <i class="fas fa-paper-plane"></i> Request Private Quote
-                </button>
-                <button type="button" class="btn-enquiry-wa" id="waDirectBtn">
-                  <i class="fab fa-whatsapp"></i> WhatsApp Concierge
-                </button>
-              </div>
-              <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
-            </form>
-
-            <!-- Success state shown after successful submit -->
-            <div id="formSuccess" class="form-success" hidden>
-              <div class="fs-icon"><i class="fas fa-check-circle"></i></div>
-              <h3>Thank you, <span id="fsName">there</span>!</h3>
-              <p>Your enquiry has been received. Our travel desk will get in touch with you on WhatsApp or phone to shape the right route and quote.</p>
-              <p class="fs-sub">In a hurry? Chat with us right now on WhatsApp and get a quote in minutes.</p>
-              <div class="fs-actions">
-                <a id="fsWaBtn" href="#" target="_blank" rel="noopener" class="fs-btn-wa">
-                  <i class="fab fa-whatsapp"></i> Chat on WhatsApp Now
-                </a>
-                <button class="fs-btn-reset" id="fsResetBtn">
-                  <i class="fas fa-rotate-left"></i> New Enquiry
-                </button>
-              </div>
-            </div>
+          <!-- Right column: the shared booking form (instant quote), embedded inline -->
+          <div class="contact-booking">
+            <?php require 'includes/calc_modal.php'; ?>
           </div>
         </div>
       </div>
     </section>
 
   </main>
-
-  <!-- BOOKING POPUP MODAL -->
-  <div id="bookingModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-card">
-
-      <button class="modal-close" aria-label="Close" id="modalCloseBtn">
-        <i class="fa-solid fa-times"></i>
-      </button>
-
-      <!-- Header -->
-      <div class="modal-header">
-        <div class="modal-header-icon">
-          <img src="assets/logo-icon.svg" width="34" height="34" alt="">
-        </div>
-        <div>
-          <h2 id="modalTitle">Request a Private Quote</h2>
-          <p>Share a few details and our travel desk will respond on WhatsApp.</p>
-        </div>
-      </div>
-
-      <!-- Service type selector -->
-      <div class="modal-service-tabs">
-        <button type="button" class="mst-btn active" data-service="classic">
-          <i class="fa-solid fa-car-side"></i> Private Cab
-        </button>
-        <button type="button" class="mst-btn" data-service="budget">
-          <i class="fa-solid fa-map-marked-alt"></i> Custom Tour
-        </button>
-        <button type="button" class="mst-btn" data-service="luxury">
-          <i class="fa-solid fa-van-shuttle"></i> Group Travel
-        </button>
-      </div>
-
-      <!-- Form body -->
-      <form class="modal-form" id="modalForm"
-            action="api/submit.php" method="POST">
-        <input type="hidden" name="csrf_token" value="<?php echo h($_SESSION['lead_form_token']); ?>">
-        <input type="hidden" name="package"    id="modalPackageInput" value="classic">
-
-        <div class="mf-row">
-          <div class="mf-group">
-            <label class="mf-label"><i class="fa-solid fa-location-dot"></i> Pickup City</label>
-            <select class="mf-input" name="pickup" required>
-              <option value="">Select pickup city...</option>
-              <?php foreach ($pickup_locations as $loc): ?>
-              <option value="<?php echo h($loc['city']); ?>"><?php echo h($loc['city']); ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <div class="mf-group">
-            <label class="mf-label"><i class="fa-solid fa-flag-checkered"></i> Destination</label>
-            <input class="mf-input" type="text" name="destination"
-                   placeholder="Manali, Shimla, Spiti...">
-          </div>
-        </div>
-
-        <div class="mf-row">
-          <div class="mf-group">
-            <label class="mf-label"><i class="fa-regular fa-calendar"></i> Travel Date</label>
-            <input class="mf-input" type="date" name="travel_date">
-          </div>
-          <div class="mf-group">
-            <label class="mf-label"><i class="fa-solid fa-users"></i> Passengers</label>
-            <input class="mf-input" type="number" name="pax" min="1" max="60" value="2">
-          </div>
-        </div>
-
-        <div class="mf-row">
-          <div class="mf-group">
-            <label class="mf-label"><i class="fa-solid fa-user"></i> Your Name</label>
-            <input class="mf-input" type="text" name="name"
-                   placeholder="Full name" required>
-          </div>
-          <div class="mf-group">
-            <label class="mf-label"><i class="fa-solid fa-phone"></i> Phone Number</label>
-            <input class="mf-input" type="tel" name="phone"
-                   placeholder="+91 XXXXX XXXXX" required>
-          </div>
-        </div>
-
-        <div id="modalError" class="mf-error" hidden></div>
-
-        <div class="modal-actions">
-          <button type="submit" class="modal-submit" id="modalSubmitBtn">
-            <i class="fa-solid fa-paper-plane"></i> Request Quote
-          </button>
-          <button type="button" class="modal-wa-btn" id="modalWaBtn">
-            <i class="fa-brands fa-whatsapp"></i> WhatsApp Concierge
-          </button>
-        </div>
-      </form>
-
-      <!-- Success state (hidden until submit) -->
-      <div class="modal-success" id="modalSuccess" hidden>
-        <div class="ms-icon"><i class="fa-solid fa-circle-check"></i></div>
-        <h3>Request Received</h3>
-        <p>Thanks, <strong id="modalSuccessName">there</strong>. Our travel desk will review your route and respond shortly.</p>
-        <div class="ms-actions">
-          <a href="#" class="ms-wa-link" id="modalSuccessWa" target="_blank" rel="noopener">
-            <i class="fa-brands fa-whatsapp"></i> Continue on WhatsApp
-          </a>
-          <button type="button" class="ms-close-btn" id="modalSuccessClose">
-            Done &nbsp;<i class="fa-solid fa-check"></i>
-          </button>
-        </div>
-      </div>
-
-      <p class="modal-note">
-        <i class="fa-solid fa-shield-halved"></i> Your details stay private and are used only for trip planning.
-      </p>
-    </div>
-  </div>
 
 <?php require 'includes/foot.php'; ?>
 </body>

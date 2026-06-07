@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'agency_phone'     => substr(trim($_POST['agency_phone'] ?? ''), 0, 30),
         'agency_whatsapp'  => preg_replace('/[^0-9]/', '', $_POST['agency_whatsapp'] ?? ''),
         'agency_email'     => filter_var(trim($_POST['agency_email'] ?? ''), FILTER_VALIDATE_EMAIL) ?: '',
-        'admin_theme'      => in_array($_POST['admin_theme'] ?? '', ['dark-gold', 'dark-blue', 'light']) ? $_POST['admin_theme'] : 'dark-gold',
+        'admin_theme'      => ($_POST['admin_theme'] ?? '') === 'light' ? 'light' : 'dark',
     ];
 
     try {
@@ -46,7 +46,7 @@ $res = $conn->query("SELECT setting_key, setting_value FROM settings");
 if ($res) foreach ($res->fetch_all(MYSQLI_ASSOC) as $row) $settings[$row['setting_key']] = $row['setting_value'];
 $conn->close();
 
-$currentTheme = $_SESSION['admin_theme'] ?? ($settings['admin_theme'] ?? 'dark-gold');
+$currentTheme = ($_SESSION['admin_theme'] ?? ($settings['admin_theme'] ?? 'dark')) === 'light' ? 'light' : 'dark';
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -201,27 +201,14 @@ $currentTheme = $_SESSION['admin_theme'] ?? ($settings['admin_theme'] ?? 'dark-g
             <div class="theme-options">
 
               <label class="theme-option">
-                <input type="radio" name="admin_theme" value="dark-gold" <?= $currentTheme === 'dark-gold' ? 'checked' : '' ?>>
-                <div class="theme-preview">
-                  <div class="tp-sidebar tp-dg-s"></div>
-                  <div class="tp-main tp-dg-m"></div>
-                </div>
-                <div class="theme-info">
-                  <div class="theme-name">Dark Gold <span style="font-size:10px;background:rgba(201,168,76,.15);color:var(--accent);padding:2px 7px;border-radius:4px;margin-left:6px">Current</span></div>
-                  <div class="theme-desc">Deep dark background with gold accents</div>
-                </div>
-                <div class="theme-tick"><i class="fas fa-check"></i></div>
-              </label>
-
-              <label class="theme-option">
-                <input type="radio" name="admin_theme" value="dark-blue" <?= $currentTheme === 'dark-blue' ? 'checked' : '' ?>>
+                <input type="radio" name="admin_theme" value="dark" <?= $currentTheme === 'dark' ? 'checked' : '' ?>>
                 <div class="theme-preview">
                   <div class="tp-sidebar tp-db-s"></div>
                   <div class="tp-main tp-db-m"></div>
                 </div>
                 <div class="theme-info">
-                  <div class="theme-name">Dark Blue</div>
-                  <div class="theme-desc">Dark navy background with blue accents</div>
+                  <div class="theme-name">Dark <?= $currentTheme === 'dark' ? '<span style="font-size:10px;background:rgba(56,189,248,.15);color:var(--accent);padding:2px 7px;border-radius:4px;margin-left:6px">Current</span>' : '' ?></div>
+                  <div class="theme-desc">Alpine Frost — midnight navy with frost-blue accents</div>
                 </div>
                 <div class="theme-tick"><i class="fas fa-check"></i></div>
               </label>
@@ -233,8 +220,8 @@ $currentTheme = $_SESSION['admin_theme'] ?? ($settings['admin_theme'] ?? 'dark-g
                   <div class="tp-main tp-lt-m"></div>
                 </div>
                 <div class="theme-info">
-                  <div class="theme-name">Light</div>
-                  <div class="theme-desc">Clean white background with dark sidebar</div>
+                  <div class="theme-name">Light <?= $currentTheme === 'light' ? '<span style="font-size:10px;background:rgba(14,165,233,.15);color:var(--accent);padding:2px 7px;border-radius:4px;margin-left:6px">Current</span>' : '' ?></div>
+                  <div class="theme-desc">Clean white background with a dark navy sidebar</div>
                 </div>
                 <div class="theme-tick"><i class="fas fa-check"></i></div>
               </label>

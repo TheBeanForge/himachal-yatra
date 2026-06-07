@@ -16,9 +16,17 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
             <h3 class="footer-about-heading">Born in the Mountains.<br>Built for the Road.</h3>
             <p>Founded by mountain-road specialists who have driven every major Himachal route in all seasons. Verified drivers, transparent fares and a travel desk that stays reachable from departure to drop. No middlemen — just us, you and the mountains.</p>
             <div class="footer-social">
-              <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-              <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-              <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+              <?php
+                // Real profile URLs come from env vars; unset ones are skipped (no dead links).
+                foreach ([
+                  ['SOCIAL_FACEBOOK',  'facebook-f', 'Facebook'],
+                  ['SOCIAL_INSTAGRAM', 'instagram',  'Instagram'],
+                  ['SOCIAL_YOUTUBE',   'youtube',    'YouTube'],
+                ] as [$env, $icon, $label]):
+                  $url = getenv($env) ?: '';
+                  if ($url === '') continue; ?>
+              <a href="<?php echo h($url); ?>" target="_blank" rel="noopener" aria-label="<?php echo h($label); ?>"><i class="fa-brands fa-<?php echo $icon; ?>"></i></a>
+              <?php endforeach; ?>
               <a href="https://wa.me/<?php echo h($whatsappNumber); ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
             </div>
           </div>
@@ -64,6 +72,10 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
               <i class="fa-solid fa-location-dot"></i>
               <span>Shimla &amp; New Delhi, India</span>
             </div>
+            <div class="footer-trust">
+              <span><i class="fa-solid fa-shield-halved"></i> Verified Drivers</span>
+              <span><i class="fa-solid fa-headset"></i> 24/7 Support</span>
+            </div>
           </div>
 
         </div>
@@ -73,7 +85,7 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
     <div class="container mx-auto px-3">
       <div class="footer-bottom">
         <span>&copy; <?php echo date('Y'); ?> Himachal Yatra Travels. All Rights Reserved.</span>
-        <span><a href="#">Privacy Policy</a> &nbsp;|&nbsp; <a href="#">Terms &amp; Conditions</a></span>
+        <span><a href="privacy.php">Privacy Policy</a> &nbsp;|&nbsp; <a href="terms.php">Terms &amp; Conditions</a></span>
       </div>
     </div>
   </footer>
