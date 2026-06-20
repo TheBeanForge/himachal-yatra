@@ -3,22 +3,7 @@
 <div class="sidebar-overlay d-lg-none" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <nav class="sidebar d-flex flex-column" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-logo"><img src="../assets/logo-icon.svg" alt="" width="38" height="38" style="display:block"></div>
-    <div>
-      <div class="brand-name">HIMACHAL <span>YATRA</span></div>
-      <div class="brand-tagline">Admin Portal</div>
-    </div>
-  </div>
-
-  <!-- View Website — prominent button -->
-  <div class="px-3 pt-3">
-    <a href="../index.php" target="_blank" class="view-site-btn">
-      <i class="fas fa-arrow-up-right-from-square"></i> View Website
-    </a>
-  </div>
-
-  <div class="sidebar-section-label">LEADS</div>
+  <div class="sidebar-section-label" style="padding-top:16px">LEADS</div>
   <ul class="sidebar-nav">
     <?php
       // Single lead inbox = booking_enquiries (shown by enquiries.php).
@@ -91,8 +76,9 @@
   </ul>
 
   <?php if (in_array($_SESSION['admin_user']['role'] ?? '', ['superadmin','admin'])): ?>
-  <div class="sidebar-section-label">ADMIN</div>
-  <ul class="sidebar-nav">
+  <!-- ADMIN section is in the top bar on desktop; shown here only on mobile -->
+  <div class="sidebar-section-label d-lg-none">ADMIN</div>
+  <ul class="sidebar-nav d-lg-none">
     <?php if (($_SESSION['admin_user']['role'] ?? '') === 'superadmin'): ?>
     <li>
       <a href="users.php" class="sidebar-link <?= $cur==='users.php'?'active':'' ?>">
@@ -114,14 +100,28 @@
   <?php endif; ?>
 
   <div class="mt-auto pb-3 px-3">
+    <a href="help.php" class="sidebar-link <?= $cur==='help.php' ? 'active' : '' ?>">
+      <i class="fas fa-circle-question fa-fw"></i> Help &amp; Guide
+    </a>
     <a href="logout.php" class="sidebar-link" style="color:#dc2626">
       <i class="fas fa-right-from-bracket fa-fw"></i> Logout
     </a>
   </div>
 </nav>
 <script>
+// Mobile sidebar toggle — defined here so EVERY admin page has it
+// (previously several pages were missing these and the ☰ button was dead).
+function openSidebar(){
+  document.getElementById('sidebar')?.classList.add('open');
+  document.getElementById('sidebarOverlay')?.classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebarOverlay')?.classList.remove('show');
+}
 document.addEventListener('DOMContentLoaded', function () {
   var sb = document.getElementById('sidebar');
+  if (!sb) return;
   var startX = 0;
   sb.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
   sb.addEventListener('touchend', function (e) {

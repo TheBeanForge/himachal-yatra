@@ -1,4 +1,4 @@
-# Himachal Yatra Travels
+# Himachal Safar
 
 PHP/MySQL tourism website for a Himachal Pradesh travel agency — public marketing site, lead capture form (DB + WhatsApp), and an admin panel for managing leads, photos, users, and audit log.
 
@@ -12,13 +12,13 @@ PHP/MySQL tourism website for a Himachal Pradesh travel agency — public market
 ## Local Setup (XAMPP)
 
 1. Clone into `C:\xampp\htdocs\tourismsite` (or `<your-xampp>/htdocs/tourismsite`).
-2. Start Apache and MySQL from the XAMPP control panel. This project assumes MySQL is on **port 3307** — adjust `api/config.php` if yours runs on 3306.
+2. Start Apache and MySQL from the XAMPP control panel. This project uses MySQL on **port 3306** by default — adjust the DB constants in `includes/vars.php` if your local setup differs.
 3. Import the schema:
    ```
-   mysql -u root -P 3307 < database.sql
+   mysql -u root -P 3306 < database.sql
    ```
    Or open phpMyAdmin and run `database.sql`.
-4. Copy `api/config.example.php` → `api/config.php` and edit the DB creds + agency WhatsApp number if needed. `api/config.php` is git-ignored.
+4. Edit the DB credentials and agency WhatsApp number near the top of `includes/vars.php` if needed.
 5. Visit http://localhost/tourismsite/
 
 ## Admin
@@ -40,11 +40,9 @@ Roles:
   style.css             public-site styles (dark + gold theme)
   script.js             public-site behavior
   includes/
-    vars.php            session + security headers + shared template vars
+    vars.php            DB settings, connection helpers, session + shared vars
     nav.php / foot.php  shared header/footer
   api/
-    config.php          DB connection + helpers (git-ignored)
-    config.example.php  template — copy to config.php
     submit.php          POST endpoint for lead form
     {add,edit,delete}_user.php   superadmin endpoints
     {upload,delete}_photo.php    admin photo endpoints
@@ -59,4 +57,4 @@ Roles:
 - Public lead form: per-session CSRF token + honeypot field.
 - Admin endpoints: session check + per-session CSRF token sent as `X-CSRF-Token` header.
 - Photo upload: MIME-validated via `finfo`, restricted to JPG/PNG/WebP, 5 MB cap, PHP execution disabled in `uploads/` via `.htaccess`.
-- DB credentials live only in `api/config.php` (git-ignored).
+- DB credentials live near the top of `includes/vars.php` so shared hosting deployment does not need a separate config copy step.

@@ -1,148 +1,91 @@
 <?php
 session_start();
 if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 
-// Only superadmin and admin can access settings
 $role = $_SESSION['admin_user']['role'] ?? '';
-if (!in_array($role, ['superadmin', 'admin'])) {
-    header('Location: dashboard.php'); exit;
-}
+if (!in_array($role, ['superadmin', 'admin'])) { header('Location: dashboard.php'); exit; }
 
 $saved = false;
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_admin_csrf();
-
     $fields = [
-        'agency_name'      => substr(trim($_POST['agency_name'] ?? ''), 0, 100),
-        'agency_phone'     => substr(trim($_POST['agency_phone'] ?? ''), 0, 30),
-        'agency_whatsapp'  => preg_replace('/[^0-9]/', '', $_POST['agency_whatsapp'] ?? ''),
-        'agency_email'     => filter_var(trim($_POST['agency_email'] ?? ''), FILTER_VALIDATE_EMAIL) ?: '',
-        'admin_theme'      => ($_POST['admin_theme'] ?? '') === 'light' ? 'light' : 'dark',
+        'agency_name'     => substr(trim($_POST['agency_name'] ?? ''), 0, 100),
+        'agency_phone'    => substr(trim($_POST['agency_phone'] ?? ''), 0, 30),
+        'agency_whatsapp' => preg_replace('/[^0-9]/', '', $_POST['agency_whatsapp'] ?? ''),
+        'agency_email'    => filter_var(trim($_POST['agency_email'] ?? ''), FILTER_VALIDATE_EMAIL) ?: '',
     ];
-
     try {
         $stmt = $conn->prepare('INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
-        foreach ($fields as $key => $value) {
-            $stmt->bind_param('ss', $key, $value);
-            $stmt->execute();
-        }
+        foreach ($fields as $key => $value) { $stmt->bind_param('ss', $key, $value); $stmt->execute(); }
         $stmt->close();
         audit_log('settings_update', 'Agency settings updated');
         $saved = true;
-
-        // Update session theme
-        $_SESSION['admin_theme'] = $fields['admin_theme'];
     } catch (Throwable $e) {
         $error = 'Could not save settings.';
     }
 }
 
-// Load current settings
 $settings = [];
 $res = $conn->query("SELECT setting_key, setting_value FROM settings");
 if ($res) foreach ($res->fetch_all(MYSQLI_ASSOC) as $row) $settings[$row['setting_key']] = $row['setting_value'];
 $conn->close();
 
-$currentTheme = ($_SESSION['admin_theme'] ?? ($settings['admin_theme'] ?? 'dark')) === 'light' ? 'light' : 'dark';
+$csrf = htmlspecialchars(admin_csrf_token());
+$page_title = 'Settings';
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="csrf-token" content="<?= htmlspecialchars(admin_csrf_token()) ?>"/>
-<title>Settings — Himachal Yatra Admin</title>
+<meta name="csrf-token" content="<?= $csrf ?>"/>
+<title>Settings — Himachal Safar Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<link href="assets/admin.css" rel="stylesheet"/>
+<link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet"/>
 <style>
-.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-@media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
+  /* Theme-aware Apple neutrals for the form */
+  :root, [data-theme="dark"] { --ap-hairline: rgba(255,255,255,.09); --ap-input: rgba(255,255,255,.04); --ap-focus: rgba(214,199,161,.20); }
+  [data-theme="light"] { --ap-hairline: rgba(0,0,0,.06); --ap-input: #ffffff; --ap-focus: rgba(184,161,106,.20); }
+  [data-theme="pine"]  { --ap-hairline: rgba(24,64,36,.10); --ap-input: #ffffff; --ap-focus: rgba(62,142,94,.18); }
 
-.settings-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; padding: 28px;
-}
-.settings-card h3 {
-  font-size: 14px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .08em; color: var(--muted);
-  margin-bottom: 22px; display: flex; align-items: center; gap: 8px;
-}
-.settings-card h3 i { color: var(--accent); }
+  .ap-wrap { max-width: 640px; margin: 0 auto; }
+  .ap-h1 { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin: 4px 0 4px; color: var(--ink); }
+  .ap-sub { font-size: 14px; color: var(--muted); margin: 0 0 26px; }
 
-.sf-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
-.sf-label { font-size: 12px; font-weight: 600; color: var(--muted); }
-.sf-input {
-  height: 42px; padding: 0 14px;
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--ink); font-size: 13.5px;
-  font-family: inherit; outline: none; transition: border-color .2s;
-  width: 100%;
-}
-.sf-input:focus { border-color: var(--accent); }
-.sf-input::placeholder { color: var(--muted); }
-
-.save-btn {
-  height: 42px; padding: 0 28px;
-  background: var(--accent); color: #0d0d14;
-  border: none; border-radius: 8px;
-  font: 700 13.5px 'Inter', sans-serif; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 8px;
-  transition: background .2s;
-}
-.save-btn:hover { background: var(--accent-l); }
-
-.flash-ok  { background: rgba(34,197,94,.10); color: #4ade80; border: 1px solid rgba(34,197,94,.20); border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-.flash-err { background: rgba(239,68,68,.10); color: #f87171; border: 1px solid rgba(239,68,68,.20); border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-
-/* Theme selector */
-.theme-options { display: flex; flex-direction: column; gap: 12px; }
-.theme-option {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 16px; border-radius: 10px;
-  border: 1.5px solid var(--border); cursor: pointer;
-  transition: border-color .2s, background .2s;
-  position: relative;
-}
-.theme-option:has(input:checked) {
-  border-color: var(--accent);
-  background: rgba(201,168,76,.06);
-}
-.theme-option input[type=radio] { display: none; }
-.theme-preview {
-  width: 48px; height: 32px; border-radius: 6px;
-  border: 1px solid rgba(255,255,255,.1);
-  flex-shrink: 0; overflow: hidden;
-  display: grid; grid-template-columns: 30% 70%;
-}
-.tp-sidebar { height: 100%; }
-.tp-main    { height: 100%; }
-
-/* Dark Gold */
-.tp-dg-s { background: #0d0d14; }
-.tp-dg-m { background: #161623; }
-/* Dark Blue */
-.tp-db-s { background: #0f172a; }
-.tp-db-m { background: #1e293b; }
-/* Light */
-.tp-lt-s { background: #1e293b; }
-.tp-lt-m { background: #f8fafc; }
-
-.theme-info { flex: 1; }
-.theme-name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
-.theme-desc { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
-.theme-tick {
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid var(--border);
-  display: grid; place-items: center;
-  font-size: 10px; color: transparent;
-  transition: all .2s;
-}
-.theme-option:has(input:checked) .theme-tick {
-  background: var(--accent); border-color: var(--accent); color: #0d0d14;
-}
+  .ap-card {
+    background: var(--surface); border: 1px solid var(--ap-hairline);
+    border-radius: 16px; padding: 30px 30px 26px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .ap-card-title { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 22px; display: flex; align-items: center; gap: 8px; }
+  .ap-card-title i { color: var(--accent); }
+  .ap-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .ap-field label { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+  .ap-field .hint { font-weight: 400; color: var(--muted); }
+  .ap-input {
+    height: 44px; padding: 0 15px; width: 100%;
+    background: var(--ap-input); border: 1px solid var(--ap-hairline);
+    border-radius: 11px; color: var(--ink); font-size: 14px; font-family: 'Inter', sans-serif;
+    outline: none; transition: border-color .18s, box-shadow .18s;
+  }
+  .ap-input::placeholder { color: var(--muted); }
+  .ap-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ap-focus); }
+  .ap-actions { margin-top: 26px; }
+  .ap-save {
+    height: 44px; padding: 0 26px; border: none; border-radius: 11px;
+    background: var(--accent); color: #0d0d14; font: 600 14px 'Inter', sans-serif;
+    cursor: pointer; transition: filter .15s, transform .05s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .ap-save:hover { filter: brightness(1.06); }
+  .ap-save:active { transform: scale(.985); }
+  .ap-flash { border-radius: 11px; padding: 12px 16px; font-size: 13.5px; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 9px; }
+  .ap-flash.ok  { background: rgba(34,197,94,.10); color: #15a34a; border: 1px solid rgba(34,197,94,.20); }
+  .ap-flash.err { background: rgba(239,68,68,.10); color: #dc2626; border: 1px solid rgba(239,68,68,.20); }
 </style>
 </head>
 <body>
@@ -151,101 +94,48 @@ $currentTheme = ($_SESSION['admin_theme'] ?? ($settings['admin_theme'] ?? 'dark'
   <div class="admin-main">
     <?php require_once 'partials/topbar.php'; ?>
     <div class="admin-content">
+      <div class="ap-wrap">
 
-      <?php if ($saved): ?>
-      <div class="flash-ok"><i class="fas fa-check-circle me-2"></i>Settings saved successfully.</div>
-      <?php endif; ?>
-      <?php if ($error): ?>
-      <div class="flash-err"><i class="fas fa-exclamation-circle me-2"></i><?= htmlspecialchars($error) ?></div>
-      <?php endif; ?>
+        <h1 class="ap-h1">Settings</h1>
+        <p class="ap-sub">Manage your agency details. Switch the panel theme from the top-right of the bar above.</p>
 
-      <form method="POST">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_csrf'] ?? '') ?>">
+        <?php if ($saved): ?>
+        <div class="ap-flash ok"><i class="fas fa-circle-check"></i> Settings saved successfully.</div>
+        <?php endif; ?>
+        <?php if ($error): ?>
+        <div class="ap-flash err"><i class="fas fa-circle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
-        <div class="settings-grid">
+        <form method="post" class="ap-card">
+          <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+          <div class="ap-card-title"><i class="fas fa-building"></i> Agency Information</div>
 
-          <!-- Agency Info -->
-          <div class="settings-card">
-            <h3><i class="fas fa-building"></i> Agency Information</h3>
-
-            <div class="sf-group">
-              <label class="sf-label">Agency Name</label>
-              <input class="sf-input" type="text" name="agency_name"
-                     value="<?= htmlspecialchars($settings['agency_name'] ?? '') ?>"
-                     placeholder="Himachal Yatra Travels">
-            </div>
-            <div class="sf-group">
-              <label class="sf-label">Phone Number</label>
-              <input class="sf-input" type="text" name="agency_phone"
-                     value="<?= htmlspecialchars($settings['agency_phone'] ?? '') ?>"
-                     placeholder="+91 98765 43210">
-            </div>
-            <div class="sf-group">
-              <label class="sf-label">WhatsApp Number <span style="color:var(--muted);font-weight:400">(digits only, with country code)</span></label>
-              <input class="sf-input" type="text" name="agency_whatsapp"
-                     value="<?= htmlspecialchars($settings['agency_whatsapp'] ?? '') ?>"
-                     placeholder="919876543210">
-            </div>
-            <div class="sf-group" style="margin-bottom:0">
-              <label class="sf-label">Email Address</label>
-              <input class="sf-input" type="email" name="agency_email"
-                     value="<?= htmlspecialchars($settings['agency_email'] ?? '') ?>"
-                     placeholder="info@himachalyatratravels.com">
-            </div>
+          <div class="ap-field">
+            <label>Agency Name</label>
+            <input class="ap-input" type="text" name="agency_name" value="<?= htmlspecialchars($settings['agency_name'] ?? '') ?>" placeholder="Himachal Safar">
+          </div>
+          <div class="ap-field">
+            <label>Phone Number</label>
+            <input class="ap-input" type="text" name="agency_phone" value="<?= htmlspecialchars($settings['agency_phone'] ?? '') ?>" placeholder="+91 98765 43210">
+          </div>
+          <div class="ap-field">
+            <label>WhatsApp Number <span class="hint">— digits only, with country code</span></label>
+            <input class="ap-input" type="text" name="agency_whatsapp" value="<?= htmlspecialchars($settings['agency_whatsapp'] ?? '') ?>" placeholder="919876543210">
+          </div>
+          <div class="ap-field" style="margin-bottom:0">
+            <label>Email Address</label>
+            <input class="ap-input" type="email" name="agency_email" value="<?= htmlspecialchars($settings['agency_email'] ?? '') ?>" placeholder="info@himachalsafar.com">
           </div>
 
-          <!-- Theme -->
-          <div class="settings-card">
-            <h3><i class="fas fa-palette"></i> Admin Theme</h3>
-
-            <div class="theme-options">
-
-              <label class="theme-option">
-                <input type="radio" name="admin_theme" value="dark" <?= $currentTheme === 'dark' ? 'checked' : '' ?>>
-                <div class="theme-preview">
-                  <div class="tp-sidebar tp-db-s"></div>
-                  <div class="tp-main tp-db-m"></div>
-                </div>
-                <div class="theme-info">
-                  <div class="theme-name">Dark <?= $currentTheme === 'dark' ? '<span style="font-size:10px;background:rgba(56,189,248,.15);color:var(--accent);padding:2px 7px;border-radius:4px;margin-left:6px">Current</span>' : '' ?></div>
-                  <div class="theme-desc">Alpine Frost — midnight navy with frost-blue accents</div>
-                </div>
-                <div class="theme-tick"><i class="fas fa-check"></i></div>
-              </label>
-
-              <label class="theme-option">
-                <input type="radio" name="admin_theme" value="light" <?= $currentTheme === 'light' ? 'checked' : '' ?>>
-                <div class="theme-preview">
-                  <div class="tp-sidebar tp-lt-s"></div>
-                  <div class="tp-main tp-lt-m"></div>
-                </div>
-                <div class="theme-info">
-                  <div class="theme-name">Light <?= $currentTheme === 'light' ? '<span style="font-size:10px;background:rgba(14,165,233,.15);color:var(--accent);padding:2px 7px;border-radius:4px;margin-left:6px">Current</span>' : '' ?></div>
-                  <div class="theme-desc">Clean white background with a dark navy sidebar</div>
-                </div>
-                <div class="theme-tick"><i class="fas fa-check"></i></div>
-              </label>
-
-            </div>
+          <div class="ap-actions">
+            <button type="submit" class="ap-save"><i class="fas fa-check"></i> Save Settings</button>
           </div>
+        </form>
 
-        </div>
-
-        <div style="margin-top:24px">
-          <button type="submit" class="save-btn">
-            <i class="fas fa-save"></i> Save Settings
-          </button>
-        </div>
-
-      </form>
+      </div>
     </div>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
-</script>
 </body>
 </html>

@@ -7,11 +7,11 @@ require_once 'includes/vars.php';
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Privacy Policy | Himachal Yatra Travels</title>
-  <meta name="description" content="How Himachal Yatra Travels collects, uses, and protects the personal information you share when requesting a quote or booking a trip.">
+  <title>Privacy Policy | Himachal Safar</title>
+  <meta name="description" content="How Himachal Safar collects, uses, and protects the personal information you share when requesting a quote or booking a trip.">
   <?php
-    $seoTitle = 'Privacy Policy | Himachal Yatra Travels';
-    $seoDesc  = 'How Himachal Yatra Travels collects, uses, and protects your personal information.';
+    $seoTitle = 'Privacy Policy | Himachal Safar';
+    $seoDesc  = 'How Himachal Safar collects, uses, and protects your personal information.';
     $seoPath  = 'privacy.php';
     $seoCrumb = 'Privacy Policy';
     include __DIR__ . '/includes/seo_head.php';
@@ -21,7 +21,7 @@ require_once 'includes/vars.php';
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=<?php echo @filemtime(__DIR__ . '/style.css'); ?>">
 </head>
 <body data-wa="<?php echo h($whatsappNumber); ?>">
 <?php require 'includes/nav.php'; ?>
@@ -32,7 +32,7 @@ require_once 'includes/vars.php';
         <h1>Privacy Policy</h1>
         <p class="legal-updated">Last updated: <?php echo date('F Y'); ?></p>
 
-        <p>Himachal Yatra Travels ("we", "us") respects your privacy. This policy explains what
+        <p>Himachal Safar ("we", "us") respects your privacy. This policy explains what
         information we collect when you use our website or request a travel quote, and how we use it.</p>
 
         <h2>Information We Collect</h2>

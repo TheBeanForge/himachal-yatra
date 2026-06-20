@@ -3,6 +3,22 @@ $base       = '';
 $activeDest = '';
 require_once 'includes/vars.php';
 
+// Admin-selected homepage hero slideshow photos (up to 5). Empty → Unsplash fallback.
+$heroSlides = array_slice(photos_in_slot($conn ?? null, 'home_hero'), 0, 5);
+
+// Active fleet vehicles (admin-managed, with photos). Empty → hardcoded fallback in the fleet section.
+$dbFleet = [];
+if ($conn instanceof mysqli) {
+    try {
+        $rf = $conn->query("SELECT vehicle_name, photo, seating_capacity FROM vehicles WHERE status='active' ORDER BY daily_rate ASC");
+        if ($rf) $dbFleet = $rf->fetch_all(MYSQLI_ASSOC);
+    } catch (mysqli_sql_exception) {}
+}
+// Only switch the website fleet to the admin's vehicles once at least one has a
+// photo — until then keep the polished default cards so the page never looks bare.
+$fleetHasPhoto = false;
+foreach ($dbFleet as $v) { if (!empty($v['photo'])) { $fleetHasPhoto = true; break; } }
+
 // Load approved reviews (newest first). Falls back to a curated seed array when the table is empty / DB is down.
 $db_reviews = [];
 if ($conn instanceof mysqli) {
@@ -12,6 +28,26 @@ if ($conn instanceof mysqli) {
     } catch (mysqli_sql_exception) {
         // table may not exist yet — fall through to seed data
     }
+}
+
+// FAQ content — rendered in the page below AND emitted as FAQPage structured
+// data for rich snippets (kept in one place so they never drift apart).
+$faqs = [
+  ['Can you plan a complete Himachal trip, not just a cab?', 'Yes. We start with private transport and can help coordinate route timing, sightseeing order, hotel movement, halt planning and multi-city itineraries.'],
+  ['Which Himachal routes do you cover?', 'We regularly cover Shimla, Manali, Dharamshala, Dalhousie, Spiti Valley, Kullu, Kasol, McLeodganj, Khajjiar and custom routes from Delhi, Chandigarh and nearby cities.'],
+  ['How do you suggest the right vehicle?', 'We recommend vehicles based on passenger count, luggage, route length, road conditions and season. Families and longer mountain routes usually work best with SUVs or Tempo Travellers.'],
+  ['Are prices confirmed before booking?', 'Yes. We share the route, vehicle type, fare, inclusions and exclusions before confirmation so there is clarity before your journey starts.'],
+  ['Do drivers know mountain and snow routes?', 'Our drivers are familiar with Himachal hill roads, long transfers, high-altitude routes and seasonal route changes. For snow or Spiti routes, we plan more carefully around access and weather.'],
+];
+$seoFaq = $faqs;
+
+// Honest aggregate rating for rich snippets — only from real approved reviews
+// that are actually shown on the page (avoids Google's fake-review penalties).
+$seoRatingValue = null; $seoRatingCount = 0;
+if (!empty($db_reviews)) {
+    $sum = 0; foreach ($db_reviews as $r) $sum += (int) $r['rating'];
+    $seoRatingCount = count($db_reviews);
+    $seoRatingValue = round($sum / max(1, $seoRatingCount), 1);
 }
 
 // Load per-route photos from routes table
@@ -40,13 +76,13 @@ if ($conn instanceof mysqli) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Himachal Yatra Travels | Private Himachal Cab &amp; Tour Packages</title>
-  <meta name="description" content="Plan private Himachal journeys with Himachal Yatra Travels. Premium cabs, verified mountain drivers, Shimla-Manali packages, Spiti Valley expeditions and tempo travellers.">
-  <meta name="keywords" content="Himachal Yatra Travels, Delhi to Manali cab, Delhi to Shimla taxi, Himachal tour package, Spiti Valley trip, tempo traveller Himachal, Dharamshala cab booking">
+  <title>Himachal Safar | Private Himachal Cab &amp; Tour Packages</title>
+  <meta name="description" content="Plan private Himachal journeys with Himachal Safar. Premium cabs, verified mountain drivers, Shimla-Manali packages, Spiti Valley expeditions and tempo travellers.">
+  <meta name="keywords" content="Himachal Safar, Delhi to Manali cab, Delhi to Shimla taxi, Himachal tour package, Spiti Valley trip, tempo traveller Himachal, Dharamshala cab booking">
   <meta name="robots" content="index, follow">
   <?php
-    $seoTitle = 'Himachal Yatra Travels | Private Himachal Cab & Tour Packages';
-    $seoDesc  = 'Plan private Himachal journeys with Himachal Yatra Travels. Premium cabs, verified mountain drivers, Shimla-Manali packages, Spiti Valley expeditions and tempo travellers.';
+    $seoTitle = 'Himachal Safar | Private Himachal Cab & Tour Packages';
+    $seoDesc  = 'Plan private Himachal journeys with Himachal Safar. Premium cabs, verified mountain drivers, Shimla-Manali packages, Spiti Valley expeditions and tempo travellers.';
     $seoPath  = '';
     include __DIR__ . '/includes/seo_head.php';
   ?>
@@ -57,7 +93,7 @@ if ($conn instanceof mysqli) {
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=<?php echo @filemtime(__DIR__ . '/style.css'); ?>">
 </head>
 <body data-wa="<?php echo h($whatsappNumber); ?>">
 <?php require 'includes/nav.php'; ?>
@@ -66,11 +102,34 @@ if ($conn instanceof mysqli) {
 
     <!-- HERO -->
     <section class="hero-section" id="home">
-      <div class="hero-bg">
-        <img
-          src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1920&q=90"
-          alt="Himachal Pradesh snow-capped mountains Manali"
-          fetchpriority="high" decoding="async" width="1920" height="1080">
+      <div class="hero-bg" aria-hidden="true">
+        <?php if (!empty($heroSlides)): $n = count($heroSlides); ?>
+          <?php foreach ($heroSlides as $i => $s): ?>
+          <div class="hero-slide" style="background-image:url('uploads/photos/<?= h($s['filename']) ?>');<?= $n > 1 ? ' animation-delay:' . ($i * 5) . 's;' : '' ?>"></div>
+          <?php endforeach; ?>
+          <?php if ($n > 1):
+            // Adaptive cross-fade: each slide owns 1/n of an (n×5s) loop with a ~1s fade.
+            $T = $n * 5; $slot = 100 / $n; $fade = 20 / $n; ?>
+          <style>
+          .hero-bg .hero-slide { animation-name: heroFadeDyn; animation-duration: <?= $T ?>s; }
+          @keyframes heroFadeDyn {
+            0% { opacity: 1; }
+            <?= round($slot, 3) ?>% { opacity: 1; }
+            <?= round($slot + $fade, 3) ?>% { opacity: 0; }
+            <?= round(100 - $fade, 3) ?>% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+          </style>
+          <?php else: ?>
+          <style>.hero-bg .hero-slide { animation: none; opacity: 1; }</style>
+          <?php endif; ?>
+        <?php else: ?>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <?php endif; ?>
       </div>
 
       <div class="container mx-auto px-3 hero-content">
@@ -107,7 +166,7 @@ if ($conn instanceof mysqli) {
           <defs>
             <path id="spinCircle" d="M 60,60 m -42,0 a 42,42 0 1,1 84,0 a 42,42 0 1,1 -84,0"/>
           </defs>
-          <text fill="rgba(56,189,248,.80)" font-size="11.5" font-family="Inter,sans-serif" font-weight="700" letter-spacing="3">
+          <text fill="rgba(214,199,161,.82)" font-size="11.5" font-family="Inter,sans-serif" font-weight="700" letter-spacing="3">
             <textPath href="#spinCircle">ADVENTURE · HIMACHAL · TRAVEL · COMFORT · </textPath>
           </text>
         </svg>
@@ -255,40 +314,40 @@ if ($conn instanceof mysqli) {
           <h2 class="section-title">A Simple <span>Concierge Process</span></h2>
           <p class="section-desc">Share the route once. We help you shape the vehicle, timing and itinerary before you confirm.</p>
         </div>
-        <div class="steps-grid">
-          <div class="step-card reveal">
+        <ol class="steps-grid">
+          <li class="step-card reveal">
             <div class="step-num">
-              <i class="fa-solid fa-map-pin"></i>
+              <i class="fa-solid fa-map-pin" aria-hidden="true"></i>
               <span class="step-number">1</span>
             </div>
             <h3>Share Your Plan</h3>
             <p>Tell us pickup city, dates, destination list, group size and hotel preferences.</p>
-          </div>
-          <div class="step-card reveal reveal-delay-1">
+          </li>
+          <li class="step-card reveal reveal-delay-1">
             <div class="step-num">
-              <i class="fa-brands fa-whatsapp"></i>
+              <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
               <span class="step-number">2</span>
             </div>
             <h3>Receive a Clear Quote</h3>
             <p>We suggest the right vehicle and send inclusions, fare and route timing on WhatsApp.</p>
-          </div>
-          <div class="step-card reveal reveal-delay-2">
+          </li>
+          <li class="step-card reveal reveal-delay-2">
             <div class="step-num">
-              <i class="fa-solid fa-handshake"></i>
+              <i class="fa-solid fa-handshake" aria-hidden="true"></i>
               <span class="step-number">3</span>
             </div>
             <h3>Confirm the Details</h3>
             <p>Once confirmed, we assign the vehicle, brief the driver and lock pickup coordination.</p>
-          </div>
-          <div class="step-card reveal reveal-delay-3">
+          </li>
+          <li class="step-card reveal reveal-delay-3">
             <div class="step-num">
-              <i class="fa-solid fa-mountain-sun"></i>
+              <i class="fa-solid fa-mountain-sun" aria-hidden="true"></i>
               <span class="step-number">4</span>
             </div>
             <h3>Travel with Support</h3>
             <p>Your driver and travel desk stay connected through the journey.</p>
-          </div>
-        </div>
+          </li>
+        </ol>
       </div>
     </section>
 
@@ -311,11 +370,11 @@ if ($conn instanceof mysqli) {
               ['Rajesh Sharma',    'New Delhi',  5, '#166534', 'Delhi-Manali',     'Booked Delhi to Manali for our family of 6. The Innova Crysta was spotless, and the driver was experienced with mountain roads. We felt safe throughout the snowfall section near Rohtang.', ''],
               ['Priya Verma',      'Chandigarh', 5, '#b45309', 'Shimla Weekend',   'Went to Shimla for a weekend with 3 friends. Cab arrived early, driver was professional and gave useful local tips for Mall Road and Jakhu Temple. Price was exactly as quoted.', ''],
               ['Sukhwinder Singh', 'Ludhiana',   5, '#1e40af', 'Dharamshala',      'Family trip to Dharamshala and McLeodganj. Driver knew all the best local spots and was very helpful with luggage on steep roads. Kids loved the journey. Highly recommend for Kangra valley visits.', ''],
-              ['Anjali Kapoor',    'Gurugram',   5, '#7c3aed', 'Manali Honeymoon', 'Honeymoon trip to Manali was made perfect by Himachal Yatra. Cab was premium and comfortable. Driver gave us privacy and was always on time. Solang Valley and Rohtang visit were absolutely flawless.', ''],
+              ['Anjali Kapoor',    'Gurugram',   5, '#7c3aed', 'Manali Honeymoon', 'Honeymoon trip to Manali was made perfect by Himachal Safar. Cab was premium and comfortable. Driver gave us privacy and was always on time. Solang Valley and Rohtang visit were absolutely flawless.', ''],
               ['Mohit Agarwal',    'Jaipur',     5, '#0f766e', 'Shimla Leisure',   'Travelled to Shimla with my wife for a leisure trip. Very comfortable journey. Driver was patient with senior passengers and stopped whenever we needed rest breaks. Good service overall.', ''],
               ['Divya Sharma',     'Noida',      5, '#be185d', 'Kasol Trip',       'Group of 8 friends to Kasol in a tempo traveller. The driver knew the Parvati Valley roads perfectly, the booking was quick on WhatsApp, and the ride felt comfortable and safe.', ''],
               ['Harpreet Kaur',    'Amritsar',   5, '#c2410c', 'Dalhousie',        'Dalhousie trip with husband and in-laws was beautifully organized. Innova was clean and fully air-conditioned. Driver showed us Khajjiar (mini Switzerland) which was not even in our plan. Excellent!', ''],
-              ['Vikash Gupta',     'Lucknow',    5, '#166534', 'Spiti Valley',     'Spiti Valley requires serious driving expertise and Himachal Yatra delivered. Our driver navigated narrow mountain roads, river crossings and high-altitude passes with complete confidence. 9-day trip was flawless.', ''],
+              ['Vikash Gupta',     'Lucknow',    5, '#166534', 'Spiti Valley',     'Spiti Valley requires serious driving expertise and Himachal Safar delivered. Our driver navigated narrow mountain roads, river crossings and high-altitude passes with complete confidence. 9-day trip was flawless.', ''],
               ['Sunita Yadav',     'New Delhi',  5, '#b45309', 'Manali 5 Days',    'Booked 5-day Manali package for me and my sister. Everything was arranged — pickup, hotel coordination, sightseeing. Driver was like a local guide, took us to Naggar Castle. Superb experience!', ''],
               ['Arjun Nair',       'Chandigarh', 5, '#1e40af', 'McLeodganj',       'Road trip to McLeodganj with college group. Tempo traveller was fully loaded with gear and still very comfortable. Driver was friendly, on time, and made the 5-hour drive feel short. Highly recommended!', ''],
             ];
@@ -462,7 +521,26 @@ if ($conn instanceof mysqli) {
           Tell us your route, passenger count and luggage. We will recommend the right vehicle before quoting.
         </div>
         <div class="fleet-grid">
-          <?php
+          <?php if ($fleetHasPhoto): ?>
+            <?php foreach ($dbFleet as $v): ?>
+            <article class="fleet-card reveal">
+              <div class="fleet-card-img">
+                <?php if (!empty($v['photo'])): ?>
+                <img src="uploads/photos/<?php echo h($v['photo']); ?>" alt="<?php echo h($v['vehicle_name']); ?> — Himachal cab" loading="lazy" decoding="async" width="900" height="560">
+                <?php else: ?>
+                <div class="fleet-img-placeholder"><i class="fa-solid fa-car-side"></i></div>
+                <?php endif; ?>
+              </div>
+              <div class="fleet-card-body">
+                <h3><?php echo h($v['vehicle_name']); ?></h3>
+                <div class="fleet-meta">
+                  <span class="fleet-tag"><i class="fa-regular fa-user"></i> <?php echo h($v['seating_capacity']); ?></span>
+                  <span class="fleet-tag"><i class="fa-regular fa-snowflake"></i> AC</span>
+                </div>
+              </div>
+            </article>
+            <?php endforeach; ?>
+          <?php else:
           $fleet = [
             ['Swift Dzire',          '1-3 Guests',  'AC', 'Efficient city pickups and short hill transfers', 'https://commons.wikimedia.org/wiki/Special:FilePath/Suzuki%20Dzire%201.2%20GL%202019.jpg?width=900'],
             ['Innova Hycross',       '4-6 Guests',  'AC', 'Premium comfort for families and longer routes',   'https://commons.wikimedia.org/wiki/Special:FilePath/2022%20Toyota%20Kijang%20Innova%20Zenix%20V%20%28front%29.jpg?width=900'],
@@ -484,6 +562,27 @@ if ($conn instanceof mysqli) {
               <div class="fleet-note"><?php echo $car[3]; ?></div>
             </div>
           </article>
+          <?php endforeach; ?>
+          <?php endif; ?>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="faq-area section-pad">
+      <div class="container mx-auto px-3">
+        <div class="section-header reveal">
+          <div class="section-tag"><i class="fa-solid fa-circle-question"></i> FAQ</div>
+          <h2 class="section-title">Himachal Travel <span>Questions</span></h2>
+          <p class="section-desc">Quick answers before you plan your cab, package or private mountain route.</p>
+        </div>
+
+        <div class="faq-list reveal">
+          <?php foreach ($faqs as $i => $f): ?>
+          <details class="faq-item"<?= $i === 0 ? ' open' : '' ?>>
+            <summary><?= h($f[0]) ?></summary>
+            <p><?= h($f[1]) ?></p>
+          </details>
           <?php endforeach; ?>
         </div>
       </div>

@@ -1,8 +1,8 @@
 User-agent: *
 Allow: /
+Allow: /uploads/photos/
 Disallow: /admin/
 Disallow: /api/
 Disallow: /db/
-Disallow: /uploads/
 
-Sitemap: https://himachalyatratravels.com/sitemap.xml
+Sitemap: https://himachalsafar.com/sitemap.xml

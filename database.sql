@@ -1,4 +1,4 @@
--- Himachal Yatra Travels — database setup
+-- Himachal Safar — database setup
 -- Run this in phpMyAdmin or: mysql -u root -p < database.sql
 -- If upgrading an existing install, run the ALTER statements at the bottom of this file.
 
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
   ('agency_whatsapp', '919876543210'),
-  ('agency_name',     'Himachal Yatra Travels'),
+  ('agency_name',     'Himachal Safar'),
   ('agency_email',    'info@himachalyatratravels.com'),
   ('agency_phone',    '+91 98765 43210');
 
@@ -79,6 +79,21 @@ CREATE TABLE IF NOT EXISTS photos (
   role        ENUM('gallery','hero','about','route') NOT NULL DEFAULT 'gallery',
   uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   KEY idx_photos_dest (destination)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Maps photos to named "slots" (purposes). One photo can fill several slots.
+--   home_hero      → homepage hero slideshow (max 5)
+--   {dest}_hero    → a destination's hero image  (max 1)
+--   {dest}_about   → a destination's about image (max 1)
+-- Capacities are enforced in PHP (includes/vars.php); add new purposes by adding a slot key.
+CREATE TABLE IF NOT EXISTS photo_assignments (
+  id        INT AUTO_INCREMENT PRIMARY KEY,
+  photo_id  INT NOT NULL,
+  slot      VARCHAR(40) NOT NULL,
+  position  TINYINT NOT NULL DEFAULT 0,
+  UNIQUE KEY uniq_photo_slot (photo_id, slot),
+  KEY idx_slot (slot),
+  CONSTRAINT fk_pa_photo FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Routes with per-route photo assignment

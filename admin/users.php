@@ -3,7 +3,7 @@ session_start();
 if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
 if ($_SESSION['admin_user']['role'] !== 'superadmin') { header('Location: dashboard.php'); exit; }
 
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 $users   = $conn->query('SELECT id, username, full_name, role, created_at FROM admin_users ORDER BY id ASC')->fetch_all(MYSQLI_ASSOC);
 $conn->close();
 
@@ -15,11 +15,11 @@ $page_title = 'User Management';
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="csrf-token" content="<?= htmlspecialchars(admin_csrf_token()) ?>"/>
-<title>User Management — Himachal Yatra Admin</title>
+<title>User Management — Himachal Safar Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Poppins:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<link href="assets/admin.css" rel="stylesheet"/>
+<link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet"/>
 <style>
 .add-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:28px}
 .add-card h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;margin-bottom:20px;color:var(--ink)}
@@ -34,8 +34,8 @@ $page_title = 'User Management';
 .flash.err{background:rgba(185,28,28,.12);color:#fca5a5;border:1px solid rgba(185,28,28,.25)}
 .role-select{font-size:12px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;outline:none;font-family:inherit;cursor:pointer;background:var(--surface-2);color:var(--ink)}
 .badge-super{background:rgba(147,51,234,.15);color:#c084fc;border:1px solid rgba(147,51,234,.25);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px}
-.btn-pw{background:rgba(14,165,233,.12);color:#7dd3fc;border:1px solid rgba(14,165,233,.20);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
-.btn-pw:hover{background:rgba(14,165,233,.22)}
+.btn-pw{background:rgba(214,199,161,.12);color:#D6C7A1;border:1px solid rgba(214,199,161,.20);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
+.btn-pw:hover{background:rgba(214,199,161,.22)}
 .btn-del-u{background:rgba(185,28,28,.12);color:#fca5a5;border:1px solid rgba(185,28,28,.20);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
 .btn-del-u:hover{background:rgba(185,28,28,.25)}
 .actions-cell{display:flex;align-items:center;gap:8px;flex-wrap:wrap}

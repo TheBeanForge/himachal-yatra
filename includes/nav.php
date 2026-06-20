@@ -10,18 +10,17 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
 <nav class="navbar navbar-expand-lg site-nav sticky-top">
   <div class="container mx-auto px-3">
 
-    <a class="navbar-brand logo" href="<?php echo $home; ?>" aria-label="Himachal Yatra Travels">
+    <a class="navbar-brand logo" href="<?php echo $home; ?>" aria-label="Himachal Safar">
       <span class="logo-icon">
         <img src="<?php echo $base ? '' : ''; ?>assets/logo-icon.svg" alt="" width="34" height="34" aria-hidden="true" style="display:block">
       </span>
       <span class="logo-text">
-        <span class="brand-main">Himachal <span>Yatra</span></span>
+        <span class="brand-main">Himachal <span>Safar</span></span>
         <span class="brand-sub">Travels</span>
       </span>
     </a>
 
     <button class="nav-ham" id="navHam" type="button"
-            data-bs-toggle="collapse" data-bs-target="#mainNav"
             aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
       <span></span><span></span><span></span>
     </button>
@@ -36,8 +35,8 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('routes'); ?>">Routes</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('fleet'); ?>">Fleet</a></li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle <?php echo $activeDest ? 'active' : ''; ?>"
-             href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle js-dropdown-toggle <?php echo $activeDest ? 'active' : ''; ?>"
+             href="#" role="button" aria-haspopup="true" aria-expanded="false">
             Destinations <i class="fa-solid fa-chevron-down nav-chevron"></i>
           </a>
           <ul class="dropdown-menu dest-dropdown">
@@ -59,6 +58,9 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
         </button>
         <button class="theme-btn" data-theme="light" title="Light" aria-label="Light theme" aria-pressed="false">
           <i class="fa-solid fa-sun" aria-hidden="true"></i>
+        </button>
+        <button class="theme-btn" data-theme="pine" title="Pine (forest)" aria-label="Pine forest theme" aria-pressed="false">
+          <i class="fa-solid fa-tree" aria-hidden="true"></i>
         </button>
       </div>
 

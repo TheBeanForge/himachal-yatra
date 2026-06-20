@@ -1,4 +1,4 @@
-# Himachal Yatra Travels — Complete User Journey
+# Himachal Safar — Complete User Journey
 
 ---
 
@@ -29,7 +29,7 @@
 
 ## Site Overview
 
-**Himachal Yatra Travels** is a premium cab and tour service based in Himachal Pradesh. The website serves two audiences:
+**Himachal Safar** is a premium cab and tour service based in Himachal Pradesh. The website serves two audiences:
 
 - **Public visitors** — browse routes, explore destinations, request quotes, and submit reviews
 - **Admin team** — manage incoming leads, moderate reviews, upload gallery photos, and handle team access
@@ -398,13 +398,11 @@ tourismsite/
 ├── database.sql                # Schema + seed data
 │
 ├── includes/
-│   ├── vars.php                # Session init, security headers
+│   ├── vars.php                # DB settings, session init, security headers
 │   ├── nav.php                 # Header navigation
 │   └── foot.php                # Footer
 │
 ├── api/
-│   ├── config.php              # DB connection + helpers (git-ignored)
-│   ├── config.example.php      # Config template
 │   ├── submit.php
 │   ├── submit_review.php
 │   ├── upload_photo.php

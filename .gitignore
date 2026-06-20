@@ -1,6 +1,3 @@
-# PHP config with credentials
-api/config.php
-
 # Uploads
 uploads/*
 !uploads/.htaccess

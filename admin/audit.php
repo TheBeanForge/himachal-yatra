@@ -3,7 +3,7 @@ session_start();
 if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
 if ($_SESSION['admin_user']['role'] !== 'superadmin') { header('Location: dashboard.php'); exit; }
 
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 
 $filter_user   = trim($_GET['user'] ?? '');
 $filter_action = trim($_GET['action'] ?? '');
@@ -50,11 +50,11 @@ $page_title = 'Audit Log';
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Audit Log — Himachal Yatra Admin</title>
+<title>Audit Log — Himachal Safar Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Poppins:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<link href="assets/admin.css" rel="stylesheet"/>
+<link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet"/>
 <style>
 .log-count{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
 </style>

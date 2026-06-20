@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 
 // Check admin auth
 if (empty($_SESSION['admin_user'])) {
@@ -90,7 +90,7 @@ if ($conn instanceof mysqli) {
   <title>Manage Pickup Locations — Admin</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/admin.css">
+  <link rel="stylesheet" href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>">
 </head>
 <body>
 <?php require 'partials/sidebar.php'; ?>

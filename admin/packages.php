@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 
 $csrf = admin_csrf_token();
 $msg  = '';
@@ -69,7 +69,7 @@ $DESTS = [''=>'All / Multi', 'manali'=>'Manali', 'shimla'=>'Shimla', 'dharamshal
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-<link href="assets/admin.css" rel="stylesheet">
+<link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet">
 <style>
 .pkg-table th { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
 .pkg-table td { font-size:13.5px; vertical-align:middle; }

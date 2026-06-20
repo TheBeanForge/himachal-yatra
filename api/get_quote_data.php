@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Cache-Control: public, max-age=120');
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../includes/vars.php';
 
 if (!$conn instanceof mysqli) {
     http_response_code(503);

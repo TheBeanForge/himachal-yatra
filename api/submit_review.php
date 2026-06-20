@@ -3,7 +3,7 @@ declare(strict_types=1);
 session_start();
 header('Content-Type: application/json');
 header('X-Content-Type-Options: nosniff');
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../includes/vars.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -70,6 +70,11 @@ if ($file && ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
     $photo_filename = bin2hex(random_bytes(12)) . '.' . $allowed[$mime];
     if (!move_uploaded_file($file['tmp_name'], $dir . $photo_filename)) {
         $photo_filename = '';   // Don't fail the whole submission for a photo glitch
+    } elseif (!optimize_image_for_website($dir . $photo_filename, $mime, 400 * 1024, 900, 900)) {
+        @unlink($dir . $photo_filename);
+        http_response_code(422);
+        echo json_encode(['success' => false, 'error' => 'Could not optimize photo under 400 KB. Please upload a smaller JPG/WebP image.']);
+        exit;
     }
 }
 

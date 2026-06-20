@@ -1,25 +1,10 @@
-﻿<?php
+<?php
 $base       = 'index.php';
 $activeDest = 'spiti';
 require_once 'includes/vars.php';
-require_once 'api/config.php';
 $db_photos = []; $hero_photo = null; $about_photo = null;
 if ($conn instanceof mysqli) {
-    try {
-        $stmt = $conn->prepare("SELECT filename, caption, role, is_hero, is_about FROM photos WHERE destination = ? ORDER BY sort_order ASC");
-        $stmt->bind_param('s', $activeDest);
-        $stmt->execute();
-        $all_photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-        foreach ($all_photos as $p) {
-            if (!empty($p['is_hero']))        $hero_photo  = $p;
-            elseif (!empty($p['is_about']))   $about_photo = $p;
-            else                              $db_photos[] = $p;
-        }
-        // Fallback: if no role set, use first/second photo
-        if (!$hero_photo  && !empty($all_photos))    $hero_photo  = $all_photos[0];
-        if (!$about_photo && count($all_photos) > 1) $about_photo = $all_photos[1];
-    } catch (mysqli_sql_exception) {}
+    [$hero_photo, $about_photo, $db_photos] = load_dest_photos($conn, $activeDest);
     $conn->close();
 }
 ?><!doctype html>
@@ -27,11 +12,11 @@ if ($conn instanceof mysqli) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spiti Valley Tour &amp; Cab Booking | Himachal Yatra Travels</title>
-  <meta name="description" content="Explore Spiti Valley with Himachal Yatra Travels. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.">
+  <title>Spiti Valley Tour &amp; Cab Booking | Himachal Safar</title>
+  <meta name="description" content="Explore Spiti Valley with Himachal Safar. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.">
   <?php
-    $seoTitle = 'Spiti Valley Tour & Cab Booking | Himachal Yatra Travels';
-    $seoDesc  = 'Explore Spiti Valley with Himachal Yatra Travels. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.';
+    $seoTitle = 'Spiti Valley Tour & Cab Booking | Himachal Safar';
+    $seoDesc  = 'Explore Spiti Valley with Himachal Safar. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.';
     $seoPath  = 'spiti.php';
     $seoCrumb = 'Spiti Valley';
     include __DIR__ . '/includes/seo_head.php';
@@ -41,7 +26,7 @@ if ($conn instanceof mysqli) {
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=<?php echo @filemtime(__DIR__ . '/style.css'); ?>">
 </head>
 <body data-wa="<?php echo h($whatsappNumber); ?>">
 <?php require 'includes/nav.php'; ?>

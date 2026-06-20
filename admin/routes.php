@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 
 // Assign photo to route
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,7 +44,7 @@ $page_title = 'Route Photos';
 <title>Route Photos — Admin</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<link href="assets/admin.css" rel="stylesheet"/>
+<link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet"/>
 <style>
 .routes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
 
@@ -146,7 +146,7 @@ $page_title = 'Route Photos';
   text-transform: uppercase;
 }
 .role-hero  { background: rgba(201,168,76,.9); color: #0d0d14; }
-.role-about { background: rgba(59,130,246,.9);  color: #fff; }
+.role-about { background: rgba(184,161,106,.9);  color: #fff; }
 .role-route { background: rgba(34,197,94,.9);   color: #0d0d14; }
 .picker-remove {
   margin-top: 14px; padding: 8px 16px; border-radius: 8px;

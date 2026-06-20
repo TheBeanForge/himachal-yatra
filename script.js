@@ -1,7 +1,7 @@
 // ── Theme switcher (runs before DOMContentLoaded to avoid flash) ──
 // Only two themes are supported: 'dark' and 'light'. Anything else
 // (e.g. a legacy 'blue' value) falls back to 'dark'.
-const ALLOWED_THEMES = ['dark', 'light'];
+const ALLOWED_THEMES = ['dark', 'light', 'pine'];
 (function () {
   let saved = localStorage.getItem('site-theme');
   if (!ALLOWED_THEMES.includes(saved)) { saved = 'dark'; localStorage.setItem('site-theme', 'dark'); }
@@ -50,13 +50,48 @@ document.addEventListener('DOMContentLoaded', () => {
     nav?.classList.toggle('scrolled', window.scrollY > 60);
   }, { passive: true });
 
-  // ── Custom hamburger animation ──
+  // ── Hamburger toggle (vanilla — works even if Bootstrap's JS fails to load) ──
   const navHam  = document.getElementById('navHam');
   const mainNav = document.getElementById('mainNav');
+  const setMenu = (open) => {
+    if (!navHam || !mainNav) return;
+    mainNav.classList.toggle('show', open);
+    navHam.classList.toggle('open', open);
+    navHam.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
   if (navHam && mainNav) {
-    mainNav.addEventListener('show.bs.collapse', () => navHam.classList.add('open'));
-    mainNav.addEventListener('hide.bs.collapse', () => navHam.classList.remove('open'));
+    navHam.addEventListener('click', () => setMenu(!mainNav.classList.contains('show')));
+    // Tap outside the open menu closes it
+    document.addEventListener('click', (e) => {
+      if (mainNav.classList.contains('show') &&
+          !mainNav.contains(e.target) && !navHam.contains(e.target)) {
+        setMenu(false);
+      }
+    });
   }
+
+  // ── Dropdown toggles (vanilla — no Bootstrap JS dependency) ──
+  document.querySelectorAll('.js-dropdown-toggle').forEach((toggle) => {
+    const parent = toggle.closest('.dropdown');
+    const menu   = parent && parent.querySelector('.dropdown-menu');
+    if (!parent || !menu) return;
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const open = !parent.classList.contains('show');
+      parent.classList.toggle('show', open);
+      menu.classList.toggle('show', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+  // Click outside closes any open dropdown
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.dropdown.show').forEach((d) => {
+      if (d.contains(e.target)) return;
+      d.classList.remove('show');
+      d.querySelector('.dropdown-menu')?.classList.remove('show');
+      d.querySelector('.js-dropdown-toggle')?.setAttribute('aria-expanded', 'false');
+    });
+  });
 
   // ── Smooth scroll for anchor links ──
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
@@ -67,10 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!target) return;
       e.preventDefault();
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      const openMenu = document.querySelector('.navbar-collapse.show');
-      if (openMenu && window.bootstrap) {
-        window.bootstrap.Collapse.getOrCreateInstance(openMenu).hide();
-      }
+      if (mainNav && mainNav.classList.contains('show')) setMenu(false);
     });
   });
 

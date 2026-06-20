@@ -7,7 +7,7 @@ if (PHP_SAPI !== 'cli') {
         exit('Forbidden — run from the CLI or sign in as superadmin.');
     }
 }
-require_once __DIR__ . '/../api/config.php';
+require_once __DIR__ . '/../includes/vars.php';
 if (!$conn instanceof mysqli) die('<p style="color:red;font-family:sans-serif">DB connection failed.</p>');
 
 $queries = [

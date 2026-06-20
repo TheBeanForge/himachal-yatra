@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 $csrf = admin_csrf_token();
 
 // Status update
@@ -43,13 +43,13 @@ $ct=array_column($counts,'c','status');
 $dests=array_column($conn->query("SELECT DISTINCT destination_key FROM tour_packages WHERE destination_key IS NOT NULL AND destination_key!='' ORDER BY destination_key")->fetch_all(MYSQLI_NUM), 0);
 $conn->close();
 $STATUS_LABELS=['new'=>'New','contacted'=>'Contacted','quoted'=>'Quoted','confirmed'=>'Confirmed','closed'=>'Closed'];
-$STATUS_COLORS=['new'=>'#3b82f6','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','confirmed'=>'#22c55e','closed'=>'#6b7280'];
+$STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','confirmed'=>'#22c55e','closed'=>'#6b7280'];
 ?><!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="csrf-token" content="<?=h($csrf)?>"><title>Enquiries — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-<link href="assets/admin.css" rel="stylesheet">
+<link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet">
 <style>
 .enq-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 20px;min-width:110px}
 .enq-stat-val{font-size:1.6rem;font-weight:900;font-family:'Montserrat',sans-serif;color:var(--ink);line-height:1}
@@ -75,7 +75,7 @@ $STATUS_COLORS=['new'=>'#3b82f6','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
 .form-select.admin-input:focus{
   outline:none;border-color:var(--accent);
   background-color:var(--surface-2);color:var(--ink);
-  box-shadow:0 0 0 3px rgba(56,189,248,.18);
+  box-shadow:0 0 0 3px rgba(214,199,161,.18);
 }
 .form-select.admin-input option{background:var(--surface-2);color:var(--ink)}
 .status-sel{font-weight:600}

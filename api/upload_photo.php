@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-require_once 'config.php';
+require_once __DIR__ . '/../includes/vars.php';
 require_admin_csrf();
 
 $allowed_dests = ['manali','shimla','dharamshala','dalhousie','spiti','general'];
@@ -56,6 +56,15 @@ if (!is_dir($upload_dir)) {
 
 if (!move_uploaded_file($file['tmp_name'], $upload_dir . $filename)) {
     echo json_encode(['ok' => false, 'error' => 'Failed to save file']);
+    exit;
+}
+
+// Downscale + recompress to keep pages fast on mobile. Hero images need
+// width, galleries don't — so we cap at 1920px wide. Silently skips if the
+// GD extension isn't available (e.g. a host without it) and keeps the original.
+if (!optimize_image_for_website($upload_dir . $filename, $mime, 400 * 1024, 1600, 1000)) {
+    @unlink($upload_dir . $filename);
+    echo json_encode(['ok' => false, 'error' => 'Could not optimize photo under 400 KB. Please upload a smaller JPG/WebP image.']);
     exit;
 }
 

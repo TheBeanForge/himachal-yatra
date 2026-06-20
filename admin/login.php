@@ -4,7 +4,7 @@ if (!empty($_SESSION['admin_user'])) { header('Location: dashboard.php'); exit; 
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once '../api/config.php';
+    require_once '../includes/vars.php';
 
     // Brute-force throttle: max 5 failed attempts per 15-minute window per session
     $lock = $_SESSION['login_throttle'] ?? ['count' => 0, 'start' => time()];
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin Login — Himachal Yatra Travels</title>
+<title>Admin Login — Himachal Safar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -275,7 +275,7 @@ body{
 }
 .role-chip i{font-size:13px;}
 .role-chip.super{border-color:rgba(201,168,76,.35);color:var(--accent);background:rgba(201,168,76,.10);}
-.role-chip.admin{border-color:rgba(59,130,246,.30);color:#60a5fa;background:rgba(59,130,246,.08);}
+.role-chip.admin{border-color:rgba(214,199,161,.30);color:#D6C7A1;background:rgba(214,199,161,.08);}
 .role-chip.staff{border-color:rgba(255,255,255,.10);color:var(--muted);background:rgba(255,255,255,.04);}
 
 .lf-footer{
@@ -331,7 +331,7 @@ body{
     <div class="l-brand">
       <div class="l-brand-icon"><i class="fa-solid fa-mountain-sun"></i></div>
       <div>
-        <div class="l-brand-name">HIMACHAL <span>YATRA</span></div>
+        <div class="l-brand-name">HIMACHAL <span>SAFAR</span></div>
         <div class="l-brand-tag">Travels · Admin Portal</div>
       </div>
     </div>
@@ -381,7 +381,7 @@ body{
 
     <div class="lf-logo"><i class="fa-solid fa-mountain-sun"></i></div>
     <div class="lf-title">Welcome back</div>
-    <div class="lf-desc">Sign in to your <strong>Himachal Yatra</strong> admin account to manage your agency.</div>
+    <div class="lf-desc">Sign in to your <strong>Himachal Safar</strong> admin account to manage your agency.</div>
 
     <?php if ($error): ?>
     <div class="err-box"><i class="fas fa-circle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
@@ -421,7 +421,7 @@ body{
     </div>
 
     <div class="lf-footer">
-      &copy; <?= date('Y') ?> Himachal Yatra Travels &nbsp;·&nbsp; Secure Admin Portal<br>
+      &copy; <?= date('Y') ?> Himachal Safar &nbsp;·&nbsp; Secure Admin Portal<br>
       Unauthorized access is strictly prohibited.
     </div>
   </div>

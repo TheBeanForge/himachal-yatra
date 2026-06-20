@@ -7,7 +7,7 @@ if (PHP_SAPI !== 'cli') {
         exit('Forbidden — run from the CLI or sign in as superadmin.');
     }
 }
-require_once __DIR__ . '/../api/config.php';
+require_once __DIR__ . '/../includes/vars.php';
 if (!$conn instanceof mysqli) die('<p style="font-family:sans-serif;color:red">DB connection failed.</p>');
 
 $queries = [
@@ -27,6 +27,7 @@ $queries = [
   "CREATE TABLE IF NOT EXISTS vehicles (
     id               INT AUTO_INCREMENT PRIMARY KEY,
     vehicle_name     VARCHAR(100) NOT NULL,
+    photo            VARCHAR(255) NULL,
     seating_capacity VARCHAR(20)  NOT NULL,
     daily_rate       DECIMAL(10,2) NOT NULL DEFAULT 3000.00,
     status           ENUM('active','inactive') DEFAULT 'active'

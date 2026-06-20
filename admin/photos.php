@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
-require_once '../api/config.php';
+require_once '../includes/vars.php';
 
 $dests = ['manali' => 'Manali', 'shimla' => 'Shimla', 'dharamshala' => 'Dharamshala', 'dalhousie' => 'Dalhousie', 'spiti' => 'Spiti Valley', 'general' => 'General / Homepage'];
 $filter_dest = $_GET['dest'] ?? '';
@@ -22,6 +22,27 @@ if ($filter_dest) $stmt->bind_param('s', $filter_dest);
 $stmt->execute();
 $photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+// Slot assignments: photo_id => [slot => true], plus per-slot counts.
+$assign = []; $slot_counts = [];
+if ($ares = $conn->query("SELECT photo_id, slot FROM photo_assignments")) {
+    while ($r = $ares->fetch_assoc()) {
+        $assign[(int)$r['photo_id']][$r['slot']] = true;
+        $slot_counts[$r['slot']] = ($slot_counts[$r['slot']] ?? 0) + 1;
+    }
+}
+
+// ALL photos (unfiltered) → build slot => [photos in order] for the overview panel.
+$allPhotos = [];
+if ($r = $conn->query("SELECT id, filename, destination FROM photos ORDER BY destination, sort_order ASC, id ASC")) {
+    $allPhotos = $r->fetch_all(MYSQLI_ASSOC);
+}
+$slotPhotos = [];
+foreach ($allPhotos as $p) {
+    $pid = (int)$p['id'];
+    if (empty($assign[$pid])) continue;
+    foreach (array_keys($assign[$pid]) as $slot) $slotPhotos[$slot][] = $p;
+}
 $conn->close();
 
 $page_title = 'Photo Gallery';
@@ -31,11 +52,11 @@ $page_title = 'Photo Gallery';
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="csrf-token" content="<?= htmlspecialchars(admin_csrf_token()) ?>"/>
-<title>Photo Gallery — Himachal Yatra Admin</title>
+<title>Photo Gallery — Himachal Safar Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Poppins:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-<link href="assets/admin.css" rel="stylesheet"/>
+<link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet"/>
 <style>
 .upload-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:28px}
 .upload-card h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;margin-bottom:20px;color:var(--ink)}
@@ -65,7 +86,8 @@ $page_title = 'Photo Gallery';
   cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
 .chip:hover{border-color:var(--accent);color:var(--accent)}
 .chip.chip-on-hero {background:rgba(201,168,76,.15);color:var(--accent);border-color:var(--accent)}
-.chip.chip-on-about{background:rgba(59,130,246,.15);color:#60a5fa;border-color:rgba(59,130,246,.45)}
+.chip.chip-on-about{background:rgba(214,199,161,.15);color:#D6C7A1;border-color:rgba(214,199,161,.45)}
+.chip.chip-active{background:rgba(201,168,76,.18);color:var(--accent);border-color:var(--accent)}
 .photo-actions{display:flex;align-items:center;gap:3px;flex-shrink:0}
 .btn-move{background:rgba(201,168,76,.08);color:#e0c46a;border:1px solid rgba(201,168,76,.20);
   border-radius:5px;width:24px;height:24px;cursor:pointer;display:grid;place-items:center;
@@ -96,9 +118,49 @@ $page_title = 'Photo Gallery';
   text-transform:uppercase;letter-spacing:.06em;pointer-events:none;
 }
 .role-badge.hero  { background:rgba(201,168,76,.9);color:#0d0d14; }
-.role-badge.about { background:rgba(59,130,246,.9);color:#fff; }
+.role-badge.about { background:rgba(184,161,106,.9);color:#fff; }
 .role-badge.route { background:rgba(34,197,94,.9);color:#0d0d14; }
-@media(max-width:768px){.upload-form{grid-template-columns:1fr}}
+/* Purpose badges (overlay on each photo) */
+.pbadge{position:absolute;right:8px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;pointer-events:none;color:#0d0d14}
+.pbadge.cover{background:#3b82f6;color:#fff}
+.pbadge.slideshow{background:#e0b84a}
+.pbadge.about{background:#22c55e}
+.pbadge.gallery{background:rgba(120,120,140,.92);color:#fff}
+.pbadge.spare{background:rgba(120,120,140,.5);color:#fff}
+/* "Live on your site" overview panel */
+.ov-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:24px}
+.ov-title{font-family:'Poppins',sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.ov-legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.ov-key{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-weight:600}
+.ov-dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+.ov-row{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid var(--border);flex-wrap:wrap}
+.ov-label{min-width:150px;font-weight:700;font-size:13px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.ov-slots{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ov-slot{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ov-slot small{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+.ov-thumb{width:56px;height:40px;border-radius:6px;object-fit:cover;border:1.5px solid var(--border);display:block}
+/* Clickable "add a photo here" box */
+.ov-add{width:56px;height:40px;border-radius:6px;border:1.5px dashed var(--accent);
+  background:rgba(201,168,76,.08);color:var(--accent);font-size:8.5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.04em;cursor:pointer;display:grid;place-items:center;
+  gap:1px;line-height:1;padding:0;transition:background .15s,transform .1s}
+.ov-add:hover{background:rgba(201,168,76,.22)}
+.ov-add:active{transform:scale(.96)}
+.ov-add i{font-size:11px}
+/* Filled slot that can be replaced by clicking */
+.ov-up{position:relative;padding:0;border:none;background:none;cursor:pointer;display:block;border-radius:6px;line-height:0}
+.ov-up .ov-thumb{display:block}
+.ov-replace{position:absolute;inset:0;display:grid;place-items:center;border-radius:6px;
+  background:rgba(13,13,20,.55);color:#fff;font-size:8.5px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.04em;opacity:0;transition:opacity .15s}
+.ov-up:hover .ov-replace{opacity:1}
+.ov-note{display:flex;align-items:flex-start;gap:7px;font-size:11.5px;line-height:1.5;color:var(--muted);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:14px}
+.ov-note i{color:var(--accent);margin-top:1px}
+.ov-count{font-size:12px;color:var(--muted)}
+.ov-count b{color:var(--ink)}
+@media(max-width:768px){.upload-form{grid-template-columns:1fr}.ov-label{min-width:0;width:100%}}
 </style>
 </head>
 <body>
@@ -135,7 +197,7 @@ $page_title = 'Photo Gallery';
           <div class="form-field">
             <label>Photo</label>
             <label class="file-label" id="fileLabel">
-              <i class="fas fa-image"></i> <span id="fileLabelText">Choose JPG/PNG/WebP (max 5MB)</span>
+              <i class="fas fa-image"></i> <span id="fileLabelText">Choose JPG/PNG/WebP (saved under 400KB)</span>
               <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required onchange="updateLabel(this)">
             </label>
           </div>
@@ -146,6 +208,74 @@ $page_title = 'Photo Gallery';
         </form>
         <div id="uploadMsg" style="margin-top:14px"></div>
       </div>
+
+      <!-- Live overview: what each photo is used for -->
+      <div class="ov-panel">
+        <div class="ov-title"><i class="fas fa-eye" style="color:var(--accent)"></i> Live on your site — what's used where</div>
+        <div class="ov-legend">
+          <span class="ov-key"><span class="ov-dot" style="background:#e0b84a"></span> Slideshow</span>
+          <span class="ov-key"><span class="ov-dot" style="background:#3b82f6"></span> Cover</span>
+          <span class="ov-key"><span class="ov-dot" style="background:#22c55e"></span> About</span>
+          <span class="ov-key"><span class="ov-dot" style="background:rgba(120,120,140,.92)"></span> Gallery (internal)</span>
+        </div>
+        <div class="ov-note">
+          <i class="fas fa-circle-info"></i>
+          <span>Click a <strong>+ Add</strong> box to upload a photo straight into that spot (Slideshow / Cover / About). Hover a filled Cover/About photo and click <strong>Replace</strong> to swap it. New images are uploaded and assigned in one step.</span>
+        </div>
+
+        <!-- Homepage slideshow -->
+        <div class="ov-row">
+          <div class="ov-label"><i class="fas fa-house"></i> Homepage</div>
+          <div class="ov-slots">
+            <?php $hh = $slotPhotos['home_hero'] ?? []; for ($k = 0; $k < 5; $k++): ?>
+            <div class="ov-slot">
+              <?php if (isset($hh[$k])): ?>
+                <img class="ov-thumb" src="../uploads/photos/<?= h($hh[$k]['filename']) ?>" alt="">
+              <?php else: ?>
+                <button type="button" class="ov-add" onclick="pickForSlot('home_hero')" title="Upload a photo into the homepage slideshow"><i class="fas fa-plus"></i> Add</button>
+              <?php endif; ?>
+              <small><?= $k + 1 ?></small>
+            </div>
+            <?php endfor; ?>
+            <span class="ov-count">Slideshow <b><?= count($hh) ?>/5</b></span>
+          </div>
+        </div>
+
+        <!-- Destinations -->
+        <?php foreach (['manali','shimla','dharamshala','dalhousie','spiti'] as $d):
+          $cover = $slotPhotos["{$d}_hero"][0]  ?? null;
+          $abt   = $slotPhotos["{$d}_about"][0] ?? null;
+          $gal   = max(0, ($dest_counts[$d] ?? 0) - ($cover ? 1 : 0) - ($abt ? 1 : 0));
+        ?>
+        <div class="ov-row">
+          <div class="ov-label"><i class="fas fa-location-dot"></i> <?= h($dests[$d]) ?></div>
+          <div class="ov-slots">
+            <div class="ov-slot">
+              <?php if ($cover): ?>
+                <button type="button" class="ov-up" onclick="pickForSlot('<?= $d ?>_hero')" title="Click to replace the cover photo">
+                  <img class="ov-thumb" src="../uploads/photos/<?= h($cover['filename']) ?>" alt=""><span class="ov-replace">Replace</span>
+                </button>
+              <?php else: ?>
+                <button type="button" class="ov-add" onclick="pickForSlot('<?= $d ?>_hero')" title="Upload this destination's cover photo"><i class="fas fa-plus"></i> Add</button>
+              <?php endif; ?>
+              <small>Cover</small>
+            </div>
+            <div class="ov-slot">
+              <?php if ($abt): ?>
+                <button type="button" class="ov-up" onclick="pickForSlot('<?= $d ?>_about')" title="Click to replace the about photo">
+                  <img class="ov-thumb" src="../uploads/photos/<?= h($abt['filename']) ?>" alt=""><span class="ov-replace">Replace</span>
+                </button>
+              <?php else: ?>
+                <button type="button" class="ov-add" onclick="pickForSlot('<?= $d ?>_about')" title="Upload this destination's about photo"><i class="fas fa-plus"></i> Add</button>
+              <?php endif; ?>
+              <small>About</small>
+            </div>
+            <span class="ov-count">Gallery <b><?= $gal ?></b> photo<?= $gal === 1 ? '' : 's' ?></span>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <input type="file" id="slotUpload" accept="image/jpeg,image/png,image/webp" style="display:none">
 
       <!-- Destination Filter Tabs -->
       <div class="dest-tabs">
@@ -159,32 +289,56 @@ $page_title = 'Photo Gallery';
       <?php if (empty($photos)): ?>
       <div class="empty-state"><i class="fas fa-images"></i><p>No photos uploaded yet.</p></div>
       <?php else: ?>
-      <p style="color:var(--muted);font-size:12px;margin-bottom:12px"><i class="fas fa-circle-info"></i> Use the arrows to reorder photos within a destination — earlier photos appear first on the public gallery.</p>
+      <p style="color:var(--muted);font-size:12px;margin-bottom:12px"><i class="fas fa-circle-info"></i> Tick a photo's purpose below (the badge updates instantly). Use the arrows to reorder — earlier photos appear first in the gallery &amp; slideshow.</p>
       <div class="photo-grid" id="photoGrid">
-        <?php foreach ($photos as $i => $p): ?>
-        <div class="photo-card" id="photo-<?= $p['id'] ?>">
+        <?php foreach ($photos as $i => $p):
+          $pid       = (int)$p['id'];
+          $bucket    = $p['destination'];
+          $isHome    = $bucket === 'general';
+          $slotHero  = $isHome ? 'home_hero' : "{$bucket}_hero";
+          $slotAbout = "{$bucket}_about";
+          $onHero    = isset($assign[$pid][$slotHero]);
+          $onAbout   = !$isHome && isset($assign[$pid][$slotAbout]);
+          // Which badge(s) this photo wears
+          $badges = [];
+          if ($isHome) {
+              $badges[] = $onHero ? ['slideshow','Slideshow'] : ['spare','Not used'];
+          } else {
+              if ($onHero)  $badges[] = ['cover','Cover'];
+              if ($onAbout) $badges[] = ['about','About'];
+              if (!$onHero && !$onAbout) $badges[] = ['gallery','Gallery'];
+          }
+        ?>
+        <div class="photo-card" id="photo-<?= $pid ?>">
           <div style="position:relative">
             <img src="../uploads/photos/<?= htmlspecialchars($p['filename']) ?>" alt="<?= htmlspecialchars($p['caption']) ?>" loading="lazy">
             <span class="photo-num"><?= $i + 1 ?></span>
-            <?php if ($p['is_hero']): ?><span class="role-badge hero" style="top:8px;right:8px;left:auto">Hero</span><?php endif; ?>
-            <?php if ($p['is_about']): ?><span class="role-badge about" style="top:<?= $p['is_hero']?'34px':'8px' ?>;right:8px;left:auto">About</span><?php endif; ?>
+            <?php foreach ($badges as $bi => $b): ?>
+            <span class="pbadge <?= $b[0] ?>" style="top:<?= 8 + $bi * 26 ?>px"><?= $b[1] ?></span>
+            <?php endforeach; ?>
           </div>
           <div class="photo-card-body">
             <div class="photo-caption"><?= htmlspecialchars($p['caption'] ?: 'No caption') ?></div>
-            <div class="photo-dest"><?= htmlspecialchars($dests[$p['destination']] ?? $p['destination']) ?></div>
+            <div class="photo-dest"><?= htmlspecialchars($dests[$bucket] ?? $bucket) ?></div>
             <div class="photo-footer">
               <div class="photo-chips">
-                <button class="chip <?= $p['is_hero'] ?'chip-on-hero':'' ?>"
-                  onclick="toggleRole(<?= $p['id'] ?>,'is_hero',this)"
-                  title="Use as hero background">Hero</button>
-                <button class="chip <?= $p['is_about']?'chip-on-about':'' ?>"
-                  onclick="toggleRole(<?= $p['id'] ?>,'is_about',this)"
-                  title="Use in about section">About</button>
+                <?php if ($isHome): ?>
+                <button class="chip <?= $onHero?'chip-active':'' ?>" data-slot="home_hero"
+                  onclick="toggleSlot(<?= $pid ?>,'home_hero',this)"
+                  title="Show in homepage hero slideshow (max 5)">Slideshow</button>
+                <?php else: ?>
+                <button class="chip <?= $onHero?'chip-active':'' ?>" data-slot="<?= $slotHero ?>"
+                  onclick="toggleSlot(<?= $pid ?>,'<?= $slotHero ?>',this)"
+                  title="Use as this destination's cover (banner) photo">Cover</button>
+                <button class="chip <?= $onAbout?'chip-active':'' ?>" data-slot="<?= $slotAbout ?>"
+                  onclick="toggleSlot(<?= $pid ?>,'<?= $slotAbout ?>',this)"
+                  title="Use in this destination's about section">About</button>
+                <?php endif; ?>
               </div>
               <div class="photo-actions">
-                <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'up')" title="Move earlier"><i class="fas fa-arrow-up"></i></button>
-                <button class="btn-move" onclick="reorder(<?= $p['id'] ?>, 'down')" title="Move later"><i class="fas fa-arrow-down"></i></button>
-                <button class="btn-del" onclick="deletePhoto(<?= $p['id'] ?>)" title="Delete"><i class="fas fa-trash"></i></button>
+                <button class="btn-move" onclick="reorder(<?= $pid ?>, 'up')" title="Move earlier"><i class="fas fa-arrow-up"></i></button>
+                <button class="btn-move" onclick="reorder(<?= $pid ?>, 'down')" title="Move later"><i class="fas fa-arrow-down"></i></button>
+                <button class="btn-del" onclick="deletePhoto(<?= $pid ?>)" title="Delete"><i class="fas fa-trash"></i></button>
               </div>
             </div>
           </div>
@@ -205,8 +359,32 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 const csrfHeader = { 'X-CSRF-Token': CSRF };
 
+// ── Upload straight into a slot from the "Live on your site" panel ──
+let _targetSlot = null;
+function pickForSlot(slot) {
+  _targetSlot = slot;
+  const inp = document.getElementById('slotUpload');
+  inp.value = '';
+  inp.click();
+}
+document.getElementById('slotUpload').addEventListener('change', async function () {
+  if (!this.files[0] || !_targetSlot) return;
+  const panel = document.querySelector('.ov-panel');
+  if (panel) { panel.style.opacity = '.5'; panel.style.pointerEvents = 'none'; }
+  const fd = new FormData();
+  fd.append('photo', this.files[0]);
+  fd.append('slot', _targetSlot);
+  try {
+    const res  = await fetch('../api/upload_to_slot.php', { method: 'POST', body: fd, headers: csrfHeader });
+    const data = await res.json();
+    if (data.ok) { location.reload(); return; }
+    alert(data.error || 'Upload failed');
+  } catch { alert('Network error. Please try again.'); }
+  if (panel) { panel.style.opacity = '1'; panel.style.pointerEvents = 'auto'; }
+});
+
 function updateLabel(input) {
-  document.getElementById('fileLabelText').textContent = input.files[0]?.name || 'Choose JPG/PNG/WebP (max 5MB)';
+  document.getElementById('fileLabelText').textContent = input.files[0]?.name || 'Choose JPG/PNG/WebP (saved under 400KB)';
 }
 
 function updatePhotoCount() {
@@ -248,7 +426,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     if (data.ok) {
       msg.innerHTML = '<div class="flash ok"><i class="fas fa-check-circle me-1"></i> Photo uploaded successfully.</div>';
       e.target.reset();
-      document.getElementById('fileLabelText').textContent = 'Choose JPG/PNG/WebP (max 5MB)';
+      document.getElementById('fileLabelText').textContent = 'Choose JPG/PNG/WebP (saved under 400KB)';
       setTimeout(() => location.reload(), 1200);
     } else {
       msg.innerHTML = `<div class="flash err"><i class="fas fa-circle-exclamation me-1"></i> ${data.error || 'Upload failed'}</div>`;
@@ -260,27 +438,22 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
 });
 
-async function toggleRole(id, field, btn) {
-  const isOn  = btn.classList.contains('chip-on-hero') || btn.classList.contains('chip-on-about');
+async function toggleSlot(id, slot, btn) {
+  const isOn   = btn.classList.contains('chip-active');
   const newVal = isOn ? 0 : 1;
   const fd = new FormData();
-  fd.append('id', id); fd.append('field', field); fd.append('value', newVal);
+  fd.append('id', id); fd.append('slot', slot); fd.append('value', newVal);
   btn.disabled = true;
   try {
     const res  = await fetch('../api/set_photo_role.php', { method:'POST', body:fd, headers:csrfHeader });
     const data = await res.json();
     if (data.ok) {
-      const cls = field === 'is_hero' ? 'chip-on-hero' : 'chip-on-about';
-      if (newVal) {
-        // Turn off same role on sibling cards
-        document.querySelectorAll('.chip-on-' + (field==='is_hero'?'hero':'about')).forEach(c => {
-          c.classList.remove('chip-on-hero','chip-on-about');
-        });
-        btn.classList.add(cls);
-      } else {
-        btn.classList.remove(cls);
-      }
-    } else { alert(data.error || 'Could not update.'); }
+      // Reload so the badges and the "Live on your site" overview stay in sync
+      // (e.g. swapping a Cover clears the previous one everywhere at once).
+      location.reload();
+      return;
+    }
+    alert(data.error || 'Could not update.');
   } catch { alert('Network error.'); }
   btn.disabled = false;
 }
