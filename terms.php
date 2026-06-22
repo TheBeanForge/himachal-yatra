@@ -56,7 +56,7 @@ require_once 'includes/vars.php';
         <p>These terms are governed by the laws of India, with jurisdiction in Himachal Pradesh.</p>
 
         <h2>Contact</h2>
-        <p>Questions? Email <a href="mailto:info@himachalyatratravels.com">info@himachalyatratravels.com</a>
+        <p>Questions? Email <a href="mailto:info@himachalsafar.com">info@himachalsafar.com</a>
         or call <a href="tel:<?php echo h($phoneTel); ?>"><?php echo h($phoneDisplay); ?></a>.</p>
 
         <p class="legal-note"><i class="fa-solid fa-circle-info"></i> This is a starting template — please review it with a legal professional before launch.</p>

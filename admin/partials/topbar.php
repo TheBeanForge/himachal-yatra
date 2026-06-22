@@ -35,6 +35,8 @@ $_csrf    = admin_csrf_token();
         <label for="tbth-light" title="Light"><i class="fas fa-sun"></i></label>
         <input type="radio" name="admin_theme" id="tbth-pine"  value="pine"  <?= $_theme==='pine'  ? 'checked' : '' ?>>
         <label for="tbth-pine"  title="Pine"><i class="fas fa-tree"></i></label>
+        <input type="radio" name="admin_theme" id="tbth-sky"   value="sky"   <?= $_theme==='sky'   ? 'checked' : '' ?>>
+        <label for="tbth-sky"   title="Sky (blue &amp; white)"><i class="fas fa-cloud"></i></label>
       </div>
     </form>
     <a href="../index.php" target="_blank" class="topbar-site-btn">

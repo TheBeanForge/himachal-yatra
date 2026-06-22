@@ -79,6 +79,30 @@
 [data-theme="pine"] .sidebar-link.active { background: rgba(62,142,94,.15); }
 [data-theme="pine"] .brand-logo { background: rgba(62,142,94,.12); border-color: rgba(62,142,94,.24); }
 
+/* ── SKY — sky-blue & white ── */
+[data-theme="sky"] {
+  --bg:        #EAF4FD;
+  --sidebar:   #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #E3F0FB;
+  --border:    #CFE2F2;
+  --accent:    #2E90DA;
+  --accent-d:  #1E73B8;
+  --accent-l:  #8FCDF5;
+  --ink:       #0F2A43;
+  --ink-2:     #2C4A66;
+  --muted:     #5B7892;
+  --bs-body-bg:         #EAF4FD;
+  --bs-body-color:      #0F2A43;
+  --bs-border-color:    #CFE2F2;
+  --bs-secondary-color: #5B7892;
+  --bs-emphasis-color: #0F2A43; --bs-emphasis-color-rgb: 15,42,67;
+}
+[data-theme="sky"] .sidebar { box-shadow: 8px 0 30px rgba(20,80,150,.07); }
+[data-theme="sky"] .sidebar-link:hover { background: rgba(46,144,218,.10); }
+[data-theme="sky"] .sidebar-link.active { background: rgba(46,144,218,.15); }
+[data-theme="sky"] .brand-logo { background: rgba(46,144,218,.12); border-color: rgba(46,144,218,.24); }
+
 /* ── FIX: make Bootstrap table & emphasis text follow the admin theme ──
    Bootstrap's .table sets color:var(--bs-table-color) → var(--bs-emphasis-color),
    which defaults to #000. The admin theme set --bs-body-color but not these, so

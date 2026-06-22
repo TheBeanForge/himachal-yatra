@@ -74,7 +74,7 @@ function require_admin_csrf(): void {
 }
 
 function admin_theme(): string {
-  $normalize = fn($t) => in_array($t, ['light', 'pine'], true) ? $t : 'dark';
+  $normalize = fn($t) => in_array($t, ['light', 'pine', 'sky'], true) ? $t : 'dark';
   if (!empty($_SESSION['admin_theme'])) return $normalize($_SESSION['admin_theme']);
   global $conn;
   if (!($conn instanceof mysqli)) $conn = db_connect();

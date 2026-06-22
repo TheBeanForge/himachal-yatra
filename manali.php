@@ -18,6 +18,9 @@ if ($conn instanceof mysqli) {
     $seoTitle = 'Manali Tour Packages & Cab Booking | Himachal Safar';
     $seoDesc  = 'Plan your Manali trip with Himachal Safar. Delhi to Manali. Rohtang Pass, Solang Valley, Hadimba Temple — expert mountain drivers.';
     $seoPath  = 'manali.php';
+    // Per-page social share image = this destination's own hero (falls back to generic default).
+    $SITE_URL = rtrim(getenv('SITE_URL') ?: 'https://himachalsafar.com', '/');
+    if ($hero_photo) $seoImage = $SITE_URL . '/uploads/photos/' . $hero_photo['filename'];
     include __DIR__ . '/includes/seo_head.php';
   ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">

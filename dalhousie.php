@@ -18,6 +18,9 @@ if ($conn instanceof mysqli) {
     $seoTitle = 'Dalhousie Tour Packages & Cab Booking | Himachal Safar';
     $seoDesc  = 'Book Delhi to Dalhousie. Khajjiar (mini Switzerland), Dainkund Peak, Chamera Lake — peaceful hill station with Himachal Safar.';
     $seoPath  = 'dalhousie.php';
+    // Per-page social share image = this destination's own hero (falls back to generic default).
+    $SITE_URL = rtrim(getenv('SITE_URL') ?: 'https://himachalsafar.com', '/');
+    if ($hero_photo) $seoImage = $SITE_URL . '/uploads/photos/' . $hero_photo['filename'];
     include __DIR__ . '/includes/seo_head.php';
   ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">

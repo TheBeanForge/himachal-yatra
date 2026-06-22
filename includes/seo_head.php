@@ -81,6 +81,20 @@ if (!empty($seoRatingValue) && !empty($seoRatingCount)) {
     'worstRating' => '1',
   ];
 }
+// Individual Review markup — only real approved reviews shown on the page.
+if (!empty($seoReviews)) {
+  $agency['review'] = array_map(fn($r) => [
+    '@type'        => 'Review',
+    'author'       => ['@type' => 'Person', 'name' => $r['author']],
+    'reviewRating' => [
+      '@type'       => 'Rating',
+      'ratingValue' => (string) $r['rating'],
+      'bestRating'  => '5',
+      'worstRating' => '1',
+    ],
+    'reviewBody'   => $r['text'],
+  ], $seoReviews);
+}
 echo json_encode($agency, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ?>
 </script>

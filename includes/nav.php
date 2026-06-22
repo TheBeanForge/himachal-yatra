@@ -62,6 +62,9 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
         <button class="theme-btn" data-theme="pine" title="Pine (forest)" aria-label="Pine forest theme" aria-pressed="false">
           <i class="fa-solid fa-tree" aria-hidden="true"></i>
         </button>
+        <button class="theme-btn" data-theme="sky" title="Sky (blue &amp; white)" aria-label="Sky blue and white theme" aria-pressed="false">
+          <i class="fa-solid fa-cloud" aria-hidden="true"></i>
+        </button>
       </div>
 
     </div>

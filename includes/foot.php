@@ -62,11 +62,11 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
             </div>
             <div class="footer-contact-item">
               <i class="fa-brands fa-whatsapp"></i>
-              <span><a href="https://wa.me/<?php echo h($whatsappNumber); ?>" target="_blank" rel="noopener">WhatsApp Concierge</a></span>
+              <span><a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener">WhatsApp Concierge</a></span>
             </div>
             <div class="footer-contact-item">
               <i class="fa-regular fa-envelope"></i>
-              <span>info@himachalyatratravels.com</span>
+              <span><a href="mailto:info@himachalsafar.com">info@himachalsafar.com</a></span>
             </div>
             <div class="footer-contact-item">
               <i class="fa-solid fa-location-dot"></i>
@@ -90,16 +90,25 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
     </div>
   </footer>
 
-  <!-- WhatsApp Float -->
-  <a class="wa-float" href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <!-- WhatsApp Float (pre-chat capture; href is a no-JS fallback) -->
+  <a class="wa-float" href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" data-wa-lead data-source="float">
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 
-  <!-- Mobile CTA -->
+  <!-- Mobile CTA: Call · WhatsApp · Get Quote. The calculator lives only on index.php,
+       so off-homepage the Quote item deep-links to it instead of calling openCalcModal(). -->
   <div class="mobile-cta">
-    <a href="tel:<?php echo h($phoneTel); ?>"><i class="fa-solid fa-phone"></i> Call</a>
-    <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Concierge</a>
+    <a href="tel:<?php echo h($phoneTel); ?>" aria-label="Call us now"><i class="fa-solid fa-phone"></i> Call</a>
+    <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp" data-wa-lead data-source="mobilebar"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+    <?php if (($base ?? '') === ''): ?>
+    <button type="button" onclick="openCalcModal('')" aria-label="Get an instant quote"><i class="fa-solid fa-calculator"></i> Get Quote</button>
+    <?php else: ?>
+    <a href="index.php?calc=" aria-label="Get an instant quote"><i class="fa-solid fa-calculator"></i> Get Quote</a>
+    <?php endif; ?>
   </div>
+
+  <!-- Pre-chat WhatsApp lead popup (site-wide) -->
+  <?php require __DIR__ . '/wa_lead_modal.php'; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="script.js?v=<?php echo @filemtime(__DIR__ . '/../script.js'); ?>" defer></script>

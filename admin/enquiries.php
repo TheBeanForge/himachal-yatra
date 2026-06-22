@@ -20,17 +20,19 @@ if (($_GET['export']??'')==='csv') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="enquiries_'.date('Y-m-d').'.csv"');
     $f=fopen('php://output','w');
-    fputcsv($f,['ID','Date','Name','Mobile','Email','Package','Pickup City','Vehicle','Travelers','Pickup Date','Drop Date','Total (₹)','Status']);
-    foreach($rows as $r) fputcsv($f,[$r['id'],$r['created_at'],$r['customer_name'],$r['mobile'],$r['email']??'',$r['package_name']??'',$r['pickup_city']??'',$r['vehicle_name']??'',$r['travelers'],$r['pickup_date'],$r['drop_date'],number_format((float)$r['estimated_price'],2),$r['status']??'new']);
+    fputcsv($f,['ID','Date','Source','Name','Mobile','Email','Package','Pickup City','Vehicle','Travelers','Pickup Date','Drop Date','Total (₹)','Status']);
+    foreach($rows as $r) fputcsv($f,[$r['id'],$r['created_at'],$r['source']??'calculator',$r['customer_name'],$r['mobile'],$r['email']??'',$r['package_name']??'',$r['pickup_city']??'',$r['vehicle_name']??'',$r['travelers'],$r['pickup_date']??'',$r['drop_date']??'',number_format((float)($r['estimated_price']??0),2),$r['status']??'new']);
     fclose($f); exit;
 }
 
 // Filters
 $status_f  = $_GET['status']??'';
 $dest_f    = trim($_GET['dest']??'');
+$source_f  = $_GET['source']??'';
 $search_f  = trim($_GET['q']??'');
 $where=[]; $params=[]; $types='';
 if(in_array($status_f,['new','contacted','quoted','confirmed','closed'],true)){ $where[]='be.status=?'; $params[]=$status_f; $types.='s'; }
+if(in_array($source_f,['calculator','whatsapp'],true)){ $where[]='be.source=?'; $params[]=$source_f; $types.='s'; }
 if($dest_f){ $where[]='tp.destination_key=?'; $params[]=$dest_f; $types.='s'; }
 if($search_f){ $where[]='(be.customer_name LIKE ? OR be.mobile LIKE ? OR tp.package_name LIKE ?)'; $l="%$search_f%"; $params=array_merge($params,[$l,$l,$l]); $types.='sss'; }
 $wsql=implode(' AND ',$where);
@@ -116,6 +118,11 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
       <option value="">All Destinations</option>
       <?php foreach($dests as $dk):?><option value="<?=h($dk)?>" <?=$dest_f===$dk?'selected':''?>><?=ucfirst($dk)?></option><?php endforeach;?>
     </select>
+    <select name="source" class="form-select admin-input" style="max-width:140px">
+      <option value="">All Sources</option>
+      <option value="calculator" <?=$source_f==='calculator'?'selected':''?>>Calculator</option>
+      <option value="whatsapp"   <?=$source_f==='whatsapp'?'selected':''?>>WhatsApp</option>
+    </select>
     <button class="btn btn-primary-gold btn-sm" type="submit"><i class="fas fa-search"></i> Filter</button>
     <a href="enquiries.php" class="btn btn-sm" style="border:1px solid var(--border);color:var(--muted)">Clear</a>
   </form>
@@ -124,12 +131,12 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
     <div class="table-responsive">
       <table class="table mb-0" style="font-size:13px">
         <thead><tr>
-          <?php foreach(['#','Date','Customer','Package','Trip','Vehicle','Est. Total','Status','Actions'] as $h):?>
+          <?php foreach(['#','Date','Source','Customer','Package','Trip','Vehicle','Est. Total','Status','Actions'] as $h):?>
           <th style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted);white-space:nowrap<?= $h==='Actions'?';text-align:center':'' ?>"><?=$h?></th>
           <?php endforeach;?>
         </tr></thead>
         <tbody>
-        <?php if(!$rows):?><tr><td colspan="9" class="text-center py-5" style="color:var(--muted)">No enquiries found.</td></tr><?php endif;?>
+        <?php if(!$rows):?><tr><td colspan="10" class="text-center py-5" style="color:var(--muted)">No enquiries found.</td></tr><?php endif;?>
         <?php foreach($rows as $r):
           $bd=!empty($r['breakdown_json'])?json_decode($r['breakdown_json'],true):null;
           $st=$r['status']??'new';
@@ -137,6 +144,12 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
         <tr>
           <td style="color:var(--muted);font-size:12px"><?=(int)$r['id']?></td>
           <td style="white-space:nowrap;font-size:12px;color:var(--muted)"><?=date('d M Y',strtotime($r['created_at']))?><br><?=date('h:i A',strtotime($r['created_at']))?></td>
+          <td>
+            <?php $src=$r['source']??'calculator'; $isWa=($src==='whatsapp'); ?>
+            <span class="status-pill" style="background:<?=$isWa?'#25D366':'#B8A16A'?>;color:<?=$isWa?'#06231a':'#1a1a1a'?>">
+              <?=$isWa?'WhatsApp':'Calculator'?>
+            </span>
+          </td>
           <td>
             <div style="font-weight:600;color:var(--ink)"><?=h($r['customer_name'])?></div>
             <div style="font-size:11.5px;color:var(--muted)"><?=h($r['mobile'])?></div>
@@ -147,15 +160,19 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
             <div style="font-size:11.5px;color:var(--muted)"><?=h($r['pickup_city']??'—')?></div>
           </td>
           <td style="white-space:nowrap;font-size:12px">
+            <?php if(!empty($r['pickup_date']) && !empty($r['drop_date'])):?>
             <?=h($r['pickup_date'])?> → <?=h($r['drop_date'])?>
             <div style="color:var(--muted)"><?=(int)$r['travelers']?> travelers</div>
+            <?php else:?><span style="color:var(--muted)">—</span><?php endif;?>
           </td>
           <td style="font-size:12.5px"><?=h($r['vehicle_name']??'—')?></td>
           <td style="font-weight:800;color:var(--lime);font-size:14px;white-space:nowrap">
-            ₹<?=number_format((float)($r['estimated_price']??0),0)?>
+            <?php if($r['estimated_price']!==null && $r['estimated_price']!==''):?>
+            ₹<?=number_format((float)$r['estimated_price'],0)?>
             <?php if($bd):?>
             <div class="bd-preview"><?=$bd['days']??0?> days · ₹<?=number_format($bd['package_cost']??0,0)?> pkg</div>
             <?php endif;?>
+            <?php else:?><span style="color:var(--muted);font-weight:400">—</span><?php endif;?>
           </td>
           <td>
             <select class="status-sel form-select admin-input" data-id="<?=(int)$r['id']?>" style="width:140px;font-size:12px">
@@ -200,11 +217,14 @@ document.querySelectorAll('.status-sel').forEach(sel=>{
 function viewBreakdown(r){
   const bd=r.breakdown_json?JSON.parse(r.breakdown_json):{};
   const fmt=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
+  const srcLabel=(r.source==='whatsapp')?'WhatsApp pre-chat':'Calculator';
+  const dates=(r.pickup_date&&r.drop_date)?`${r.pickup_date} → ${r.drop_date}<br>${r.travelers} travelers`:'—';
   let html=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
     <div><b>Customer</b><br>${r.customer_name}<br>${r.mobile}${r.email?'<br>'+r.email:''}</div>
     <div><b>Trip</b><br>${r.package_name||'—'}<br>From: ${r.pickup_city||'—'}<br>${r.vehicle_name||'—'}</div>
-    <div><b>Dates</b><br>${r.pickup_date} → ${r.drop_date}<br>${r.travelers} travelers</div>
-    <div><b>Submitted</b><br>${new Date(r.created_at).toLocaleString('en-IN')}</div>
+    <div><b>Dates</b><br>${dates}</div>
+    <div><b>Submitted</b><br>${new Date(r.created_at).toLocaleString('en-IN')}<br><span style="color:var(--muted)">${srcLabel}</span></div>
+    ${r.notes?`<div style="grid-column:1/-1"><b>Notes</b><br>${r.notes}</div>`:''}
   </div>`;
   if(Object.keys(bd).length){
     html+=`<hr style="border-color:var(--border)"><b>Price Breakdown</b><table class="table table-sm mt-2" style="font-size:13px">

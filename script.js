@@ -1,7 +1,7 @@
 // ── Theme switcher (runs before DOMContentLoaded to avoid flash) ──
 // Only two themes are supported: 'dark' and 'light'. Anything else
 // (e.g. a legacy 'blue' value) falls back to 'dark'.
-const ALLOWED_THEMES = ['dark', 'light', 'pine'];
+const ALLOWED_THEMES = ['dark', 'light', 'pine', 'sky'];
 (function () {
   let saved = localStorage.getItem('site-theme');
   if (!ALLOWED_THEMES.includes(saved)) { saved = 'dark'; localStorage.setItem('site-theme', 'dark'); }

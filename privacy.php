@@ -61,7 +61,7 @@ require_once 'includes/vars.php';
         <p>You may request access to, correction of, or deletion of your personal data by contacting us.</p>
 
         <h2>Contact</h2>
-        <p>Questions about this policy? Email <a href="mailto:info@himachalyatratravels.com">info@himachalyatratravels.com</a>
+        <p>Questions about this policy? Email <a href="mailto:info@himachalsafar.com">info@himachalsafar.com</a>
         or call <a href="tel:<?php echo h($phoneTel); ?>"><?php echo h($phoneDisplay); ?></a>.</p>
 
         <p class="legal-note"><i class="fa-solid fa-circle-info"></i> This is a starting template — please review it with a legal professional before launch.</p>

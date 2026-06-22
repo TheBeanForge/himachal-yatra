@@ -3,7 +3,7 @@ $base       = '';
 $activeDest = '';
 require_once 'includes/vars.php';
 
-// Admin-selected homepage hero slideshow photos (up to 5). Empty → Unsplash fallback.
+// Admin-selected homepage hero slideshow photos (up to 5). Empty → local seasonal fallback slides.
 $heroSlides = array_slice(photos_in_slot($conn ?? null, 'home_hero'), 0, 5);
 
 // Active fleet vehicles (admin-managed, with photos). Empty → hardcoded fallback in the fleet section.
@@ -43,11 +43,19 @@ $seoFaq = $faqs;
 
 // Honest aggregate rating for rich snippets — only from real approved reviews
 // that are actually shown on the page (avoids Google's fake-review penalties).
-$seoRatingValue = null; $seoRatingCount = 0;
+$seoRatingValue = null; $seoRatingCount = 0; $seoReviews = [];
 if (!empty($db_reviews)) {
     $sum = 0; foreach ($db_reviews as $r) $sum += (int) $r['rating'];
     $seoRatingCount = count($db_reviews);
     $seoRatingValue = round($sum / max(1, $seoRatingCount), 1);
+    // Up to 5 real approved reviews for honest Review rich-snippet markup.
+    foreach (array_slice($db_reviews, 0, 5) as $r) {
+        $seoReviews[] = [
+            'author' => $r['name'],
+            'rating' => (int) $r['rating'],
+            'text'   => $r['review_text'],
+        ];
+    }
 }
 
 // Load per-route photos from routes table
@@ -124,7 +132,7 @@ if ($conn instanceof mysqli) {
           <style>.hero-bg .hero-slide { animation: none; opacity: 1; }</style>
           <?php endif; ?>
         <?php else: ?>
-        <div class="hero-slide"></div>
+        <!-- Local illustrated seasonal fallback slides (spring · summer · autumn · winter). Backgrounds set in style.css. -->
         <div class="hero-slide"></div>
         <div class="hero-slide"></div>
         <div class="hero-slide"></div>
@@ -137,17 +145,20 @@ if ($conn instanceof mysqli) {
           <i class="fa-solid fa-location-dot"></i> Private Himachal Travel Concierge
         </div>
         <h1 class="reveal reveal-delay-1">
-          Private Himachal<br><span class="highlight">Journeys.</span><br>Planned End<br>to End.
+          Explore <span class="highlight">Himachal.</span><br>Leave the Planning to Us.
         </h1>
         <p class="hero-subtitle reveal reveal-delay-2">
-          Premium cabs, verified mountain drivers and curated itineraries across Shimla, Manali, Dharamshala, Dalhousie and Spiti.
+          Private cabs, handpicked routes, local experts, and hassle-free travel experiences.
         </p>
 
         <div class="hero-cta-row reveal reveal-delay-3">
           <button type="button" class="btn-hero-primary" id="openBookingModal">
             <i class="fa-solid fa-calendar-check"></i> Plan My Journey
           </button>
-          <a href="#routes" class="btn-hero-outline">
+          <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener" class="btn-hero-wa" data-wa-lead data-source="hero">
+            <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+          </a>
+          <a href="#routes" class="btn-hero-link">
             <i class="fa-solid fa-route"></i> Explore Routes
           </a>
         </div>
@@ -604,11 +615,11 @@ if ($conn instanceof mysqli) {
               </div>
               <div class="contact-detail">
                 <div class="contact-detail-icon"><i class="fa-brands fa-whatsapp"></i></div>
-                <span><a href="https://wa.me/<?php echo h($whatsappNumber); ?>" target="_blank" rel="noopener">Speak to Travel Concierge</a></span>
+                <span><a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener">Speak to Travel Concierge</a></span>
               </div>
               <div class="contact-detail">
                 <div class="contact-detail-icon"><i class="fa-regular fa-envelope"></i></div>
-                <span>info@himachalyatratravels.com</span>
+                <span><a href="mailto:info@himachalsafar.com">info@himachalsafar.com</a></span>
               </div>
               <div class="contact-detail">
                 <div class="contact-detail-icon"><i class="fa-solid fa-location-dot"></i></div>
@@ -616,13 +627,25 @@ if ($conn instanceof mysqli) {
               </div>
             </div>
           </div>
-          <!-- Right column: the shared booking form (instant quote), embedded inline -->
+          <!-- Right column: CTA that opens the instant-quote popup -->
           <div class="contact-booking">
-            <?php require 'includes/calc_modal.php'; ?>
+            <div class="contact-quote-cta">
+              <div class="cqcta-icon"><i class="fa-solid fa-calculator"></i></div>
+              <h3>Get an Instant Price Estimate</h3>
+              <p>Pick your package, vehicle and dates — see a clear fare breakup in seconds, then submit your enquiry in one tap.</p>
+              <div class="cqcta-actions">
+                <button type="button" class="cqcta-btn" data-open-quote=""><i class="fa-solid fa-bolt"></i> Open Instant Quote</button>
+                <a class="cqcta-wa" href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener" data-wa-lead data-source="contact"><i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp</a>
+              </div>
+              <span class="cqcta-note"><i class="fa-solid fa-lock"></i> No spam · We reply within 24 hours</span>
+            </div>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- Instant-quote popup form + floating button (page-level overlay) -->
+    <?php require 'includes/calc_modal.php'; ?>
 
   </main>
 

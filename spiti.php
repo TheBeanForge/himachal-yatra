@@ -19,6 +19,9 @@ if ($conn instanceof mysqli) {
     $seoDesc  = 'Explore Spiti Valley with Himachal Safar. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.';
     $seoPath  = 'spiti.php';
     $seoCrumb = 'Spiti Valley';
+    // Per-page social share image = this destination's own hero (falls back to generic default).
+    $SITE_URL = rtrim(getenv('SITE_URL') ?: 'https://himachalsafar.com', '/');
+    if ($hero_photo) $seoImage = $SITE_URL . '/uploads/photos/' . $hero_photo['filename'];
     include __DIR__ . '/includes/seo_head.php';
   ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">

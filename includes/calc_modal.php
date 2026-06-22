@@ -1,7 +1,15 @@
 <?php $__csrf = $_SESSION['lead_form_token'] ?? ''; ?>
 
-<div class="cq-inline" id="cqInline">
-  <div class="cq-card" id="cqCard" role="region" aria-label="Instant quote booking form">
+<!-- ═══ QUOTE POPUP MODAL ═══
+     The booking form lives here once. Every "Get Quote / Plan Trip" trigger
+     (hero CTA, route cards, contact button, floating button, ?calc= deep-link)
+     opens it via window.openCalcModal(destKey). -->
+<div class="cq-modal" id="cqModal" aria-hidden="true">
+  <div class="cq-modal-backdrop" data-cq-close></div>
+  <div class="cq-modal-dialog" role="dialog" aria-modal="true" aria-label="Instant quote booking form">
+    <button type="button" class="cq-modal-x" data-cq-close aria-label="Close quote form"><i class="fa-solid fa-xmark"></i></button>
+    <div class="cq-inline" id="cqInline">
+      <div class="cq-card" id="cqCard">
 
     <!-- Header -->
     <div class="cq-header">
@@ -203,23 +211,91 @@
         <h3 class="cq-success-title">Enquiry Submitted!</h3>
         <p class="cq-success-msg">Your enquiry has been submitted successfully. Our team will contact you within 24 hours.</p>
         <div class="cq-success-summary" id="cqSuccessSummary"></div>
-        <button type="button" class="cq-btn-outline cq-mt" id="cqNewBtn">
+
+        <!-- Hot-lead handoff: send the enquiry straight into a WhatsApp chat -->
+        <a class="cq-btn-wa cq-mt" id="cqWaBtn" href="#" target="_blank" rel="noopener">
+          <i class="fa-brands fa-whatsapp"></i> Continue on WhatsApp
+        </a>
+        <a class="cq-btn-outline cq-mt-sm" id="cqCallBtn" href="tel:<?= h($phoneTel) ?>">
+          <i class="fa-solid fa-phone"></i> Call now
+        </a>
+        <p class="cq-footnote cq-mt-sm"><i class="fa-solid fa-clock"></i> Our travel desk usually replies within ~2 hours (9am–9pm).</p>
+
+        <button type="button" class="cq-btn-text cq-mt-sm" id="cqNewBtn">
           <i class="fa-solid fa-rotate-left"></i> Calculate New Estimate
         </button>
       </div>
     </div><!-- /cqStateSuccess -->
 
-  </div>
-</div>
+      </div><!-- /cqCard -->
+    </div><!-- /cqInline -->
+  </div><!-- /cqModal-dialog -->
+</div><!-- /cqModal -->
+
+<!-- Floating "Get Quote" button — lets users open the quote popup from anywhere -->
+<button type="button" class="cq-fab" id="cqFab" aria-label="Get an instant quote">
+  <i class="fa-solid fa-calculator"></i><span>Get Quote</span>
+</button>
 
 <!-- ═══ STYLES ═══ -->
 <style>
-/* Inline (in-page) booking form — fills its column, no modal chrome.
-   The surrounding .contact-card supplies the panel surface/border. */
-.cq-inline { width: 100%; }
+/* ── Quote popup modal ── */
+.cq-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 4vh 1rem;
+}
+.cq-modal.open { display: flex; }
+.cq-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(8,10,14,.72); backdrop-filter: blur(5px);
+  animation: cqFade .25s ease;
+}
+.cq-modal-dialog {
+  position: relative; z-index: 1; margin: auto;
+  width: 100%; max-width: 640px; max-height: 92vh;
+  display: flex; flex-direction: column;
+  background: var(--surf-1); border: 1px solid var(--line);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  animation: cqPop .28s cubic-bezier(.2,.8,.2,1);
+}
+[data-theme="light"] .cq-modal-dialog { background: #faf9f5; }
+@keyframes cqFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cqPop  { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
+.cq-modal-x {
+  position: absolute; top: .85rem; right: .85rem; z-index: 5;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surf-3);
+  color: var(--text-2); cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s, transform .2s;
+}
+.cq-modal-x:hover { background: var(--lime); color: #000; transform: rotate(90deg); }
+
+/* Inline card — fills the dialog; the dialog supplies the panel surface. */
+.cq-inline { width: 100%; overflow-y: auto; }
 .cq-card {
   width: 100%; padding: 0; display: flex; flex-direction: column;
   background: transparent;
+}
+
+/* ── Floating "Get Quote" button ── */
+.cq-fab {
+  position: fixed; right: 24px; bottom: 100px; z-index: 99;
+  display: inline-flex; align-items: center; gap: .5rem;
+  height: 52px; padding: 0 1.2rem; border: none; border-radius: 30px;
+  background: linear-gradient(135deg, var(--lime) 0%, var(--lime-2) 100%);
+  color: #0b0d12; font-family: 'Montserrat',sans-serif; font-weight: 800; font-size: .9rem;
+  cursor: pointer; box-shadow: 0 6px 24px rgba(200,167,93,.42);
+  transition: transform .2s, box-shadow .2s;
+}
+.cq-fab:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(200,167,93,.55); }
+.cq-fab i { font-size: 1rem; }
+@media (max-width: 767px) {
+  /* On mobile the WhatsApp float is hidden and the 3-up bottom CTA bar
+     (Call · WhatsApp · Get Quote) takes over — so hide the FAB entirely. */
+  .cq-fab { display: none; }
 }
 
 /* Header */
@@ -410,6 +486,25 @@
   transition: border-color .2s, color .2s;
 }
 .cq-btn-outline:hover { border-color: var(--lime); color: var(--lime); }
+/* WhatsApp handoff button (success screen) */
+.cq-btn-wa {
+  width: 100%; height: 50px; border: none; border-radius: 11px;
+  background: #25D366; color: #06231a; font-size: .95rem; font-weight: 800;
+  font-family: 'Montserrat',sans-serif; cursor: pointer; text-decoration: none;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  box-shadow: 0 4px 20px rgba(37,211,102,.32); transition: transform .2s, box-shadow .2s;
+}
+.cq-btn-wa:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,211,102,.45); color: #06231a; }
+.cq-btn-wa i { font-size: 1.15rem; }
+/* Low-emphasis text button (e.g. "Calculate New Estimate") */
+.cq-btn-text {
+  width: 100%; height: 40px; border: none; background: transparent;
+  color: var(--muted); font-size: .82rem; font-weight: 600; font-family: 'Inter',sans-serif;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .4rem;
+  transition: color .2s;
+}
+.cq-btn-text:hover { color: var(--lime); }
+.cq-mt-sm { margin-top: .55rem; }
 .cq-btn-spin { display: none; align-items: center; gap: .4rem; }
 .cq-footnote { font-size: .7rem; color: var(--muted); text-align: center; margin: 0; display: flex; align-items: center; justify-content: center; gap: .3rem; }
 .cq-footnote i { color: var(--lime); }
@@ -507,15 +602,36 @@ const stateRes   = document.getElementById('cqStateResult');
 const stateSuc   = document.getElementById('cqStateSuccess');
 const todayStr   = new Date().toISOString().split('T')[0];
 
-/* ── The booking form is now embedded inline in the Contact section.
-     openCalcModal() is kept so existing triggers (hero CTA, route-card
-     "Request Quote", ?calc= deep-link) still work — it scrolls to the
-     form and optionally preselects a destination instead of opening a modal. ── */
+/* ── Conversion config (from PHP) — used to build the post-submit WhatsApp handoff ── */
+const CQ_WA  = "<?= h($whatsappNumber) ?>";
+const CQ_TEL = "<?= h($phoneTel) ?>";
+
+/* ── The booking form lives in a popup modal. openCalcModal(destKey) opens it
+     from any trigger (hero CTA, route-card "Request Quote", contact button,
+     floating button, ?calc= deep-link) and optionally preselects a destination. ── */
+const cqModal = document.getElementById('cqModal');
+
+function openModal(){
+  if(!cqModal) return;
+  cqModal.classList.add('open');
+  cqModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';   // lock background scroll
+  try{ sessionStorage.setItem('cqShown','1'); }catch(e){}  // mark shown so the 5s auto-popup won't re-fire
+}
+function closeModal(){
+  if(!cqModal) return;
+  cqModal.classList.remove('open');
+  cqModal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+
 window.openCalcModal = function(destKey){
   show('form');
   loadData().then(()=>{ if(destKey) preselectDest(destKey); recalc(); });
-  cqInline?.scrollIntoView({behavior:'smooth', block:'start'});
+  openModal();
+  cqInline?.scrollTo({top:0});             // reset scroll to the top of the form
 };
+window.closeCalcModal = closeModal;
 
 function show(state){
   stateForm.hidden = state!=='form';
@@ -852,6 +968,21 @@ function fillSuccess(api){
       <strong class="cq-success-total">${fmtINR(total)}</strong>
     </div>
   `;
+
+  // Build the WhatsApp handoff deep link with the full enquiry context.
+  const waBtn=document.getElementById('cqWaBtn');
+  if(waBtn && CQ_WA){
+    const ref = api.enquiry_id ? `#${api.enquiry_id}` : '';
+    const msg =
+      `Hi Himachal Safar, I just submitted an enquiry${ref?` (Ref ${ref})`:''} and would like to confirm my trip.\n\n`+
+      `• Package: ${api.package||'—'}\n`+
+      `• Pickup: ${api.pickup||'—'}\n`+
+      `• Vehicle: ${api.vehicle||'—'}\n`+
+      `• Dates: ${S.pickup} → ${S.drop}\n`+
+      `• Travelers: ${sn(api.travelers)}\n`+
+      `• Estimated total: ${fmtINR(total)}`;
+    waBtn.href = `https://wa.me/${CQ_WA}?text=${encodeURIComponent(msg)}`;
+  }
 }
 
 /* ── Reset / New Estimate ── */
@@ -871,19 +1002,40 @@ document.getElementById('cqNewBtn').addEventListener('click',()=>{
   show('form');
 });
 
-/* ── Inline init: the form is always visible, so load options &
-     render the live estimate placeholder on page load. ── */
+/* ── Preload options & render the estimate placeholder so the first
+     open is instant. ── */
 show('form');
 loadData().then(recalc);
 
-/* ── Existing CTA triggers scroll to the inline form ── */
-['openBookingModal','heroBookBtn'].forEach(id=>{
+/* ── Close triggers: the ✕ button, backdrop click, and Escape key ── */
+cqModal?.querySelectorAll('[data-cq-close]').forEach(el=>el.addEventListener('click',closeModal));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&cqModal?.classList.contains('open')) closeModal(); });
+
+/* ── Open triggers: hero CTA, floating button, and any [data-open-quote] element ── */
+['openBookingModal','heroBookBtn','cqFab'].forEach(id=>{
   document.getElementById(id)?.addEventListener('click',e=>{e.stopImmediatePropagation();openCalcModal('');},true);
+});
+document.querySelectorAll('[data-open-quote]').forEach(el=>{
+  el.addEventListener('click',e=>{e.preventDefault();openCalcModal(el.getAttribute('data-open-quote')||'');});
 });
 
 /* ── URL auto-open: ?calc=manali ── */
 const _dp=new URLSearchParams(window.location.search).get('calc');
 if(_dp) window.addEventListener('load',()=>setTimeout(()=>openCalcModal(_dp),250));
+
+/* ── Auto-open the quote popup 5s after landing — once per browser session.
+     Skips if a ?calc= deep link already opened it, if the visitor already
+     opened it manually, or if the WhatsApp lead popup is currently open. ── */
+if(!_dp){
+  let already=false; try{ already=sessionStorage.getItem('cqShown')==='1'; }catch(e){}
+  if(!already){
+    setTimeout(()=>{
+      let shown=false; try{ shown=sessionStorage.getItem('cqShown')==='1'; }catch(e){}
+      const waOpen=document.getElementById('wlModal')?.classList.contains('open');
+      if(!shown && !cqModal?.classList.contains('open') && !waOpen) openCalcModal('');
+    }, 5000);
+  }
+}
 
 })();
 </script>

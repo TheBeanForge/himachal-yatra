@@ -10,7 +10,7 @@ if (empty($_SESSION['admin_user']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 require_admin_csrf();
 
-$theme = in_array($_POST['admin_theme'] ?? '', ['light', 'pine'], true) ? $_POST['admin_theme'] : 'dark';
+$theme = in_array($_POST['admin_theme'] ?? '', ['light', 'pine', 'sky'], true) ? $_POST['admin_theme'] : 'dark';
 
 if ($conn instanceof mysqli) {
     $stmt = $conn->prepare('INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');

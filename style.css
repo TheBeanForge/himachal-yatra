@@ -224,6 +224,7 @@
 /* ── Light: Mobile CTA ── */
 [data-theme="light"] .mobile-cta { background: #fff; border-color: rgba(0,0,0,.10); }
 [data-theme="light"] .mobile-cta a { color: #2C2C2E; }
+[data-theme="light"] .mobile-cta a:first-child { color: #fff; } /* dark Call button keeps light text */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; scroll-padding-top: 90px; }
@@ -464,8 +465,8 @@ body.bright-bg .brand-sub  { color: rgba(20,24,42,.55); }
 }
 .hero-bg { position: absolute; inset: 0; z-index: 0; }
 
-/* ── Hero cross-fade slideshow: 5 images · 25s loop · ~5s each ──
-   Image sources live below in :nth-child rules — swap those URLs only. */
+/* ── Hero cross-fade slideshow: 4 illustrated seasonal images · 20s loop · ~5s each ──
+   Used only as the fallback when no admin home_hero photos are set. */
 .hero-slide {
   position: absolute; inset: 0;
   background-size: cover;
@@ -473,23 +474,21 @@ body.bright-bg .brand-sub  { color: rgba(20,24,42,.55); }
   background-repeat: no-repeat;
   opacity: 0;                       /* hidden until its slot; slide 1 starts at 1 via the 0% keyframe */
   will-change: opacity;
-  animation: heroFade 25s linear infinite;
+  animation: heroFade 20s linear infinite;
 }
-/* Slide 1 = your existing high-res Manali shot (verified).
-   Slides 2–5 = high-res placeholders — replace with your own Himachal images. */
-.hero-slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1920&q=80'); animation-delay: 0s;  }
-.hero-slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1605640840605-14ac1855827b?auto=format&fit=crop&w=1920&q=80'); animation-delay: 5s;  }
-.hero-slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1571536802807-30451e3955d8?auto=format&fit=crop&w=1920&q=80'); animation-delay: 10s; }
-.hero-slide:nth-child(4) { background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=80'); animation-delay: 15s; }
-.hero-slide:nth-child(5) { background-image: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1920&q=80'); animation-delay: 20s; }
+/* Local illustrated seasonal fallback art (spring · summer · autumn · winter). */
+.hero-slide:nth-child(1) { background-image: url('assets/photos/hero-spring.png'); animation-delay: 0s;  }
+.hero-slide:nth-child(2) { background-image: url('assets/photos/hero-summer.png'); animation-delay: 5s;  }
+.hero-slide:nth-child(3) { background-image: url('assets/photos/hero-autumn.png'); animation-delay: 10s; }
+.hero-slide:nth-child(4) { background-image: url('assets/photos/hero-winter.png'); animation-delay: 15s; }
 
 /* One slide owns each 5s window; the 1s overlaps create the cross-fade
-   and the 96%→100% fade-in wraps the loop with no blank frame. */
+   and the 95%→100% fade-in wraps the loop with no blank frame. */
 @keyframes heroFade {
   0%   { opacity: 1; }   /* fully visible at the start of its 5s slot */
-  20%  { opacity: 1; }   /* hold through the slot (≈5s)               */
-  24%  { opacity: 0; }   /* ~1s cross-fade out to the next image      */
-  96%  { opacity: 0; }   /* stay hidden for the rest of the 25s loop  */
+  25%  { opacity: 1; }   /* hold through the slot (≈5s)               */
+  30%  { opacity: 0; }   /* ~1s cross-fade out to the next image      */
+  95%  { opacity: 0; }   /* stay hidden for the rest of the 20s loop  */
   100% { opacity: 1; }   /* ~1s fade back in, wrapping seamlessly     */
 }
 /* Accessibility: hold a single image for users who avoid motion. */
@@ -564,6 +563,29 @@ body.bright-bg .brand-sub  { color: rgba(20,24,42,.55); }
   transition: border-color .2s, background .2s, color .2s;
 }
 .btn-hero-outline:hover { color: #0d0d14; background: #fff; border-color: #fff; }
+/* Hero WhatsApp CTA (secondary) */
+.btn-hero-wa {
+  display: inline-flex; align-items: center; gap: 9px;
+  height: 54px; padding: 0 28px;
+  background: #25D366; color: #06231a;
+  border: none; border-radius: 7px;
+  font: 800 13px 'Inter', sans-serif; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 8px 28px rgba(37,211,102,.30);
+  transition: transform .2s, box-shadow .2s, background .2s;
+}
+.btn-hero-wa:hover { color: #06231a; background: #1fbe5b; transform: translateY(-2px); box-shadow: 0 10px 36px rgba(37,211,102,.42); }
+.btn-hero-wa i { font-size: 16px; }
+/* Hero tertiary text link (Explore Routes) */
+.btn-hero-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 54px; padding: 0 10px;
+  background: transparent; color: rgba(255,255,255,.8);
+  border: none; text-decoration: none;
+  font: 600 13px 'Inter', sans-serif; letter-spacing: .04em;
+  transition: color .2s;
+}
+.btn-hero-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
 
 /* Booking Widget */
 .booking-widget {
@@ -1347,10 +1369,44 @@ body.bright-bg .brand-sub  { color: rgba(20,24,42,.55); }
 .contact-form-wrap { padding: 52px 40px; background: var(--surf-3); }
 .contact-form-wrap h3 { font-size: 20px; font-weight: 700; color: var(--charcoal); margin-bottom: 24px; }
 
-/* Right column hosts the inline booking form; the .contact-card supplies the
-   panel surface, so the host itself carries no padding/background of its own. */
-.contact-booking { padding: 0; display: flex; }
-.contact-booking .cq-card { width: 100%; }
+/* Right column hosts the quote CTA that opens the popup booking form. */
+.contact-booking { display: flex; padding: 2.5rem; }
+.contact-quote-cta {
+  display: flex; flex-direction: column; align-items: flex-start;
+  justify-content: center; gap: .9rem; margin: auto; width: 100%; max-width: 420px;
+}
+.cqcta-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: var(--gold-light); border: 1px solid rgba(200,167,93,.22);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--lime); font-size: 1.4rem;
+}
+.contact-quote-cta h3 {
+  font-family: 'Montserrat',sans-serif; font-size: 1.45rem; font-weight: 900;
+  color: var(--charcoal); margin: 0; line-height: 1.2;
+}
+.contact-quote-cta p { color: var(--text-2); font-size: .92rem; line-height: 1.6; margin: 0; }
+.cqcta-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .4rem; }
+.cqcta-wa {
+  height: 52px; padding: 0 1.4rem; border: none; border-radius: 12px;
+  background: #25D366; color: #06231a;
+  font-family: 'Montserrat',sans-serif; font-weight: 800; font-size: .9rem;
+  cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: .5rem;
+  box-shadow: 0 4px 20px rgba(37,211,102,.28); transition: transform .2s, box-shadow .2s, background .2s;
+}
+.cqcta-wa:hover { color: #06231a; background: #1fbe5b; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,211,102,.42); }
+.cqcta-wa i { font-size: 1.05rem; }
+.cqcta-btn {
+  height: 52px; padding: 0 1.6rem; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--lime) 0%, var(--lime-2) 100%);
+  color: #0b0d12; font-family: 'Montserrat',sans-serif; font-weight: 900; font-size: .95rem;
+  cursor: pointer; display: inline-flex; align-items: center; gap: .5rem;
+  box-shadow: 0 4px 20px rgba(200,167,93,.28); transition: transform .2s, box-shadow .2s;
+}
+.cqcta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(200,167,93,.42); }
+.cqcta-note { font-size: .75rem; color: var(--muted); display: flex; align-items: center; gap: .35rem; }
+.cqcta-note i { color: var(--lime); }
 #inquiryForm {
   display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
 }
@@ -1778,16 +1834,18 @@ body.bright-bg .brand-sub  { color: rgba(20,24,42,.55); }
   .wa-float { display: none; }
   .mobile-cta {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 120;
-    display: grid; grid-template-columns: 1fr 1fr;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
     box-shadow: 0 -4px 20px rgba(0,0,0,.4);
   }
-  .mobile-cta a {
+  .mobile-cta a, .mobile-cta button {
     display: flex; align-items: center; justify-content: center;
-    gap: 8px; min-height: 56px; color: #fff;
-    font: 700 14px 'Inter', sans-serif;
+    gap: 6px; min-height: 56px; width: 100%;
+    border: none; cursor: pointer; color: #fff;
+    white-space: nowrap; font: 700 12.5px 'Inter', sans-serif;
   }
-  .mobile-cta a:first-child { background: #161623; border-right: 1px solid rgba(255,255,255,.08); }
-  .mobile-cta a:last-child { background: var(--lime); color: #0d0d14 !important; }
+  .mobile-cta a:first-child  { background: #161623; border-right: 1px solid rgba(255,255,255,.08); }
+  .mobile-cta a:nth-child(2) { background: #25D366; color: #06231a; border-right: 1px solid rgba(0,0,0,.10); }
+  .mobile-cta a:last-child, .mobile-cta button:last-child { background: var(--lime); color: #0d0d14; }
   .modal-card { padding: 22px 16px 18px; }
 }
 @media (max-width: 480px) {
@@ -2478,8 +2536,163 @@ body.bright-bg .brand-sub  { color: rgba(20,24,42,.55); }
 /* Mobile CTA + theme switcher + faq */
 [data-theme="pine"] .mobile-cta { background: #F4F8F1; border-color: rgba(24,64,36,.12); }
 [data-theme="pine"] .mobile-cta a { color: #243A2C; }
+[data-theme="pine"] .mobile-cta a:first-child { color: #fff; } /* dark Call button keeps light text */
 [data-theme="pine"] .theme-switcher { background: rgba(24,64,36,.06); }
 [data-theme="pine"] .theme-btn { color: rgba(24,40,30,.45); }
 [data-theme="pine"] .theme-btn:hover { color: var(--lime); background: rgba(24,64,36,.07); }
 [data-theme="pine"] .theme-btn.active { background: var(--lime); color: #fff; }
 [data-theme="pine"] .faq-area { background: var(--surf-1); }
+
+/* ════════════════════════════════════════════════════════════════
+   SKY — sky-blue & white (light surfaces, deep-navy text, sky-blue accent)
+   Mirrors the pine/light theme surface area. All tokens below.
+   ════════════════════════════════════════════════════════════════ */
+[data-theme="sky"] {
+  --lime:       #2E90DA;   /* sky-blue accent */
+  --lime-2:     #1E73B8;
+  --lime-3:     #5CB3F0;
+  --gold-light: rgba(46,144,218,.10);
+  --charcoal:   #0F2A43;   /* deep navy text */
+  --text-2:     #2C4A66;
+  --muted:      #5B7892;
+  --line:       rgba(13,60,110,.12);
+  --shadow-sm:  0 1px 6px rgba(13,60,110,.08);
+  --shadow:     0 10px 34px rgba(13,60,110,.12);
+  --shadow-lg:  0 24px 70px rgba(13,60,110,.16);
+  --radius:     10px;
+  --radius-sm:  8px;
+  --surf-1: #EAF4FD;   /* light sky page background */
+  --surf-2: #ffffff;   /* white panel */
+  --surf-3: #DCECFA;
+  --surf-4: #F0F7FE;
+  --cream:       #ffffff;
+  --green-light: rgba(46,144,218,.10);
+  --header-fg:        #103049;
+  --header-fg-faint:  #5B7892;
+  --header-fg-strong: #062033;
+  --header-accent:    var(--lime);
+  --header-ham:       #103049;
+  --header-shadow:    none;
+  --header-scrim:     none;
+  /* Glass tokens (opaque white-blue panels, soft blue shadow) */
+  --glass-grad:   linear-gradient(180deg, rgba(255,255,255,.94) 0%, rgba(232,243,253,.84) 100%);
+  --glass-brd:    1px solid rgba(30,115,184,.14);
+  --glass-sheen:  linear-gradient(160deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 60%);
+  --glass-fallback: var(--surf-2);
+  --card-shadow:  0 14px 36px rgba(20,80,150,.12), inset 0 1px 0 rgba(255,255,255,.8);
+  --card-shadow-hover: 0 22px 52px rgba(20,80,150,.18), inset 0 1px 0 rgba(255,255,255,.95);
+  --card-radius:  24px;
+}
+[data-theme="sky"] body { color: var(--charcoal); background: var(--surf-1); }
+
+[data-theme="sky"] .site-nav { background: rgba(244,250,255,.96); border-bottom: 1px solid rgba(13,60,110,.10); }
+[data-theme="sky"] .site-nav.scrolled { background: rgba(244,250,255,.98); box-shadow: 0 2px 12px rgba(13,60,110,.10); }
+[data-theme="sky"] .site-nav .navbar-collapse.show { background: rgba(244,250,255,.99); }
+[data-theme="sky"] .nav-link { color: #1B3A57 !important; }
+[data-theme="sky"] .nav-link:hover, [data-theme="sky"] .nav-link.active { color: var(--lime) !important; }
+[data-theme="sky"] .navbar-brand .brand-main { color: #0F2A43; }
+[data-theme="sky"] .navbar-brand .brand-main span { color: var(--lime); }
+[data-theme="sky"] .dest-dropdown { background: #fff !important; border: 1px solid rgba(13,60,110,.12) !important; box-shadow: 0 8px 24px rgba(13,60,110,.12); }
+[data-theme="sky"] .dest-dropdown .dropdown-item { color: #1B3A57; }
+[data-theme="sky"] .dest-dropdown .dropdown-item:hover { background: var(--gold-light); color: var(--lime); }
+[data-theme="sky"] .nav-ham span { background: #0F2A43; }
+
+[data-theme="sky"] .section-title { color: #0F2A43; }
+[data-theme="sky"] .section-title span { color: var(--lime); }
+[data-theme="sky"] .section-tag { color: var(--lime); border-color: rgba(46,144,218,.28); background: rgba(46,144,218,.09); }
+[data-theme="sky"] .section-desc { color: #2C4A66; }
+[data-theme="sky"] .section-label { color: var(--lime); }
+
+[data-theme="sky"] .booking-widget { background: rgba(255,255,255,.97); border-color: rgba(13,60,110,.12); }
+[data-theme="sky"] .booking-tab-btn { color: #2C4A66; }
+[data-theme="sky"] .booking-field label { color: #2C4A66; }
+[data-theme="sky"] .booking-field select, [data-theme="sky"] .booking-field input { background: #EAF4FD; border-color: rgba(13,60,110,.16); color: #0F2A43; }
+[data-theme="sky"] .booking-field select::placeholder, [data-theme="sky"] .booking-field input::placeholder { color: #7C93A8; }
+[data-theme="sky"] .hero-trust-item { color: rgba(255,255,255,.85); }
+
+[data-theme="sky"] .why-card { background: #fff; border-color: rgba(13,60,110,.10); }
+[data-theme="sky"] .why-card h3 { color: #0F2A43; }
+[data-theme="sky"] .why-card p { color: #2C4A66; }
+
+[data-theme="sky"] .stats-band { background: transparent; }
+[data-theme="sky"] .stat-item { border-color: rgba(13,60,110,.10); }
+[data-theme="sky"] .stat-item:hover { background: rgba(13,60,110,.03); }
+[data-theme="sky"] .stat-item span  { color: #1B3A57; }
+[data-theme="sky"] .stat-item small { color: #5B7892; }
+
+[data-theme="sky"] .step-card { background: #fff; border-color: rgba(13,60,110,.10); }
+[data-theme="sky"] .step-card h3 { color: #0F2A43; }
+[data-theme="sky"] .step-card p { color: #2C4A66; }
+[data-theme="sky"] .steps-connector { background: rgba(13,60,110,.12); }
+
+[data-theme="sky"] .reviews-area { background: #DCEBFA; }
+[data-theme="sky"] .rv-slider-section { background: var(--surf-1); }
+[data-theme="sky"] .rv-card { background: #fff; border-color: rgba(13,60,110,.11); }
+[data-theme="sky"] .rv-text { color: #1B3A57; }
+[data-theme="sky"] .rv-name { color: #0F2A43; }
+[data-theme="sky"] .rv-route, [data-theme="sky"] .rv-city { color: #5B7892; }
+[data-theme="sky"] .slider-nav-btn { background: #fff; border-color: rgba(13,60,110,.14); color: #0F2A43; }
+
+[data-theme="sky"] .write-review-left { background: #E3F0FB; }
+[data-theme="sky"] .write-review-left h3 { color: #0F2A43; }
+[data-theme="sky"] .write-review-left > p, [data-theme="sky"] .wr-perks li { color: #2C4A66; }
+[data-theme="sky"] .wr-icon { background: var(--gold-light); border-color: rgba(46,144,218,.30); }
+[data-theme="sky"] .wr-rating-badge { background: var(--gold-light); border-color: rgba(46,144,218,.24); }
+[data-theme="sky"] .wr-rating-count { color: #5B7892; }
+[data-theme="sky"] .write-review-right { background: transparent; }
+[data-theme="sky"] .wr-field input, [data-theme="sky"] .wr-form textarea { background: #EAF4FD; border-color: rgba(13,60,110,.16); color: #0F2A43; }
+[data-theme="sky"] .wr-field input::placeholder, [data-theme="sky"] .wr-form textarea::placeholder { color: #7C93A8; }
+[data-theme="sky"] .star-rating-input label { color: #2C4A66; }
+[data-theme="sky"] .photo-upload-label { background: #EAF4FD; color: #5B7892; }
+
+[data-theme="sky"] .fleet-card { background: #fff; border-color: rgba(13,60,110,.11); }
+[data-theme="sky"] .fleet-card h3 { color: #0F2A43; }
+[data-theme="sky"] .fleet-spec { color: #2C4A66; border-color: rgba(13,60,110,.10); }
+[data-theme="sky"] .fleet-spec i { color: var(--lime); }
+[data-theme="sky"] .fleet-note { color: #5B7892; }
+[data-theme="sky"] .fleet-card-img, [data-theme="sky"] .fleet-img-placeholder { background: #DCECFA; }
+
+[data-theme="sky"] .contact-card { background: #fff; border-color: rgba(13,60,110,.11); }
+[data-theme="sky"] .contact-info { background: #E3F0FB; }
+[data-theme="sky"] .contact-info h2 { color: #0F2A43; }
+[data-theme="sky"] .contact-info p, [data-theme="sky"] .contact-info > p { color: #2C4A66; }
+[data-theme="sky"] .contact-detail span, [data-theme="sky"] .contact-detail a { color: #1B3A57; }
+[data-theme="sky"] .contact-detail a:hover { color: var(--lime); }
+[data-theme="sky"] .contact-form-wrap { background: #fff; }
+[data-theme="sky"] #inquiryForm input, [data-theme="sky"] #inquiryForm select, [data-theme="sky"] #inquiryForm textarea { background: #fff; border-color: rgba(13,60,110,.16); color: #0F2A43; }
+[data-theme="sky"] #inquiryForm input::placeholder, [data-theme="sky"] #inquiryForm textarea::placeholder { color: #7C93A8; }
+[data-theme="sky"] #inquiryForm select option { background: #fff; color: #0F2A43; }
+
+[data-theme="sky"] .modal-card { background: #fff; }
+[data-theme="sky"] .modal-header { background: #EAF4FD; border-color: rgba(13,60,110,.12); }
+[data-theme="sky"] .modal-title-wrap h2 { color: #0F2A43; }
+[data-theme="sky"] .modal-title-wrap p { color: #2C4A66; }
+[data-theme="sky"] .modal-service-tabs { border-color: rgba(13,60,110,.12); }
+[data-theme="sky"] .mst-btn { color: #5B7892; }
+[data-theme="sky"] .mst-btn.active { color: var(--lime); }
+[data-theme="sky"] .mf-label { color: #2C4A66; }
+[data-theme="sky"] .mf-input { background: #EAF4FD; border-color: rgba(13,60,110,.16); color: #0F2A43; }
+[data-theme="sky"] .mf-input::placeholder { color: #7C93A8; }
+[data-theme="sky"] .modal-close { color: #2C4A66; background: #E3F0FB; }
+
+[data-theme="sky"] .footer { background: #0E2A47; }
+[data-theme="sky"] .footer-col h3 { color: rgba(255,255,255,.92); }
+[data-theme="sky"] .footer-col a { color: rgba(255,255,255,.6); }
+[data-theme="sky"] .footer-col a:hover { color: var(--lime-3); }
+[data-theme="sky"] .footer-about-heading { color: #fff; }
+[data-theme="sky"] .footer-brand p { color: rgba(255,255,255,.6); }
+[data-theme="sky"] .footer-contact-item, [data-theme="sky"] .footer-contact-item a { color: rgba(255,255,255,.6); }
+[data-theme="sky"] .footer-bottom { border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.62); }
+[data-theme="sky"] .footer-bottom a { color: rgba(255,255,255,.7); }
+[data-theme="sky"] .footer-bottom a:hover { color: var(--lime-3); }
+[data-theme="sky"] .footer-logo-full img { filter: brightness(0) invert(1); }
+
+[data-theme="sky"] .mobile-cta { background: #fff; border-color: rgba(13,60,110,.12); }
+[data-theme="sky"] .mobile-cta a { color: #1B3A57; }
+[data-theme="sky"] .mobile-cta a:first-child { color: #fff; } /* dark Call button keeps light text */
+
+[data-theme="sky"] .theme-switcher { background: rgba(13,60,110,.06); border-color: rgba(13,60,110,.12); }
+[data-theme="sky"] .theme-btn { color: rgba(13,40,67,.45); }
+[data-theme="sky"] .theme-btn:hover { color: var(--lime); background: rgba(13,60,110,.07); }
+[data-theme="sky"] .theme-btn.active { background: var(--lime); color: #fff; }
+[data-theme="sky"] .faq-area { background: var(--surf-1); }

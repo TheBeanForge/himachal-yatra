@@ -56,7 +56,10 @@ $queries = [
      ADD COLUMN IF NOT EXISTS tax_amount      DECIMAL(10,2) DEFAULT 0 AFTER extra_charges,
      ADD COLUMN IF NOT EXISTS breakdown_json  JSON          DEFAULT NULL AFTER tax_amount,
      ADD COLUMN IF NOT EXISTS status         ENUM('new','contacted','confirmed','cancelled') DEFAULT 'new' AFTER breakdown_json,
-     ADD COLUMN IF NOT EXISTS notes          TEXT DEFAULT NULL AFTER status",
+     ADD COLUMN IF NOT EXISTS notes          TEXT DEFAULT NULL AFTER status,
+     ADD COLUMN IF NOT EXISTS source         VARCHAR(20) DEFAULT 'calculator' AFTER notes,
+     MODIFY COLUMN pickup_date DATE NULL,
+     MODIFY COLUMN drop_date   DATE NULL",
 
   // Seed destinations
   "INSERT IGNORE INTO destinations (name, dest_key, extra_per_day, sort_order) VALUES
