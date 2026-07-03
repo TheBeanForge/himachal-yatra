@@ -45,7 +45,7 @@ require_once 'includes/vars.php';
         taxes and toll/parking charges are as stated in your quote.</p>
 
         <h2>Cancellations &amp; Changes</h2>
-        <p>Cancellation and rescheduling terms depend on the package and notice period and will be shared
+        <p>Cancellation and rescheduling terms depend on the trip and notice period and will be shared
         at confirmation. Mountain travel may be affected by weather and road conditions beyond our control.</p>
 
         <h2>Liability</h2>
@@ -56,7 +56,7 @@ require_once 'includes/vars.php';
         <p>These terms are governed by the laws of India, with jurisdiction in Himachal Pradesh.</p>
 
         <h2>Contact</h2>
-        <p>Questions? Email <a href="mailto:info@himachalsafar.com">info@himachalsafar.com</a>
+        <p>Questions? Email <a href="mailto:<?php echo h($bizEmail); ?>"><?php echo h($bizEmail); ?></a>
         or call <a href="tel:<?php echo h($phoneTel); ?>"><?php echo h($phoneDisplay); ?></a>.</p>
 
         <p class="legal-note"><i class="fa-solid fa-circle-info"></i> This is a starting template — please review it with a legal professional before launch.</p>

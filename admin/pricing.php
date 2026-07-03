@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
         $name   = trim($_POST['name']??'');
         $type   = in_array($_POST['type']??'',['percentage','flat'])?$_POST['type']:'percentage';
         $val    = max(0,(float)($_POST['value']??0));
-        $apply  = in_array($_POST['apply_on']??'',['total','package_cost','vehicle_cost'])?$_POST['apply_on']:'total';
+        $apply  = in_array($_POST['apply_on']??'',['total','vehicle_cost'])?$_POST['apply_on']:'total';
         $order  = (int)($_POST['sort_order']??0);
         $active = (int)((($_POST['active']??'1')==='1'));
         if(!$name){ $msg='error:Tax name is required.'; }
@@ -153,7 +153,6 @@ $tab = $_GET['tab']??'taxes';
       <div class="col-6"><label class="form-label" style="font-size:12px;font-weight:600;color:var(--muted)">Apply On</label>
         <select name="apply_on" id="tx_apply" class="form-select admin-input">
           <option value="total">Grand Total</option>
-          <option value="package_cost">Package Cost Only</option>
           <option value="vehicle_cost">Vehicle Cost Only</option>
         </select></div>
       <div class="col-6"><label class="form-label" style="font-size:12px;font-weight:600;color:var(--muted)">Status</label>

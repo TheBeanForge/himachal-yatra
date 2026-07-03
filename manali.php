@@ -12,10 +12,10 @@ if ($conn instanceof mysqli) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manali Tour Packages &amp; Cab Booking | Himachal Safar</title>
+  <title>Manali Trips &amp; Cab Booking | Himachal Safar</title>
   <meta name="description" content="Plan your Manali trip with Himachal Safar. Delhi to Manali. Rohtang Pass, Solang Valley, Hadimba Temple — expert mountain drivers.">
   <?php
-    $seoTitle = 'Manali Tour Packages & Cab Booking | Himachal Safar';
+    $seoTitle = 'Manali Trips & Cab Booking | Himachal Safar';
     $seoDesc  = 'Plan your Manali trip with Himachal Safar. Delhi to Manali. Rohtang Pass, Solang Valley, Hadimba Temple — expert mountain drivers.';
     $seoPath  = 'manali.php';
     // Per-page social share image = this destination's own hero (falls back to generic default).
@@ -36,9 +36,9 @@ if ($conn instanceof mysqli) {
 <main>
 
   <!-- DEST HERO -->
-  <section class="dest-hero">
+  <section class="dest-hero" id="home">
     <div class="dest-hero-bg">
-      <img src="<?= $hero_photo ? 'uploads/photos/' . h($hero_photo['filename']) : '' ?>" alt="Manali snow mountains Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
+      <img src="<?= h(dest_img_src($hero_photo, $activeDest)) ?>" alt="Manali snow mountains Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
     <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">
@@ -77,7 +77,7 @@ if ($conn instanceof mysqli) {
           </div>
         </div>
         <div class="dest-about-img reveal">
-          <img src="<?= $about_photo ? 'uploads/photos/' . h($about_photo['filename']) : '' ?>" alt="Manali valley Himalaya" loading="lazy" decoding="async" width="800" height="600">
+          <img src="<?= h(dest_img_src($about_photo, $activeDest)) ?>" alt="Manali valley Himalaya" loading="lazy" decoding="async" width="800" height="600">
         </div>
       </div>
     </div>
@@ -157,7 +157,7 @@ if ($conn instanceof mysqli) {
           <div class="drc-meta">
             <span><i class="fa-solid fa-route"></i> 550 km</span>
             <span><i class="fa-regular fa-clock"></i> 12–14 hrs</span>
-            <span class="drc-badge">Family Package</span>
+            <span class="drc-badge">Family Itinerary</span>
           </div>
           <div class="drc-bottom">
             
@@ -173,7 +173,7 @@ if ($conn instanceof mysqli) {
           <div class="drc-meta">
             <span><i class="fa-solid fa-route"></i> 300 km</span>
             <span><i class="fa-regular fa-clock"></i> 8–9 hrs</span>
-            <span class="drc-badge">Combo Package</span>
+            <span class="drc-badge">Combo Itinerary</span>
           </div>
           <div class="drc-bottom">
             
@@ -189,7 +189,7 @@ if ($conn instanceof mysqli) {
           <div class="drc-meta">
             <span><i class="fa-solid fa-route"></i> 380 km</span>
             <span><i class="fa-regular fa-clock"></i> 9–11 hrs</span>
-            <span class="drc-badge">Custom Package</span>
+            <span class="drc-badge">Custom Itinerary</span>
           </div>
           <div class="drc-bottom">
             

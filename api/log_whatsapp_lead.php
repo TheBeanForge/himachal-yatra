@@ -45,7 +45,7 @@ $name   = cl($_POST['customer_name'] ?? '', 100);
 $mobile = preg_replace('/[^0-9+]/', '', $_POST['mobile'] ?? '');
 $dest   = cl($_POST['dest'] ?? '', 40);
 
-$allowed_sources = ['hero', 'contact', 'footer', 'float', 'mobilebar', 'other'];
+$allowed_sources = ['hero', 'contact', 'footer', 'float', 'mobilebar', 'packages', 'other'];
 $source = in_array($_POST['source'] ?? '', $allowed_sources, true) ? $_POST['source'] : 'other';
 
 $errors = [];

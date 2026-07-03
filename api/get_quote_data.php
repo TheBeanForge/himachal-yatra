@@ -33,12 +33,26 @@ function cast_seasonal(array $s): array {
     return ['name'=>$s['name'],'start'=>$s['start_date'],'end'=>$s['end_date'],'pct'=>(float)$s['surcharge_pct']];
 }
 
-$packages  = array_map('cast_package',  $conn->query("SELECT id,package_name,duration_days,base_price_per_day,COALESCE(additional_charge_per_person,0) AS additional_charge_per_person,destination_key,description FROM tour_packages WHERE status='active' ORDER BY package_name ASC")->fetch_all(MYSQLI_ASSOC));
-$locations = $conn->query("SELECT id,city AS name FROM pickup_locations WHERE active=1 ORDER BY sort_order ASC,city ASC")->fetch_all(MYSQLI_ASSOC);
-$vehicles  = array_map('cast_vehicle',  $conn->query("SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY daily_rate ASC")->fetch_all(MYSQLI_ASSOC));
-$taxes     = array_map('cast_tax',      $conn->query("SELECT id,name,type,value,apply_on FROM taxes_fees WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC));
-$dests     = array_map('cast_dest',     $conn->query("SELECT id,name,dest_key,extra_per_day FROM destinations WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC));
-$seasonal  = array_map('cast_seasonal', $conn->query("SELECT name,start_date,end_date,surcharge_pct FROM seasonal_pricing WHERE active=1 AND end_date >= CURDATE() ORDER BY start_date ASC")->fetch_all(MYSQLI_ASSOC));
+// Each list degrades to [] if its table/column is missing (older installs) —
+// a partial dataset must never take down the whole quote form.
+function safe_rows(mysqli $conn, array $sqls): array {
+    foreach ($sqls as $sql) {
+        try { return $conn->query($sql)->fetch_all(MYSQLI_ASSOC); }
+        catch (mysqli_sql_exception) { continue; }
+    }
+    return [];
+}
+
+$packages  = array_map('cast_package', safe_rows($conn, [
+    "SELECT id,package_name,duration_days,base_price_per_day,COALESCE(additional_charge_per_person,0) AS additional_charge_per_person,destination_key,description FROM tour_packages WHERE status='active' ORDER BY package_name ASC",
+    // Older installs: no destination_key / additional_charge_per_person columns yet.
+    "SELECT id,package_name,duration_days,base_price_per_day,description FROM tour_packages WHERE status='active' ORDER BY package_name ASC",
+]));
+$locations = safe_rows($conn, ["SELECT id,city AS name FROM pickup_locations WHERE active=1 ORDER BY sort_order ASC,city ASC"]);
+$vehicles  = array_map('cast_vehicle',  safe_rows($conn, ["SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY daily_rate ASC"]));
+$taxes     = array_map('cast_tax',      safe_rows($conn, ["SELECT id,name,type,value,apply_on FROM taxes_fees WHERE active=1 ORDER BY sort_order ASC"]));
+$dests     = array_map('cast_dest',     safe_rows($conn, ["SELECT id,name,dest_key,extra_per_day FROM destinations WHERE active=1 ORDER BY sort_order ASC"]));
+$seasonal  = array_map('cast_seasonal', safe_rows($conn, ["SELECT name,start_date,end_date,surcharge_pct FROM seasonal_pricing WHERE active=1 AND end_date >= CURDATE() ORDER BY start_date ASC"]));
 
 $conn->close();
 echo json_encode(compact('packages','locations','vehicles','taxes','dests','seasonal'), JSON_UNESCAPED_UNICODE);

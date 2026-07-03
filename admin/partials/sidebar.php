@@ -30,13 +30,13 @@
   <div class="sidebar-section-label">QUOTE CALCULATOR</div>
   <ul class="sidebar-nav">
     <li>
-      <a href="packages.php" class="sidebar-link <?= $cur==='packages.php'?'active':'' ?>">
-        <i class="fas fa-suitcase-rolling fa-fw"></i> Tour Packages
+      <a href="destinations.php" class="sidebar-link <?= $cur==='destinations.php'?'active':'' ?>">
+        <i class="fas fa-mountain fa-fw"></i> Destinations
       </a>
     </li>
     <li>
-      <a href="destinations.php" class="sidebar-link <?= $cur==='destinations.php'?'active':'' ?>">
-        <i class="fas fa-mountain fa-fw"></i> Destinations
+      <a href="packages.php" class="sidebar-link <?= $cur==='packages.php'?'active':'' ?>">
+        <i class="fas fa-route fa-fw"></i> Tour Packages
       </a>
     </li>
     <li>
@@ -75,11 +75,10 @@
     </li>
   </ul>
 
-  <?php if (in_array($_SESSION['admin_user']['role'] ?? '', ['superadmin','admin'])): ?>
-  <!-- ADMIN section is in the top bar on desktop; shown here only on mobile -->
+  <?php if (($_SESSION['admin_user']['role'] ?? '') === 'superadmin'): ?>
+  <!-- User Management & Audit live in the top bar on desktop; shown here only on mobile -->
   <div class="sidebar-section-label d-lg-none">ADMIN</div>
   <ul class="sidebar-nav d-lg-none">
-    <?php if (($_SESSION['admin_user']['role'] ?? '') === 'superadmin'): ?>
     <li>
       <a href="users.php" class="sidebar-link <?= $cur==='users.php'?'active':'' ?>">
         <i class="fas fa-users-gear fa-fw"></i> User Management
@@ -90,16 +89,15 @@
         <i class="fas fa-clipboard-list fa-fw"></i> Audit Log
       </a>
     </li>
-    <?php endif; ?>
-    <li>
-      <a href="settings.php" class="sidebar-link <?= $cur==='settings.php'?'active':'' ?>">
-        <i class="fas fa-sliders fa-fw"></i> Settings
-      </a>
-    </li>
   </ul>
   <?php endif; ?>
 
   <div class="mt-auto pb-3 px-3">
+    <?php if (in_array($_SESSION['admin_user']['role'] ?? '', ['superadmin','admin'])): ?>
+    <a href="settings.php" class="sidebar-link <?= $cur==='settings.php'?'active':'' ?>">
+      <i class="fas fa-sliders fa-fw"></i> Settings
+    </a>
+    <?php endif; ?>
     <a href="help.php" class="sidebar-link <?= $cur==='help.php' ? 'active' : '' ?>">
       <i class="fas fa-circle-question fa-fw"></i> Help &amp; Guide
     </a>

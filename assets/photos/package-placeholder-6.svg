@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-labelledby="title desc">
+  <title id="title">Golden valley tour placeholder</title>
+  <desc id="desc">Stylized golden valley and mountains for tour package cards.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffd07f"/>
+      <stop offset=".55" stop-color="#f6dca0"/>
+      <stop offset="1" stop-color="#f3efe1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#sky)"/>
+  <circle cx="970" cy="162" r="92" fill="#fff0b8" opacity=".76"/>
+  <path d="M0 465 166 300l116 116 178-212 210 262 134-124 396 280v128H0z" fill="#9b7650"/>
+  <path d="M0 552 222 395l132 100 155-152 232 229 138-94 321 147v125H0z" fill="#5e5944"/>
+  <path d="M0 640c159-83 321-96 487-38 146 51 304 58 472 20 99-23 180-24 241-5v133H0z" fill="#c89c49"/>
+  <path d="M454 750c64-126 111-197 142-213 38-19 101 52 188 213z" fill="#243444"/>
+  <path d="M593 566c2 38 11 92 28 162" stroke="#f5df9a" stroke-width="10" stroke-linecap="round" stroke-dasharray="30 26"/>
+  <g fill="#2d4733">
+    <path d="M136 590 102 654h68z"/><rect x="131" y="649" width="10" height="36"/>
+    <path d="M1034 584 992 662h84z"/><rect x="1029" y="657" width="11" height="42"/>
+  </g>
+  <text x="70" y="120" fill="#1c2b35" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700">Golden Valley</text>
+</svg>

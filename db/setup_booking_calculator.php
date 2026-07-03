@@ -17,7 +17,14 @@ $queries = [
     id               INT AUTO_INCREMENT PRIMARY KEY,
     package_name     VARCHAR(150) NOT NULL,
     duration_days    INT NOT NULL DEFAULT 3,
+    duration_nights  INT NOT NULL DEFAULT 0,
     base_price_per_day DECIMAL(10,2) NOT NULL DEFAULT 2000.00,
+    additional_charge_per_person DECIMAL(10,2) DEFAULT 0.00,
+    destination_key  VARCHAR(50) NULL,
+    category         VARCHAR(60) NULL,
+    photo            VARCHAR(255) NULL,
+    is_bestseller    TINYINT(1) NOT NULL DEFAULT 0,
+    sort_order       INT NOT NULL DEFAULT 0,
     description      VARCHAR(300) DEFAULT NULL,
     status           ENUM('active','inactive') DEFAULT 'active',
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -33,19 +40,29 @@ $queries = [
     status           ENUM('active','inactive') DEFAULT 'active'
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-  // Booking enquiries (price calculator leads)
+  // Booking enquiries (price calculator + WhatsApp pre-chat leads)
   "CREATE TABLE IF NOT EXISTS booking_enquiries (
     id                  INT AUTO_INCREMENT PRIMARY KEY,
     package_id          INT DEFAULT NULL,
+    trip_destination    VARCHAR(500) DEFAULT NULL,
     pickup_location_id  INT DEFAULT NULL,
+    pickup_custom       VARCHAR(120) DEFAULT NULL,
     vehicle_id          INT DEFAULT NULL,
     customer_name       VARCHAR(100) NOT NULL,
     mobile              VARCHAR(20)  NOT NULL,
     email               VARCHAR(255) DEFAULT NULL,
     travelers           INT NOT NULL DEFAULT 1,
-    pickup_date         DATE NOT NULL,
-    drop_date           DATE NOT NULL,
+    pickup_date         DATE DEFAULT NULL,
+    drop_date           DATE DEFAULT NULL,
     estimated_price     DECIMAL(10,2) DEFAULT NULL,
+    package_cost        DECIMAL(10,2) DEFAULT 0,
+    vehicle_cost        DECIMAL(10,2) DEFAULT 0,
+    extra_charges       DECIMAL(10,2) DEFAULT 0,
+    tax_amount          DECIMAL(10,2) DEFAULT 0,
+    breakdown_json      JSON DEFAULT NULL,
+    status              ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new',
+    notes               TEXT DEFAULT NULL,
+    source              VARCHAR(20) DEFAULT 'calculator',
     created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_created (created_at)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
@@ -113,7 +130,7 @@ foreach ($queries as $q) {
 
 echo "</ul><p><strong>&#10003; Done &mdash; {$ok} succeeded, {$fail} failed.</strong></p>";
 echo '<div class="actions">
-  <a href="../booking.php">&#8594; Booking Calculator</a>
+  <a href="../index.php?calc=">&#8594; Booking Calculator</a>
   <a href="../index.php">&#8594; Back to Site</a>
 </div>';
 echo '</body></html>';

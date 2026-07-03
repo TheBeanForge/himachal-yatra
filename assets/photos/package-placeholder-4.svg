@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-labelledby="title desc">
+  <title id="title">Green hills tour placeholder</title>
+  <desc id="desc">Stylized green hills and cab route for tour package cards.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#a9dbf7"/>
+      <stop offset=".62" stop-color="#e6f2e5"/>
+      <stop offset="1" stop-color="#faf3dd"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#sky)"/>
+  <path d="M0 452c144-95 270-135 378-119 167 25 217 135 392 111 142-19 231-104 430-91v397H0z" fill="#9ec97f"/>
+  <path d="M0 538c161-77 300-101 418-72 178 45 303 106 490 34 104-40 201-51 292-29v279H0z" fill="#4f8e69"/>
+  <path d="M0 646c126-40 251-47 375-21 155 33 291 32 408-3 167-50 303-40 417 31v97H0z" fill="#215844"/>
+  <path d="M390 750c79-117 142-179 190-185 54-7 119 55 196 185z" fill="#263847"/>
+  <path d="M576 596c-5 37 3 83 24 138" stroke="#f7e5a7" stroke-width="10" stroke-linecap="round" stroke-dasharray="28 23"/>
+  <g fill="#111f2e">
+    <rect x="760" y="515" width="126" height="38" rx="12"/>
+    <path d="M786 492h73l35 30H754z"/>
+    <circle cx="788" cy="558" r="15"/><circle cx="858" cy="558" r="15"/>
+  </g>
+  <text x="70" y="120" fill="#102a2a" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700">Hill Country</text>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Himachal Safar — Pine Arch">
+  <title>Himachal Safar — Pine Arch</title>
+  <defs>
+    <linearGradient id="g" x1="40" y1="22" x2="80" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0DE9E"/>
+      <stop offset=".5" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#A8842A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sanctuary arch (the curated stay) -->
+  <path d="M28 102 L28 50 Q28 20 60 20 Q92 20 92 50 L92 102"
+        fill="none" stroke="url(#g)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M26 102 H94" stroke="url(#g)" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Guiding dot at the crown -->
+  <circle cx="60" cy="33" r="2.6" fill="url(#g)"/>
+
+  <!-- Geometric Himalayan spruce -->
+  <g fill="#1B263B">
+    <path d="M60 38 L51 56 L69 56 Z"/>
+    <path d="M60 50 L47 72 L73 72 Z"/>
+    <path d="M60 63 L43 88 L77 88 Z"/>
+  </g>
+  <rect x="57" y="88" width="6" height="9" fill="#1B263B"/>
+  <!-- Champagne snow line on each tier -->
+  <g fill="none" stroke="url(#g)" stroke-width="1.4" stroke-linejoin="round" opacity=".9">
+    <path d="M55 47 L60 38 L65 47"/>
+    <path d="M53 60 L60 50 L67 60"/>
+  </g>
+</svg>

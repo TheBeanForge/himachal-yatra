@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Himachal Safar — Alpine Seal">
+  <title>Himachal Safar — Alpine Seal</title>
+  <defs>
+    <linearGradient id="g" x1="30" y1="18" x2="92" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0DE9E"/>
+      <stop offset=".5" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#A8842A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Seal disc (Midnight Alpine) -->
+  <circle cx="60" cy="60" r="58" fill="#0D1B2A"/>
+  <!-- Champagne outer ring + inner hairline -->
+  <circle cx="60" cy="60" r="53.5" fill="none" stroke="url(#g)" stroke-width="1.4"/>
+  <circle cx="60" cy="60" r="48"   fill="none" stroke="#D4AF37" stroke-width=".6" opacity=".4"/>
+  <!-- North marker on the ring -->
+  <path d="M60 1.5 L63.5 6.5 L60 11.5 L56.5 6.5 Z" fill="url(#g)"/>
+
+  <!-- Twin-peak ridge -->
+  <path d="M30 80 L45 54 L53 64 L67 44 L81 64 L90 80" fill="none" stroke="url(#g)"
+        stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Snow crowns -->
+  <path d="M62 51 L67 44 L72 51" fill="none" stroke="#F4EFE6" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M41 60 L45 54 L49 60" fill="none" stroke="#F4EFE6" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>
+
+  <!-- Journey line -->
+  <path d="M30 88 Q60 82 90 88" fill="none" stroke="url(#g)" stroke-width="1.6"
+        stroke-linecap="round" opacity=".92"/>
+</svg>

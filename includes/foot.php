@@ -17,18 +17,18 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
             <p>Founded by mountain-road specialists who have driven every major Himachal route in all seasons. Verified drivers, transparent fares and a travel desk that stays reachable from departure to drop. No middlemen — just us, you and the mountains.</p>
             <div class="footer-social">
               <?php
-                // Real profile URLs come from env vars; unset ones are skipped (no dead links).
+                // Profile URLs are admin-editable in Settings; unset ones are skipped (no dead links).
                 foreach ([
-                  ['SOCIAL_FACEBOOK',  'facebook-f', 'Facebook'],
-                  ['SOCIAL_INSTAGRAM', 'instagram',  'Instagram'],
-                  ['SOCIAL_YOUTUBE',   'youtube',    'YouTube'],
-                ] as [$env, $icon, $label]):
-                  $url = getenv($env) ?: '';
+                  ['facebook',  'facebook-f', 'Facebook'],
+                  ['instagram', 'instagram',  'Instagram'],
+                  ['youtube',   'youtube',    'YouTube'],
+                ] as [$key, $icon, $label]):
+                  $url = $socialLinks[$key] ?? '';
                   if ($url === '') continue; ?>
               <a href="<?php echo h($url); ?>" target="_blank" rel="noopener" aria-label="<?php echo h($label); ?>"><i class="fa-brands fa-<?php echo $icon; ?>"></i></a>
               <?php endforeach; ?>
-              <a href="https://wa.me/<?php echo h($whatsappNumber); ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
             </div>
+            <p class="footer-founders">Founded by Vishal Thakur &amp; Abhishek Thakur</p>
           </div>
 
           <!-- Quick Links -->
@@ -37,8 +37,11 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
             <a href="<?php echo $fBase ?: '#home'; ?>"><i class="fa-solid fa-chevron-right"></i> Home</a>
 
             <a href="<?php echo $fAl('routes'); ?>"><i class="fa-solid fa-chevron-right"></i> Popular Routes</a>
+            <a href="packages.php"><i class="fa-solid fa-chevron-right"></i> Tour Packages</a>
             <a href="<?php echo $fAl('fleet'); ?>"><i class="fa-solid fa-chevron-right"></i> Our Fleet</a>
-            <a href="<?php echo $fAl('packages'); ?>"><i class="fa-solid fa-chevron-right"></i> Tour Packages</a>
+            <?php /* href is the no-modal fallback (deep-links to the homepage calculator);
+                     on pages that include calc_modal.php, JS intercepts and opens the popup. */ ?>
+            <a href="index.php?calc=" data-open-quote=""><i class="fa-solid fa-chevron-right"></i> Plan a Custom Trip</a>
             <a href="<?php echo $fAl('reviews'); ?>"><i class="fa-solid fa-chevron-right"></i> Reviews</a>
             <a href="<?php echo $fAl('contact'); ?>"><i class="fa-solid fa-chevron-right"></i> Contact Us</a>
           </div>
@@ -60,17 +63,23 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
               <i class="fa-solid fa-phone"></i>
               <span><a href="tel:<?php echo h($phoneTel); ?>"><?php echo h($phoneDisplay); ?></a></span>
             </div>
+            <?php if (!empty($phone2Tel)): ?>
+            <div class="footer-contact-item">
+              <i class="fa-solid fa-phone"></i>
+              <span><a href="tel:<?php echo h($phone2Tel); ?>"><?php echo h($phone2Display); ?></a></span>
+            </div>
+            <?php endif; ?>
             <div class="footer-contact-item">
               <i class="fa-brands fa-whatsapp"></i>
               <span><a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener">WhatsApp Concierge</a></span>
             </div>
             <div class="footer-contact-item">
               <i class="fa-regular fa-envelope"></i>
-              <span><a href="mailto:info@himachalsafar.com">info@himachalsafar.com</a></span>
+              <span><a href="mailto:<?php echo h($bizEmail); ?>"><?php echo h($bizEmail); ?></a></span>
             </div>
             <div class="footer-contact-item">
               <i class="fa-solid fa-location-dot"></i>
-              <span>Shimla &amp; New Delhi, India</span>
+              <span><?php echo h($agencyLocation); ?></span>
             </div>
             <div class="footer-trust">
               <span><i class="fa-solid fa-shield-halved"></i> Verified Drivers</span>
@@ -95,16 +104,13 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 
-  <!-- Mobile CTA: Call · WhatsApp · Get Quote. The calculator lives only on index.php,
-       so off-homepage the Quote item deep-links to it instead of calling openCalcModal(). -->
+  <!-- Mobile CTA: Call · WhatsApp · Get Quote. The Quote link deep-links to the homepage
+       calculator as a fallback; on pages that include calc_modal.php the [data-open-quote]
+       handler intercepts it and opens the popup in place. -->
   <div class="mobile-cta">
     <a href="tel:<?php echo h($phoneTel); ?>" aria-label="Call us now"><i class="fa-solid fa-phone"></i> Call</a>
     <a href="https://wa.me/<?php echo h($whatsappNumber); ?>?text=<?php echo h($defaultMessage); ?>" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp" data-wa-lead data-source="mobilebar"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-    <?php if (($base ?? '') === ''): ?>
-    <button type="button" onclick="openCalcModal('')" aria-label="Get an instant quote"><i class="fa-solid fa-calculator"></i> Get Quote</button>
-    <?php else: ?>
-    <a href="index.php?calc=" aria-label="Get an instant quote"><i class="fa-solid fa-calculator"></i> Get Quote</a>
-    <?php endif; ?>
+    <a href="index.php?calc=" data-open-quote="" aria-label="Get an instant quote"><i class="fa-solid fa-calculator"></i> Get Quote</a>
   </div>
 
   <!-- Pre-chat WhatsApp lead popup (site-wide) -->

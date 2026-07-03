@@ -13,7 +13,9 @@ $slot = trim($_POST['slot'] ?? '');
 if (!photo_slot_valid($slot)) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid slot']); exit; }
 
 // Which bucket (destination) does this slot's photo belong to?
-$dest = $slot === 'home_hero' ? 'general' : preg_replace('/_(hero|about)$/', '', $slot);
+$dest = ($slot === 'home_hero' || in_array($slot, PHOTO_HOME_EXTRA, true))
+    ? 'general'
+    : preg_replace('/_(hero|about)$/', '', $slot);
 if (!in_array($dest, PHOTO_DESTS, true)) { echo json_encode(['ok'=>false,'error'=>'Invalid destination']); exit; }
 
 $cap = photo_slot_cap($slot);

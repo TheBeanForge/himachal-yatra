@@ -36,9 +36,9 @@ if ($conn instanceof mysqli) {
 <main>
 
   <!-- DEST HERO -->
-  <section class="dest-hero">
+  <section class="dest-hero" id="home">
     <div class="dest-hero-bg">
-      <img src="<?= $hero_photo ? 'uploads/photos/' . h($hero_photo['filename']) : '' ?>" alt="Dharamshala McLeodganj Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
+      <img src="<?= h(dest_img_src($hero_photo, $activeDest)) ?>" alt="Dharamshala McLeodganj Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
     <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">
@@ -77,7 +77,7 @@ if ($conn instanceof mysqli) {
           </div>
         </div>
         <div class="dest-about-img reveal">
-          <img src="<?= $about_photo ? 'uploads/photos/' . h($about_photo['filename']) : '' ?>" alt="Dharamshala Kangra valley" loading="lazy" decoding="async" width="800" height="600">
+          <img src="<?= h(dest_img_src($about_photo, $activeDest)) ?>" alt="Dharamshala Kangra valley" loading="lazy" decoding="async" width="800" height="600">
         </div>
       </div>
     </div>
@@ -173,7 +173,7 @@ if ($conn instanceof mysqli) {
           <div class="drc-meta">
             <span><i class="fa-solid fa-route"></i> 245 km</span>
             <span><i class="fa-regular fa-clock"></i> 6–7 hrs</span>
-            <span class="drc-badge">Kangra Package</span>
+            <span class="drc-badge">Kangra Itinerary</span>
           </div>
           <div class="drc-bottom">
             

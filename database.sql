@@ -29,10 +29,15 @@ CREATE TABLE IF NOT EXISTS settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
-  ('agency_whatsapp', '919876543210'),
-  ('agency_name',     'Himachal Safar'),
-  ('agency_email',    'info@himachalyatratravels.com'),
-  ('agency_phone',    '+91 98765 43210');
+  ('agency_whatsapp',  '919876543210'),
+  ('agency_name',      'Himachal Safar'),
+  ('agency_email',     'info@himachalyatratravels.com'),
+  ('agency_phone',     '+91 98765 43210'),
+  ('agency_phone2',    ''),
+  ('agency_location',  'Bilaspur, Himachal Pradesh'),
+  ('social_facebook',  ''),
+  ('social_instagram', ''),
+  ('social_youtube',   '');
 
 -- Admin users (multi-user login)
 CREATE TABLE IF NOT EXISTS admin_users (
@@ -145,4 +150,131 @@ CREATE TABLE IF NOT EXISTS reviews (
   submitted_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   KEY idx_reviews_status (status),
   KEY idx_reviews_submitted (submitted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ══ Quote calculator & lead tables ══
+-- (Also created/upgraded by db/setup_booking_calculator.php and db/setup_pricing.php;
+--  included here so a single import of this file yields a fully working site.)
+
+-- Tour packages (admin-managed, shown on packages.php and used by the quote form)
+CREATE TABLE IF NOT EXISTS tour_packages (
+  id               INT AUTO_INCREMENT PRIMARY KEY,
+  package_name     VARCHAR(150) NOT NULL,
+  duration_days    INT NOT NULL DEFAULT 3,
+  duration_nights  INT NOT NULL DEFAULT 0,
+  base_price_per_day DECIMAL(10,2) NOT NULL DEFAULT 2000.00,
+  additional_charge_per_person DECIMAL(10,2) DEFAULT 0.00,
+  destination_key  VARCHAR(50) NULL,
+  category         VARCHAR(60) NULL,
+  photo            VARCHAR(255) NULL,
+  is_bestseller    TINYINT(1) NOT NULL DEFAULT 0,
+  sort_order       INT NOT NULL DEFAULT 0,
+  description      VARCHAR(300) DEFAULT NULL,
+  status           ENUM('active','inactive') DEFAULT 'active',
+  created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Vehicles / cab fleet (admin-managed; daily_rate drives the price estimate)
+CREATE TABLE IF NOT EXISTS vehicles (
+  id               INT AUTO_INCREMENT PRIMARY KEY,
+  vehicle_name     VARCHAR(100) NOT NULL,
+  photo            VARCHAR(255) NULL,
+  seating_capacity VARCHAR(20)  NOT NULL,
+  daily_rate       DECIMAL(10,2) NOT NULL DEFAULT 3000.00,
+  status           ENUM('active','inactive') DEFAULT 'active'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO vehicles (id, vehicle_name, seating_capacity, daily_rate) VALUES
+  (1, 'Swift Dzire',              '4+1', 2500),
+  (2, 'Toyota Etios',             '4+1', 2500),
+  (3, 'Honda Amaze',              '4+1', 2600),
+  (4, 'Ertiga',                   '6+1', 3000),
+  (5, 'Innova',                   '7+1', 3500),
+  (6, 'Innova Crysta',            '7+1', 4000),
+  (7, 'Urbania',                  '10+1',6000),
+  (8, 'Tempo Traveller (12 Str)', '12+1',7000),
+  (9, 'Tempo Traveller (17 Str)', '17+1',8500);
+
+-- Destinations offered in the quote form (admin-managed)
+CREATE TABLE IF NOT EXISTS destinations (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(100) NOT NULL,
+  dest_key      VARCHAR(50)  NOT NULL UNIQUE,
+  extra_per_day DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Extra charge per person per day for remote areas',
+  active        TINYINT(1) DEFAULT 1,
+  sort_order    INT DEFAULT 0,
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO destinations (name, dest_key, extra_per_day, sort_order) VALUES
+  ('Manali',       'manali',      0.00, 1),
+  ('Shimla',       'shimla',      0.00, 2),
+  ('Dharamshala',  'dharamshala', 0.00, 3),
+  ('Dalhousie',    'dalhousie',   0.00, 4),
+  ('Spiti Valley', 'spiti',     250.00, 5),
+  ('Kasol',        'kasol',       0.00, 6),
+  ('Kullu',        'kullu',       0.00, 7),
+  ('Leh Ladakh',   'leh',       350.00, 8);
+
+-- Taxes & fees applied to estimates (admin-managed)
+CREATE TABLE IF NOT EXISTS taxes_fees (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(100) NOT NULL,
+  type       ENUM('percentage','flat') DEFAULT 'percentage',
+  value      DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  apply_on   ENUM('total','package_cost','vehicle_cost') DEFAULT 'total',
+  active     TINYINT(1) DEFAULT 1,
+  sort_order INT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO taxes_fees (name, type, value, apply_on, sort_order) VALUES
+  ('GST',            'percentage', 5.00, 'total', 1),
+  ('Service Charge', 'flat',       0.00, 'total', 2);
+
+-- Seasonal surcharges (admin-managed)
+CREATE TABLE IF NOT EXISTS seasonal_pricing (
+  id             INT AUTO_INCREMENT PRIMARY KEY,
+  name           VARCHAR(100) NOT NULL,
+  start_date     DATE NOT NULL,
+  end_date       DATE NOT NULL,
+  surcharge_pct  DECIMAL(5,2) DEFAULT 0.00 COMMENT 'Percentage surcharge on subtotal',
+  active         TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Booking enquiries — quote calculator + WhatsApp pre-chat leads (admin/enquiries.php)
+CREATE TABLE IF NOT EXISTS booking_enquiries (
+  id                  INT AUTO_INCREMENT PRIMARY KEY,
+  package_id          INT DEFAULT NULL,
+  trip_destination    VARCHAR(500) DEFAULT NULL,
+  pickup_location_id  INT DEFAULT NULL,
+  pickup_custom       VARCHAR(120) DEFAULT NULL,
+  vehicle_id          INT DEFAULT NULL,
+  customer_name       VARCHAR(100) NOT NULL,
+  mobile              VARCHAR(20)  NOT NULL,
+  email               VARCHAR(255) DEFAULT NULL,
+  travelers           INT NOT NULL DEFAULT 1,
+  pickup_date         DATE DEFAULT NULL,
+  drop_date           DATE DEFAULT NULL,
+  estimated_price     DECIMAL(10,2) DEFAULT NULL,
+  package_cost        DECIMAL(10,2) DEFAULT 0,
+  vehicle_cost        DECIMAL(10,2) DEFAULT 0,
+  extra_charges       DECIMAL(10,2) DEFAULT 0,
+  tax_amount          DECIMAL(10,2) DEFAULT 0,
+  breakdown_json      JSON DEFAULT NULL,
+  status              ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new',
+  notes               TEXT DEFAULT NULL,
+  source              VARCHAR(20) DEFAULT 'calculator',
+  created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Traveller-suggested custom destinations (quote form free-text entries, for admin review)
+CREATE TABLE IF NOT EXISTS destination_suggestions (
+  id                INT AUTO_INCREMENT PRIMARY KEY,
+  name              VARCHAR(120) NOT NULL,
+  name_norm         VARCHAR(120) NOT NULL UNIQUE COMMENT 'lower(trim(name)) for dedupe',
+  request_count     INT NOT NULL DEFAULT 1,
+  status            ENUM('pending','added','dismissed') DEFAULT 'pending',
+  created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

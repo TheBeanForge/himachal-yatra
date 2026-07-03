@@ -12,10 +12,10 @@ if ($conn instanceof mysqli) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dalhousie Tour Packages &amp; Cab Booking | Himachal Safar</title>
+  <title>Dalhousie Trips &amp; Cab Booking | Himachal Safar</title>
   <meta name="description" content="Book Delhi to Dalhousie. Khajjiar (mini Switzerland), Dainkund Peak, Chamera Lake — peaceful hill station with Himachal Safar.">
   <?php
-    $seoTitle = 'Dalhousie Tour Packages & Cab Booking | Himachal Safar';
+    $seoTitle = 'Dalhousie Trips & Cab Booking | Himachal Safar';
     $seoDesc  = 'Book Delhi to Dalhousie. Khajjiar (mini Switzerland), Dainkund Peak, Chamera Lake — peaceful hill station with Himachal Safar.';
     $seoPath  = 'dalhousie.php';
     // Per-page social share image = this destination's own hero (falls back to generic default).
@@ -36,9 +36,9 @@ if ($conn instanceof mysqli) {
 <main>
 
   <!-- DEST HERO -->
-  <section class="dest-hero">
+  <section class="dest-hero" id="home">
     <div class="dest-hero-bg">
-      <img src="<?= $hero_photo ? 'uploads/photos/' . h($hero_photo['filename']) : '' ?>" alt="Dalhousie Khajjiar Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
+      <img src="<?= h(dest_img_src($hero_photo, $activeDest)) ?>" alt="Dalhousie Khajjiar Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
     <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">
@@ -77,7 +77,7 @@ if ($conn instanceof mysqli) {
           </div>
         </div>
         <div class="dest-about-img reveal">
-          <img src="<?= $about_photo ? 'uploads/photos/' . h($about_photo['filename']) : '' ?>" alt="Dalhousie green hills Himachal" loading="lazy" decoding="async" width="800" height="600">
+          <img src="<?= h(dest_img_src($about_photo, $activeDest)) ?>" alt="Dalhousie green hills Himachal" loading="lazy" decoding="async" width="800" height="600">
         </div>
       </div>
     </div>
@@ -157,7 +157,7 @@ if ($conn instanceof mysqli) {
           <div class="drc-meta">
             <span><i class="fa-solid fa-route"></i> 560 km</span>
             <span><i class="fa-regular fa-clock"></i> 11–13 hrs</span>
-            <span class="drc-badge">Hill Escape Package</span>
+            <span class="drc-badge">Hill Escape Itinerary</span>
           </div>
           <div class="drc-bottom">
             

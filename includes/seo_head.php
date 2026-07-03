@@ -6,12 +6,13 @@
  * Domain comes from the SITE_URL env var in production, with a sensible local fallback.
  */
 $SITE_URL  = rtrim(getenv('SITE_URL') ?: 'https://himachalsafar.com', '/');
-$seoTitle  = $seoTitle ?? 'Himachal Safar | Private Himachal Cab & Tour Packages';
-$seoDesc   = $seoDesc  ?? 'Private Himachal journeys — premium cabs, verified mountain drivers, Shimla–Manali tour packages and Spiti Valley expeditions across Himachal Pradesh.';
+$seoTitle  = $seoTitle ?? 'Himachal Safar | Custom Himachal Trips, Cabs & Travel Planning';
+$seoDesc   = $seoDesc  ?? 'Personalised Himachal journeys — tailored itineraries, premium cabs, verified mountain drivers and curated stays across Shimla, Manali, Spiti and beyond.';
 $seoPath   = $seoPath  ?? '';
 $seoImage  = $seoImage ?? 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&h=630&q=80';
 $canonical = $SITE_URL . '/' . ltrim($seoPath, '/');
-$bizEmail  = getenv('AGENCY_EMAIL') ?: 'info@himachalsafar.com';
+// $bizEmail comes from vars.php (admin-editable); keep an env/default fallback if not set.
+$bizEmail  = $bizEmail ?? (getenv('AGENCY_EMAIL') ?: 'info@himachalsafar.com');
 ?>
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="geo.region" content="IN-HP">
@@ -56,7 +57,12 @@ $agency = [
     fn($n) => ['@type' => 'City', 'name' => $n],
     ['Manali','Shimla','Dharamshala','Dalhousie','Spiti Valley','Kullu','Kasol','McLeodganj','Khajjiar','Chandigarh','Delhi']
   ),
-  'address' => ['@type' => 'PostalAddress', 'addressRegion' => 'Himachal Pradesh', 'addressCountry' => 'IN'],
+  'address' => array_filter([
+    '@type'           => 'PostalAddress',
+    'addressLocality' => trim(explode(',', $agencyLocation ?? '')[0] ?? ''),
+    'addressRegion'   => 'Himachal Pradesh',
+    'addressCountry'  => 'IN',
+  ]),
   'contactPoint' => [
     '@type'           => 'ContactPoint',
     'contactType'     => 'customer service',
@@ -64,12 +70,8 @@ $agency = [
     'areaServed'      => 'IN',
     'availableLanguage' => ['English', 'Hindi'],
   ],
-  // Add real profiles via SOCIAL_* env vars; empty ones are dropped.
-  'sameAs' => array_values(array_filter([
-    getenv('SOCIAL_FACEBOOK')  ?: '',
-    getenv('SOCIAL_INSTAGRAM') ?: '',
-    getenv('SOCIAL_YOUTUBE')   ?: '',
-  ])),
+  // Social profiles are admin-editable in Settings (see vars.php); empty ones are dropped.
+  'sameAs' => array_values($socialLinks ?? []),
 ];
 // Only emit an aggregate rating when it reflects real reviews shown on the page.
 if (!empty($seoRatingValue) && !empty($seoRatingCount)) {

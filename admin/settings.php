@@ -11,11 +11,23 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_admin_csrf();
+    // Social URLs: keep only well-formed http(s) links, otherwise store empty (no dead links on the site).
+    $clean_url = function ($v) {
+        $v = trim($v ?? '');
+        if ($v === '') return '';
+        if (!preg_match('~^https?://~i', $v)) $v = 'https://' . $v;
+        return filter_var($v, FILTER_VALIDATE_URL) ?: '';
+    };
     $fields = [
-        'agency_name'     => substr(trim($_POST['agency_name'] ?? ''), 0, 100),
-        'agency_phone'    => substr(trim($_POST['agency_phone'] ?? ''), 0, 30),
-        'agency_whatsapp' => preg_replace('/[^0-9]/', '', $_POST['agency_whatsapp'] ?? ''),
-        'agency_email'    => filter_var(trim($_POST['agency_email'] ?? ''), FILTER_VALIDATE_EMAIL) ?: '',
+        'agency_name'      => substr(trim($_POST['agency_name'] ?? ''), 0, 100),
+        'agency_phone'     => substr(trim($_POST['agency_phone'] ?? ''), 0, 30),
+        'agency_phone2'    => substr(trim($_POST['agency_phone2'] ?? ''), 0, 30),
+        'agency_whatsapp'  => preg_replace('/[^0-9]/', '', $_POST['agency_whatsapp'] ?? ''),
+        'agency_email'     => filter_var(trim($_POST['agency_email'] ?? ''), FILTER_VALIDATE_EMAIL) ?: '',
+        'agency_location'  => substr(trim($_POST['agency_location'] ?? ''), 0, 150),
+        'social_facebook'  => substr($clean_url($_POST['social_facebook']  ?? ''), 0, 255),
+        'social_instagram' => substr($clean_url($_POST['social_instagram'] ?? ''), 0, 255),
+        'social_youtube'   => substr($clean_url($_POST['social_youtube']   ?? ''), 0, 255),
     ];
     try {
         $stmt = $conn->prepare('INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
@@ -42,50 +54,25 @@ $page_title = 'Settings';
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="csrf-token" content="<?= $csrf ?>"/>
 <title>Settings — Himachal Safar Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Poppins:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 <link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet"/>
 <style>
-  /* Theme-aware Apple neutrals for the form */
-  :root, [data-theme="dark"] { --ap-hairline: rgba(255,255,255,.09); --ap-input: rgba(255,255,255,.04); --ap-focus: rgba(214,199,161,.20); }
-  [data-theme="light"] { --ap-hairline: rgba(0,0,0,.06); --ap-input: #ffffff; --ap-focus: rgba(184,161,106,.20); }
-  [data-theme="pine"]  { --ap-hairline: rgba(24,64,36,.10); --ap-input: #ffffff; --ap-focus: rgba(62,142,94,.18); }
-
-  .ap-wrap { max-width: 640px; margin: 0 auto; }
-  .ap-h1 { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin: 4px 0 4px; color: var(--ink); }
-  .ap-sub { font-size: 14px; color: var(--muted); margin: 0 0 26px; }
-
-  .ap-card {
-    background: var(--surface); border: 1px solid var(--ap-hairline);
-    border-radius: 16px; padding: 30px 30px 26px;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04), inset 0 1px 0 rgba(255,255,255,.03);
-  }
-  .ap-card-title { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 22px; display: flex; align-items: center; gap: 8px; }
-  .ap-card-title i { color: var(--accent); }
-  .ap-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
-  .ap-field label { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
-  .ap-field .hint { font-weight: 400; color: var(--muted); }
-  .ap-input {
-    height: 44px; padding: 0 15px; width: 100%;
-    background: var(--ap-input); border: 1px solid var(--ap-hairline);
-    border-radius: 11px; color: var(--ink); font-size: 14px; font-family: 'Inter', sans-serif;
-    outline: none; transition: border-color .18s, box-shadow .18s;
-  }
-  .ap-input::placeholder { color: var(--muted); }
-  .ap-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ap-focus); }
-  .ap-actions { margin-top: 26px; }
-  .ap-save {
-    height: 44px; padding: 0 26px; border: none; border-radius: 11px;
-    background: var(--accent); color: #0d0d14; font: 600 14px 'Inter', sans-serif;
-    cursor: pointer; transition: filter .15s, transform .05s;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  .ap-save:hover { filter: brightness(1.06); }
-  .ap-save:active { transform: scale(.985); }
-  .ap-flash { border-radius: 11px; padding: 12px 16px; font-size: 13.5px; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 9px; }
-  .ap-flash.ok  { background: rgba(34,197,94,.10); color: #15a34a; border: 1px solid rgba(34,197,94,.20); }
-  .ap-flash.err { background: rgba(239,68,68,.10); color: #dc2626; border: 1px solid rgba(239,68,68,.20); }
+.set-h1 { font-family:'Poppins',sans-serif; font-size:22px; font-weight:800; letter-spacing:-.01em; color:var(--ink); margin:0 0 3px; }
+.set-sub { font-size:13.5px; color:var(--muted); margin:0; }
+.set-section { font-family:'Poppins',sans-serif; font-size:12.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin:0 0 18px; display:flex; align-items:center; gap:8px; }
+.set-section i { color:var(--accent); }
+.set-section.mt { margin-top:28px; padding-top:24px; border-top:1px solid var(--border); }
+.set-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px 20px; }
+.set-field { display:flex; flex-direction:column; gap:7px; }
+.set-field.full { grid-column:1 / -1; }
+.set-field label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.set-field label .hint { text-transform:none; letter-spacing:0; font-weight:400; }
+.set-input { height:44px; padding:0 14px; width:100%; background:var(--surface-2); border:1.5px solid var(--border); border-radius:8px; color:var(--ink); font:500 14px 'Inter',sans-serif; outline:none; transition:border-color .18s, background .18s; }
+.set-input::placeholder { color:var(--muted); }
+.set-input:focus { border-color:var(--accent); background:var(--surface); }
+@media(max-width:640px){ .set-grid{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -94,45 +81,79 @@ $page_title = 'Settings';
   <div class="admin-main">
     <?php require_once 'partials/topbar.php'; ?>
     <div class="admin-content">
-      <div class="ap-wrap">
 
-        <h1 class="ap-h1">Settings</h1>
-        <p class="ap-sub">Manage your agency details. Switch the panel theme from the top-right of the bar above.</p>
-
-        <?php if ($saved): ?>
-        <div class="ap-flash ok"><i class="fas fa-circle-check"></i> Settings saved successfully.</div>
-        <?php endif; ?>
-        <?php if ($error): ?>
-        <div class="ap-flash err"><i class="fas fa-circle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-
-        <form method="post" class="ap-card">
-          <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
-          <div class="ap-card-title"><i class="fas fa-building"></i> Agency Information</div>
-
-          <div class="ap-field">
-            <label>Agency Name</label>
-            <input class="ap-input" type="text" name="agency_name" value="<?= htmlspecialchars($settings['agency_name'] ?? '') ?>" placeholder="Himachal Safar">
-          </div>
-          <div class="ap-field">
-            <label>Phone Number</label>
-            <input class="ap-input" type="text" name="agency_phone" value="<?= htmlspecialchars($settings['agency_phone'] ?? '') ?>" placeholder="+91 98765 43210">
-          </div>
-          <div class="ap-field">
-            <label>WhatsApp Number <span class="hint">— digits only, with country code</span></label>
-            <input class="ap-input" type="text" name="agency_whatsapp" value="<?= htmlspecialchars($settings['agency_whatsapp'] ?? '') ?>" placeholder="919876543210">
-          </div>
-          <div class="ap-field" style="margin-bottom:0">
-            <label>Email Address</label>
-            <input class="ap-input" type="email" name="agency_email" value="<?= htmlspecialchars($settings['agency_email'] ?? '') ?>" placeholder="info@himachalsafar.com">
-          </div>
-
-          <div class="ap-actions">
-            <button type="submit" class="ap-save"><i class="fas fa-check"></i> Save Settings</button>
-          </div>
-        </form>
-
+      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+          <h1 class="set-h1">Settings</h1>
+          <p class="set-sub">Contact details, location and social links shown across your website.</p>
+        </div>
       </div>
+
+      <?php if ($saved): ?>
+      <div class="alert alert-success alert-dismissible fade show py-2 mb-3">
+        <i class="fas fa-circle-check me-1"></i> Settings saved successfully.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <?php endif; ?>
+      <?php if ($error): ?>
+      <div class="alert alert-danger alert-dismissible fade show py-2 mb-3">
+        <i class="fas fa-circle-exclamation me-1"></i> <?= htmlspecialchars($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <?php endif; ?>
+
+      <form method="post" class="admin-card" style="padding:26px 28px;">
+        <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+
+        <div class="set-section"><i class="fas fa-building"></i> Agency Information</div>
+        <div class="set-grid">
+          <div class="set-field full">
+            <label>Agency Name</label>
+            <input class="set-input" type="text" name="agency_name" value="<?= htmlspecialchars($settings['agency_name'] ?? '') ?>" placeholder="Himachal Safar">
+          </div>
+          <div class="set-field">
+            <label>Phone Number 1</label>
+            <input class="set-input" type="text" name="agency_phone" value="<?= htmlspecialchars($settings['agency_phone'] ?? '') ?>" placeholder="+91 98765 43210">
+          </div>
+          <div class="set-field">
+            <label>Phone Number 2 <span class="hint">— optional</span></label>
+            <input class="set-input" type="text" name="agency_phone2" value="<?= htmlspecialchars($settings['agency_phone2'] ?? '') ?>" placeholder="+91 91234 56789">
+          </div>
+          <div class="set-field">
+            <label>WhatsApp Number <span class="hint">— digits only, with country code</span></label>
+            <input class="set-input" type="text" name="agency_whatsapp" value="<?= htmlspecialchars($settings['agency_whatsapp'] ?? '') ?>" placeholder="919876543210">
+          </div>
+          <div class="set-field">
+            <label>Email Address</label>
+            <input class="set-input" type="email" name="agency_email" value="<?= htmlspecialchars($settings['agency_email'] ?? '') ?>" placeholder="info@himachalsafar.com">
+          </div>
+          <div class="set-field full">
+            <label>Location <span class="hint">— shown in the footer &amp; SEO</span></label>
+            <input class="set-input" type="text" name="agency_location" value="<?= htmlspecialchars($settings['agency_location'] ?? '') ?>" placeholder="Bilaspur, Himachal Pradesh">
+          </div>
+        </div>
+
+        <div class="set-section mt"><i class="fas fa-share-nodes"></i> Social Media Links</div>
+        <div class="set-grid">
+          <div class="set-field full">
+            <label>Facebook URL <span class="hint">— leave blank to hide the icon</span></label>
+            <input class="set-input" type="url" name="social_facebook" value="<?= htmlspecialchars($settings['social_facebook'] ?? '') ?>" placeholder="https://facebook.com/yourpage">
+          </div>
+          <div class="set-field full">
+            <label>Instagram URL <span class="hint">— leave blank to hide the icon</span></label>
+            <input class="set-input" type="url" name="social_instagram" value="<?= htmlspecialchars($settings['social_instagram'] ?? '') ?>" placeholder="https://instagram.com/yourhandle">
+          </div>
+          <div class="set-field full">
+            <label>YouTube URL <span class="hint">— leave blank to hide the icon</span></label>
+            <input class="set-input" type="url" name="social_youtube" value="<?= htmlspecialchars($settings['social_youtube'] ?? '') ?>" placeholder="https://youtube.com/@yourchannel">
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary-gold"><i class="fas fa-check me-1"></i> Save Settings</button>
+        </div>
+      </form>
+
     </div>
   </div>
 </div>

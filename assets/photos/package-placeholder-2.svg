@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-labelledby="title desc">
+  <title id="title">Snow valley tour placeholder</title>
+  <desc id="desc">Stylized snowy valley with pine trees for tour package cards.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#c8e6ff"/>
+      <stop offset=".7" stop-color="#eff8ff"/>
+      <stop offset="1" stop-color="#fffaf0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#sky)"/>
+  <path d="M0 458 210 190l116 152 130-172 184 248 126-128 214 184 220-160v436H0z" fill="#d8e8ef"/>
+  <path d="M0 505 230 284l116 132 154-202 182 272 115-115 403 261v118H0z" fill="#86aebc"/>
+  <path d="M0 594c124-45 252-63 386-45 168 22 270 69 452 31 139-29 238-52 362 3v167H0z" fill="#f7f7ef"/>
+  <g fill="#174237">
+    <path d="M130 560 90 640h80z"/><rect x="124" y="635" width="12" height="48"/>
+    <path d="M250 530 198 640h104z"/><rect x="244" y="637" width="13" height="55"/>
+    <path d="M1015 535 960 650h110z"/><rect x="1009" y="645" width="14" height="56"/>
+    <path d="M1104 575 1060 662h88z"/><rect x="1098" y="657" width="12" height="45"/>
+  </g>
+  <path d="M416 750c75-126 135-189 183-189 47 0 109 63 185 189z" fill="#2c3d4a"/>
+  <path d="M570 596c21 27 43 77 65 150" stroke="#f8e3a2" stroke-width="10" stroke-linecap="round" stroke-dasharray="28 24"/>
+  <text x="70" y="120" fill="#1a3140" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700">Snow Escape</text>
+</svg>

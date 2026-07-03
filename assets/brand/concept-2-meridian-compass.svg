@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Himachal Safar — Meridian Compass">
+  <title>Himachal Safar — Meridian Compass</title>
+  <defs>
+    <linearGradient id="g" x1="28" y1="20" x2="92" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0DE9E"/>
+      <stop offset=".5" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#A8842A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Compass ring + cardinal ticks -->
+  <circle cx="60" cy="60" r="52" fill="none" stroke="url(#g)" stroke-width="1.2"/>
+  <g stroke="#D4AF37" stroke-width="1.4" stroke-linecap="round" opacity=".85">
+    <path d="M60 8 V15"/><path d="M60 105 V112"/>
+    <path d="M8 60 H15"/><path d="M105 60 H112"/>
+  </g>
+
+  <!-- Guiding star above the summit -->
+  <path d="M60 18 L62.4 27 L71 29.4 L62.4 31.8 L60 41 L57.6 31.8 L49 29.4 L57.6 27 Z" fill="url(#g)"/>
+
+  <!-- Summit (Midnight Alpine) with champagne edge + snow notch -->
+  <path d="M26 86 L48 52 L60 66 L73 46 L94 86 Z" fill="#1B263B"/>
+  <path d="M26 86 L48 52 L60 66 L73 46 L94 86" fill="none" stroke="url(#g)"
+        stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M68 53 L73 46 L78 53" fill="none" stroke="#F4EFE6" stroke-width="2.4"
+        stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

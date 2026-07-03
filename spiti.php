@@ -13,10 +13,10 @@ if ($conn instanceof mysqli) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spiti Valley Tour &amp; Cab Booking | Himachal Safar</title>
-  <meta name="description" content="Explore Spiti Valley with Himachal Safar. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.">
+  <meta name="description" content="Explore Spiti Valley with Himachal Safar. Key Monastery, Chandratal Lake, Kaza, Pin Valley — custom 8N/9D adventure itineraries with expert high-altitude drivers.">
   <?php
     $seoTitle = 'Spiti Valley Tour & Cab Booking | Himachal Safar';
-    $seoDesc  = 'Explore Spiti Valley with Himachal Safar. Key Monastery, Chandratal Lake, Kaza, Pin Valley — 8N/9D adventure packages with expert high-altitude drivers.';
+    $seoDesc  = 'Explore Spiti Valley with Himachal Safar. Key Monastery, Chandratal Lake, Kaza, Pin Valley — custom 8N/9D adventure itineraries with expert high-altitude drivers.';
     $seoPath  = 'spiti.php';
     $seoCrumb = 'Spiti Valley';
     // Per-page social share image = this destination's own hero (falls back to generic default).
@@ -37,9 +37,9 @@ if ($conn instanceof mysqli) {
 <main>
 
   <!-- DEST HERO -->
-  <section class="dest-hero">
+  <section class="dest-hero" id="home">
     <div class="dest-hero-bg">
-      <img src="<?= $hero_photo ? 'uploads/photos/' . h($hero_photo['filename']) : '' ?>" alt="Spiti Valley high altitude Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
+      <img src="<?= h(dest_img_src($hero_photo, $activeDest)) ?>" alt="Spiti Valley high altitude Himachal Pradesh" fetchpriority="high" decoding="async" width="1920" height="1080">
     </div>
     <div class="dest-hero-overlay"></div>
     <div class="container mx-auto px-3 dest-hero-content">
@@ -73,13 +73,13 @@ if ($conn instanceof mysqli) {
           <p>At an average altitude of 3,800 metres, Spiti's landscape is dramatic and barren — rolling barren mountains, ancient Buddhist monasteries perched on cliffsides, high-altitude lakes and river valleys that look like they belong on another planet. Getting here requires expert drivers, acclimatization and planning. Our team specialises exclusively in Spiti expeditions.</p>
           <div class="dest-about-tags">
             <span><i class="fa-solid fa-circle-check"></i> Expert Drivers Required</span>
-            <span><i class="fa-solid fa-circle-check"></i> 9-Day Packages Available</span>
+            <span><i class="fa-solid fa-circle-check"></i> 9-Day Itineraries Available</span>
             <span><i class="fa-solid fa-circle-check"></i> Jun–Sep Road Access</span>
             <span><i class="fa-solid fa-circle-check"></i> 4WD Vehicles</span>
           </div>
         </div>
         <div class="dest-about-img reveal">
-          <img src="<?= $about_photo ? 'uploads/photos/' . h($about_photo['filename']) : '' ?>" alt="Spiti Valley high altitude landscape" loading="lazy" decoding="async" width="800" height="600">
+          <img src="<?= h(dest_img_src($about_photo, $activeDest)) ?>" alt="Spiti Valley high altitude landscape" loading="lazy" decoding="async" width="800" height="600">
         </div>
       </div>
     </div>
@@ -184,7 +184,7 @@ if ($conn instanceof mysqli) {
         </div>
         <div class="dest-route-card reveal">
           <div class="drc-top">
-            <span class="drc-from"><i class="fa-solid fa-location-dot"></i> 8N/9D Package</span>
+            <span class="drc-from"><i class="fa-solid fa-location-dot"></i> 8N/9D Itinerary</span>
             <i class="fa-solid fa-arrow-right drc-arrow"></i>
             <span class="drc-to"><i class="fa-solid fa-flag-checkered"></i> Full Spiti Circuit</span>
           </div>
@@ -195,7 +195,7 @@ if ($conn instanceof mysqli) {
           </div>
           <div class="drc-bottom">
             
-            <a href="index.php#contact" class="drc-btn">Get Package <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php#contact" class="drc-btn">Plan This Trip <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
       </div>

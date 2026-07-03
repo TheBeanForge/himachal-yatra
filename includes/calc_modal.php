@@ -17,8 +17,8 @@
         <img src="assets/logo-icon.svg" width="36" height="36" alt="">
       </div>
       <div>
-        <h2 class="cq-title" id="cqTitle">Get Your Instant Quote</h2>
-        <p class="cq-subtitle">Fill in your trip details — price updates instantly.</p>
+        <h2 class="cq-title" id="cqTitle">Plan Your Himachal Journey</h2>
+        <p class="cq-subtitle" id="cqSubtitle">Tell us a little about your trip — we&rsquo;ll tailor an instant estimate. Free, no obligation.</p>
       </div>
     </div>
 
@@ -27,44 +27,50 @@
 
       <form id="cqForm" novalidate autocomplete="off">
         <input type="hidden" name="csrf_token" value="<?= h($__csrf) ?>">
+        <input type="hidden" name="package_id" id="cqPkgId" value="">
         <input type="text" name="website" tabindex="-1" style="display:none" autocomplete="off">
 
         <!-- TRIP DETAILS -->
         <div class="cq-section">
           <div class="cq-section-label"><i class="fa-solid fa-map-location-dot"></i> Trip Details</div>
 
-          <div class="cq-row">
-            <div class="cq-field" id="cqF_pkg">
-              <label class="cq-label">Tour Package <span class="cq-req">*</span></label>
-              <div class="cq-sel" id="cqSel_pkg" data-key="pkg" data-req="1">
-                <button type="button" class="cq-sel-btn">
-                  <span class="cq-sel-txt">Select a package…</span>
-                  <i class="fa-solid fa-chevron-down cq-sel-arr"></i>
-                </button>
-                <div class="cq-sel-drop">
-                  <div class="cq-sel-sr"><i class="fa-solid fa-magnifying-glass"></i><input class="cq-sel-si" type="search" placeholder="Search packages…" autocomplete="off"></div>
-                  <ul class="cq-sel-ul" id="cqUl_pkg"></ul>
+          <div class="cq-field cq-msel-field" id="cqF_dest">
+            <label class="cq-label">Where would you like to explore in Himachal? <span class="cq-req">*</span></label>
+            <div class="cq-msel" id="cqMsel_dest">
+              <div class="cq-chips" id="cqDestChips"></div>
+              <div class="cq-msel-control">
+                <i class="fa-solid fa-magnifying-glass cq-msel-ic"></i>
+                <input type="text" id="cqDestSearch" class="cq-msel-input" autocomplete="off"
+                       placeholder="Search destinations, villages, treks, lakes or enter your own place">
+              </div>
+              <div class="cq-sel-drop" id="cqDestDrop">
+                <ul class="cq-sel-ul" id="cqUl_dest"></ul>
+                <div class="cq-msel-empty" id="cqDestEmpty" hidden>
+                  <span>Can&rsquo;t find your destination?</span>
+                  <button type="button" class="cq-add-custom" id="cqAddCustom"><i class="fa-solid fa-plus"></i> Add Custom Destination</button>
                 </div>
               </div>
-              <input type="hidden" name="package_id" id="cqHid_pkg">
-              <span class="cq-err">Please select a tour package</span>
             </div>
+            <input type="hidden" name="trip_destination" id="cqHid_dest">
+            <input type="hidden" name="custom_destinations" id="cqHid_dest_custom">
+            <span class="cq-err">Please add at least one destination</span>
+          </div>
 
-            <div class="cq-field" id="cqF_loc">
-              <label class="cq-label">Pickup City <span class="cq-req">*</span></label>
-              <div class="cq-sel" id="cqSel_loc" data-key="loc" data-req="1">
-                <button type="button" class="cq-sel-btn">
-                  <span class="cq-sel-txt">Select your city…</span>
-                  <i class="fa-solid fa-chevron-down cq-sel-arr"></i>
-                </button>
-                <div class="cq-sel-drop">
-                  <div class="cq-sel-sr"><i class="fa-solid fa-magnifying-glass"></i><input class="cq-sel-si" type="search" placeholder="Search cities…" autocomplete="off"></div>
-                  <ul class="cq-sel-ul" id="cqUl_loc"></ul>
-                </div>
+          <div class="cq-field" id="cqF_loc">
+            <label class="cq-label">Pickup City <span class="cq-req">*</span></label>
+            <div class="cq-sel" id="cqSel_loc" data-key="loc" data-req="1" data-custom="1">
+              <button type="button" class="cq-sel-btn">
+                <span class="cq-sel-txt">Select or type your city…</span>
+                <i class="fa-solid fa-chevron-down cq-sel-arr"></i>
+              </button>
+              <div class="cq-sel-drop">
+                <div class="cq-sel-sr"><i class="fa-solid fa-magnifying-glass"></i><input class="cq-sel-si" type="search" placeholder="Search, or type any city…" autocomplete="off"></div>
+                <ul class="cq-sel-ul" id="cqUl_loc"></ul>
               </div>
-              <input type="hidden" name="pickup_location_id" id="cqHid_loc">
-              <span class="cq-err">Please select a pickup city</span>
             </div>
+            <input type="hidden" name="pickup_location_id" id="cqHid_loc">
+            <input type="hidden" name="pickup_custom" id="cqHid_loc_custom">
+            <span class="cq-err">Please select or type a pickup city</span>
           </div>
 
           <div class="cq-field" id="cqF_veh">
@@ -81,6 +87,7 @@
             </div>
             <input type="hidden" name="vehicle_id" id="cqHid_veh">
             <span class="cq-err">Please select a vehicle</span>
+            <span class="cq-cap-msg" id="cqVehCap" role="alert" hidden></span>
           </div>
 
           <div class="cq-row cq-row-3">
@@ -93,6 +100,7 @@
               <label class="cq-label" for="cqDrop">Drop Date <span class="cq-req">*</span></label>
               <input type="date" id="cqDrop" name="drop_date" class="cq-input">
               <span class="cq-err">Must be after pickup date</span>
+              <span class="cq-pkg-hint" id="cqPkgHint" hidden></span>
             </div>
             <div class="cq-field">
               <label class="cq-label">Travelers</label>
@@ -132,7 +140,7 @@
           <div class="cq-bd-card">
             <div class="cq-bd-placeholder" id="cqBdPlaceholder">
               <i class="fa-solid fa-calculator"></i>
-              Select package, vehicle &amp; dates to see your estimate
+              Select your vehicle &amp; dates to see your estimate
             </div>
             <div id="cqBdRows" hidden></div>
             <div class="cq-bd-total" id="cqBdTotal" hidden>
@@ -333,6 +341,11 @@
 .cq-err { font-size: .7rem; color: #f87171; display: none; }
 .cq-err::before { content: '⚠ '; }
 .cq-field.has-err .cq-err { display: block; }
+/* Package mode: drop date auto-locked to the package length */
+.cq-pkg-hint { font-size: .7rem; color: var(--lime-2, #a0863f); font-weight: 700; }
+.cq-pkg-hint[hidden] { display: none; }
+.cq-pkg-hint::before { content: '🔒 '; }
+.cq-locked .cq-input { background: var(--gold-light, #f6efdd); cursor: not-allowed; opacity: .92; pointer-events: none; }
 .cq-field.has-err .cq-input,
 .cq-field.has-err .cq-sel-btn { border-color: #f87171 !important; }
 .cq-field.has-err .cq-tel { border-color: #f87171 !important; }
@@ -427,7 +440,63 @@
 .cq-sel-li:hover, .cq-sel-li.focused { background: var(--gold-light); color: var(--charcoal); }
 .cq-sel-li.chosen { color: var(--lime); font-weight: 600; }
 .cq-sel-li.chosen::before { content: '✓  '; font-size: .72rem; }
+/* Capacity-blocked vehicle options: visibly disabled, not selectable. */
+.cq-sel-li.cq-li-disabled { opacity: .4; cursor: not-allowed; }
+.cq-sel-li.cq-li-disabled:hover, .cq-sel-li.cq-li-disabled.focused { background: transparent; color: var(--text-2); }
+.cq-cap-msg { display: block; margin-top: .4rem; font-size: .78rem; font-weight: 600; color: #d9534f; line-height: 1.45; }
 .cq-sel-empty { padding: .75rem .9rem; font-size: .78rem; color: var(--muted); }
+/* Free-text "Use '<typed city>'" option for the pickup field */
+.cq-sel-customli { color: var(--lime); font-weight: 600; border-top: 1px solid var(--line); }
+.cq-sel-customli i { font-size: .72rem; margin-right: .15rem; }
+.cq-sel-customli .cq-cust-q { font-style: italic; }
+
+/* ── Multi-select destination picker (chips + searchable dropdown) ── */
+.cq-msel { position: relative; }
+.cq-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.cq-chips:not(:empty) { margin-bottom: .5rem; }
+.cq-chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .32rem .35rem .32rem .65rem; border-radius: 8px;
+  background: var(--gold-light); border: 1px solid rgba(200,167,93,.32);
+  color: var(--charcoal); font-size: .8rem; font-weight: 600; line-height: 1;
+}
+.cq-chip.is-custom { border-style: dashed; }
+.cq-chip-x {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border: none; border-radius: 5px; cursor: pointer;
+  background: transparent; color: var(--muted); font-size: .72rem;
+  transition: background .15s, color .15s;
+}
+.cq-chip-x:hover { background: var(--lime); color: #000; }
+.cq-msel-control {
+  display: flex; align-items: center; gap: .55rem;
+  height: 44px; padding: 0 .9rem;
+  background: var(--surf-3); border: 1.5px solid var(--line); border-radius: 10px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.cq-msel-control:focus-within { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(200,167,93,.13); }
+.cq-msel-ic { color: var(--muted); font-size: .8rem; flex-shrink: 0; }
+.cq-msel-input {
+  flex: 1; min-width: 0; height: 100%; border: none; background: transparent; outline: none;
+  color: var(--charcoal); font-size: .875rem; font-family: 'Inter',sans-serif;
+}
+.cq-msel-input::placeholder { color: var(--muted); }
+.cq-field.has-err .cq-msel-control { border-color: #f87171 !important; }
+/* The dropdown reuses .cq-sel-drop visuals but anchors to the multiselect control */
+.cq-msel .cq-sel-drop { top: 100%; margin-top: 4px; border-top: 1.5px solid var(--lime); border-radius: 12px; }
+.cq-msel-empty {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+  padding: .7rem .9rem; border-top: 1px solid var(--line);
+  font-size: .8rem; color: var(--muted);
+}
+.cq-add-custom {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .4rem .7rem; border: 1px dashed var(--lime); border-radius: 8px;
+  background: var(--gold-light); color: var(--lime); cursor: pointer;
+  font-size: .78rem; font-weight: 700; font-family: 'Inter',sans-serif;
+  transition: background .15s, color .15s;
+}
+.cq-add-custom:hover { background: var(--lime); color: #000; }
 
 /* Breakdown card */
 .cq-bd-card { background: var(--surf-2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
@@ -557,6 +626,8 @@
 [data-theme="light"] .cq-sel-btn.filled { color: #1a1a2e; }
 [data-theme="light"] .cq-sel-drop{ background: #fff; }
 [data-theme="light"] .cq-sel-si  { background: #f5f5f0; color: #1a1a2e; }
+[data-theme="light"] .cq-msel-control { background: #f5f5f0; border-color: rgba(0,0,0,.12); }
+[data-theme="light"] .cq-chip { color: #1a1a2e; }
 [data-theme="light"] .cq-bd-card { background: #fff; }
 [data-theme="light"] .cq-bd-total{ background: #f5f5f0; }
 
@@ -591,7 +662,7 @@ function daysDiff(a,b){ return Math.max(0,Math.round((new Date(b)-new Date(a))/8
 
 /* ── State ── */
 let DATA=null;
-let S={pkg:null,loc:null,veh:null,pickup:'',drop:'',travelers:2,name:'',phone:''};
+let S={dest:[],loc:null,locCustom:'',veh:null,pickup:'',drop:'',travelers:2,name:'',phone:'',packageId:'',fixedDays:0};  // dest = [{name, custom}]
 let lastCalc=null; // result of calcPrice(), shared between states
 
 /* ── DOM ── */
@@ -601,6 +672,52 @@ const stateForm  = document.getElementById('cqStateForm');
 const stateRes   = document.getElementById('cqStateResult');
 const stateSuc   = document.getElementById('cqStateSuccess');
 const todayStr   = new Date().toISOString().split('T')[0];
+
+/* ── Package mode ──
+   When opened from a Tour Package, the trip length is fixed by the package:
+   the visitor just picks a start date, vehicle and guests; the drop date and
+   number of days are derived automatically from the package. ── */
+const cqPkgIdInp   = document.getElementById('cqPkgId');
+const cqSubtitleEl = document.getElementById('cqSubtitle');
+const cqPkgHintEl  = document.getElementById('cqPkgHint');
+const CQ_SUBTITLE  = cqSubtitleEl ? cqSubtitleEl.textContent : '';
+
+function addDaysISO(iso, n){
+  const [y,m,d] = iso.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  const mm = String(dt.getUTCMonth()+1).padStart(2,'0'), dd = String(dt.getUTCDate()).padStart(2,'0');
+  return dt.getUTCFullYear() + '-' + mm + '-' + dd;
+}
+function applyFixedDrop(){
+  if(S.fixedDays>0 && S.pickup){
+    const iso = addDaysISO(S.pickup, S.fixedDays);
+    S.drop = iso;
+    const de = document.getElementById('cqDrop');
+    if(de){ de.value = iso; de.min = iso; }
+    document.getElementById('cqF_dd')?.classList.remove('has-err');
+  }
+}
+function setPackageMode(pkg){
+  const de = document.getElementById('cqDrop');
+  if(pkg && pkg.days>0){
+    S.packageId = String(pkg.id||''); S.fixedDays = pkg.days;
+    if(cqPkgIdInp) cqPkgIdInp.value = S.packageId;
+    if(de) de.readOnly = true;
+    document.getElementById('cqF_dd')?.classList.add('cq-locked');
+    if(cqPkgHintEl){ cqPkgHintEl.hidden=false; cqPkgHintEl.textContent = `Auto-set from your ${pkg.days}-day package`; }
+    if(cqSubtitleEl) cqSubtitleEl.textContent = `${pkg.name ? pkg.name + ' — ' : ''}choose your start date, vehicle and guests for an instant estimate.`;
+    applyFixedDrop();
+  } else {
+    S.packageId=''; S.fixedDays=0;
+    if(cqPkgIdInp) cqPkgIdInp.value='';
+    if(de) de.readOnly=false;
+    document.getElementById('cqF_dd')?.classList.remove('cq-locked');
+    if(cqPkgHintEl){ cqPkgHintEl.hidden=true; cqPkgHintEl.textContent=''; }
+    if(cqSubtitleEl) cqSubtitleEl.textContent = CQ_SUBTITLE;
+  }
+}
+window.openCalcModalForPackage = function(pkg){ if(window.openCalcModal) window.openCalcModal('', pkg); };
 
 /* ── Conversion config (from PHP) — used to build the post-submit WhatsApp handoff ── */
 const CQ_WA  = "<?= h($whatsappNumber) ?>";
@@ -625,8 +742,10 @@ function closeModal(){
   document.body.style.overflow='';
 }
 
-window.openCalcModal = function(destKey){
+window.openCalcModal = function(destKey, pkg){
   show('form');
+  setTitle('');                              // default friendly heading; preselectDest may personalise it
+  setPackageMode(pkg || null);               // lock the days to the package, or clear package mode
   loadData().then(()=>{ if(destKey) preselectDest(destKey); recalc(); });
   openModal();
   cqInline?.scrollTo({top:0});             // reset scroll to the top of the form
@@ -653,28 +772,152 @@ async function loadData(){
 }
 
 function buildSelectLists(){
-  fillList('cqUl_pkg', DATA.packages,  p=>`${p.name||'?'} — ${p.days||0} Days`, p=>String(p.id));
-  fillList('cqUl_loc', DATA.locations, l=>l.name||'?',                            l=>String(l.id));
-  fillList('cqUl_veh', DATA.vehicles,  v=>`${v.name||'?'} — ${v.seats||'?'} Seater`, v=>String(v.id));
+  // Destinations are rendered by the multi-select (renderDestList); loc & veh stay single-select.
+  fillList('cqUl_loc',  DATA.locations, l=>l.name||'?',                            l=>String(l.id));
+  fillList('cqUl_veh',  DATA.vehicles,  v=>`${v.name||'?'} — ${v.seats||'?'} Seater`, v=>String(v.id), v=>vehCapacity(v));
+  applyVehicleCapacity();
+  renderDestList('');
 }
 
-function fillList(ulId, items, labelFn, valFn){
+function fillList(ulId, items, labelFn, valFn, capFn){
   const ul=document.getElementById(ulId); if(!ul) return;
   ul.innerHTML=items.length
-    ? items.map(it=>`<li class="cq-sel-li" data-val="${valFn(it)}">${labelFn(it)}</li>`).join('')
+    ? items.map(it=>`<li class="cq-sel-li" data-val="${valFn(it)}"${capFn?` data-cap="${capFn(it)}"`:''}>${labelFn(it)}</li>`).join('')
     : '<li class="cq-sel-empty">No options available</li>';
   ul.querySelectorAll('.cq-sel-li').forEach(li=>
     li.addEventListener('click',()=>{
+      if(li.classList.contains('cq-li-disabled')) return;   // capacity-blocked: not selectable
       const wrap=li.closest('.cq-sel');
       if(wrap) pickOpt(wrap,li.dataset.val,li.textContent.trim());
     })
   );
 }
 
+// Passenger capacity of a vehicle = the leading number of its seating string ("7+1" → 7).
+function vehCapacity(v){ return parseInt(String(v && v.seats!=null ? v.seats : ''),10)||0; }
+
+// Keep the vehicle list and the passenger count in sync: disable every vehicle that
+// seats fewer than the chosen passenger count, and drop an already-selected one that
+// no longer fits. Called on load and whenever the traveler stepper changes.
+function applyVehicleCapacity(){
+  const need=S.travelers;
+  document.querySelectorAll('#cqUl_veh .cq-sel-li').forEach(li=>{
+    const cap=parseInt(li.dataset.cap||'0',10)||0;
+    const bad=cap>0 && cap<need;
+    li.classList.toggle('cq-li-disabled',bad);
+    li.setAttribute('aria-disabled',bad?'true':'false');
+  });
+  const capMsg=document.getElementById('cqVehCap');
+  if(S.veh){
+    const sel=(DATA&&DATA.vehicles||[]).find(v=>String(v.id)===String(S.veh));
+    const cap=vehCapacity(sel);
+    if(cap>0 && cap<need){
+      // Auto-deselect the now-too-small vehicle and explain why.
+      S.veh=null;
+      const hid=document.getElementById('cqHid_veh'); if(hid) hid.value='';
+      const wrap=document.getElementById('cqSel_veh');
+      const btn=wrap&&wrap.querySelector('.cq-sel-btn');
+      if(btn){ btn.querySelector('.cq-sel-txt').textContent='Choose your vehicle…'; btn.classList.remove('filled'); }
+      wrap&&wrap.querySelectorAll('.cq-sel-li').forEach(l=>l.classList.remove('chosen'));
+      if(capMsg){ capMsg.hidden=false; capMsg.textContent=`The selected vehicle cannot accommodate ${need} passengers. Please choose a vehicle with at least ${need} seats.`; }
+      recalc();
+      return;
+    }
+  }
+  if(capMsg) capMsg.hidden=true;
+}
+
+const DEFAULT_TITLE='Plan Your Himachal Journey';
+const cqTitleEl=document.getElementById('cqTitle');
+function setTitle(destName){
+  if(!cqTitleEl) return;
+  cqTitleEl.textContent = destName ? `Plan Your ${destName} Journey` : DEFAULT_TITLE;
+}
+
 function preselectDest(key){
-  if(!DATA) return;
-  const m=DATA.packages.find(p=>p.dest_key===key);
-  if(m){ const w=document.getElementById('cqSel_pkg'); if(w) pickOpt(w,String(m.id),`${m.name} — ${m.days} Days`); }
+  if(!DATA||!DATA.dests) return;
+  const d=DATA.dests.find(x=>x.dest_key===key);
+  if(d){
+    addDest(d.name, false);                    // seed the multi-select with this destination
+    // Friendly, non-static heading keyed to the destination the visitor came from.
+    if(d.name) setTitle(d.name);
+  }
+}
+
+/* ── Multi-select destination picker ──
+   S.dest is an array of {name, custom}. Users pick any number of DB destinations
+   and/or type their own — a traveller is never blocked by a missing place. */
+const destSearch = document.getElementById('cqDestSearch');
+const destChips  = document.getElementById('cqDestChips');
+const destDrop   = document.getElementById('cqDestDrop');
+const destUl     = document.getElementById('cqUl_dest');
+const destEmpty  = document.getElementById('cqDestEmpty');
+const destHid    = document.getElementById('cqHid_dest');
+const destHidCus = document.getElementById('cqHid_dest_custom');
+
+function destHas(name){ return S.dest.some(d=>d.name.toLowerCase()===name.toLowerCase()); }
+
+function addDest(name, custom){
+  name=(name||'').trim();
+  if(!name || destHas(name)) return;
+  S.dest.push({name, custom:!!custom});
+  renderChips();
+  renderDestList(destSearch?destSearch.value.trim():'');
+}
+function removeDest(name){
+  S.dest=S.dest.filter(d=>d.name.toLowerCase()!==name.toLowerCase());
+  renderChips();
+  renderDestList(destSearch?destSearch.value.trim():'');
+}
+
+function renderChips(){
+  if(destChips){
+    destChips.innerHTML=S.dest.map(d=>
+      `<span class="cq-chip${d.custom?' is-custom':''}">${escHtml(d.name)}`+
+      `<button type="button" class="cq-chip-x" data-name="${escAttr(d.name)}" aria-label="Remove ${escAttr(d.name)}"><i class="fa-solid fa-xmark"></i></button></span>`
+    ).join('');
+    destChips.querySelectorAll('.cq-chip-x').forEach(b=>b.addEventListener('click',()=>removeDest(b.dataset.name)));
+  }
+  if(destHid)    destHid.value    = S.dest.map(d=>d.name).join(', ');
+  if(destHidCus) destHidCus.value = S.dest.filter(d=>d.custom).map(d=>d.name).join(', ');
+  if(S.dest.length) document.getElementById('cqF_dest')?.classList.remove('has-err');
+}
+
+function renderDestList(q){
+  if(!destUl) return;
+  const ql=(q||'').toLowerCase();
+  const items=(DATA?.dests||[]).filter(d=>!ql || (d.name||'').toLowerCase().includes(ql));
+  destUl.innerHTML=items.map(d=>{
+    const chosen=destHas(d.name);
+    return `<li class="cq-sel-li${chosen?' chosen':''}" data-name="${escAttr(d.name)}">${escHtml(d.name)}</li>`;
+  }).join('');
+  destUl.querySelectorAll('.cq-sel-li').forEach(li=>li.addEventListener('click',()=>{
+    destHas(li.dataset.name) ? removeDest(li.dataset.name) : addDest(li.dataset.name,false);
+  }));
+  // Offer "Add Custom" whenever the typed value isn't already an exact DB option / chosen chip.
+  const exact=(DATA?.dests||[]).some(d=>(d.name||'').toLowerCase()===ql);
+  const showAdd = !!q && !exact;
+  if(destEmpty) destEmpty.hidden = !showAdd;
+}
+
+function escHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function escAttr(s){ return escHtml(s).replace(/'/g,'&#39;'); }
+
+function initMultiSelect(){
+  if(!destSearch) return;
+  const open =()=>{ destDrop?.classList.add('open'); renderDestList(destSearch.value.trim()); };
+  const close=()=>destDrop?.classList.remove('open');
+  destSearch.addEventListener('focus', open);
+  destSearch.addEventListener('input',()=>{ destDrop?.classList.add('open'); renderDestList(destSearch.value.trim()); });
+  destSearch.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ e.preventDefault(); const q=destSearch.value.trim(); if(q){ const m=(DATA?.dests||[]).find(d=>(d.name||'').toLowerCase()===q.toLowerCase()); addDest(m?m.name:q, !m); destSearch.value=''; renderDestList(''); } }
+    if(e.key==='Escape'){ close(); }
+    if(e.key==='Backspace' && !destSearch.value && S.dest.length){ removeDest(S.dest[S.dest.length-1].name); }
+  });
+  document.getElementById('cqAddCustom')?.addEventListener('click',()=>{
+    const q=destSearch.value.trim(); if(q){ addDest(q,true); destSearch.value=''; renderDestList(''); destSearch.focus(); }
+  });
+  document.addEventListener('click',e=>{ if(!document.getElementById('cqMsel_dest')?.contains(e.target)) close(); });
 }
 
 /* ── Custom select ── */
@@ -683,7 +926,25 @@ function initSelect(wrap){
   const drop = wrap.querySelector('.cq-sel-drop');
   const si   = wrap.querySelector('.cq-sel-si');
   const ul   = wrap.querySelector('.cq-sel-ul');
+  const allowCustom = wrap.dataset.custom==='1';
   let fi=-1;
+
+  // Free-text option: shows "Use '<typed>'" so a city we don't stock is still usable.
+  function updateCustomLi(raw){
+    let cli=ul.querySelector('.cq-sel-customli');
+    if(raw){
+      if(!cli){
+        cli=document.createElement('li');
+        cli.className='cq-sel-li cq-sel-customli';
+        cli.innerHTML='<i class="fa-solid fa-location-dot"></i> Use “<span class="cq-cust-q"></span>”';
+        cli.addEventListener('click',()=>pickOpt(wrap,cli.dataset.custom,cli.dataset.custom,true));
+        ul.appendChild(cli);
+      }
+      cli.dataset.custom=raw;
+      cli.querySelector('.cq-cust-q').textContent=raw;
+      cli.style.display='';
+    } else if(cli){ cli.style.display='none'; }
+  }
 
   function openDrop(){
     btn.classList.add('open'); drop.classList.add('open');
@@ -695,7 +956,11 @@ function initSelect(wrap){
   }
   function closeDrop(){ btn.classList.remove('open'); drop.classList.remove('open'); }
 
-  function showAll(ul){ ul.querySelectorAll('.cq-sel-li').forEach(l=>l.style.display=''); fi=-1; }
+  function showAll(ul){
+    ul.querySelectorAll('.cq-sel-li').forEach(l=>l.style.display='');
+    ul.querySelector('.cq-sel-customli')?.style.setProperty('display','none'); // hidden until typing
+    fi=-1;
+  }
   function moveFocus(d){
     const vis=[...ul.querySelectorAll('.cq-sel-li:not([style*="none"])')];
     if(!vis.length) return;
@@ -706,8 +971,12 @@ function initSelect(wrap){
 
   btn.addEventListener('click',()=>drop.classList.contains('open')?closeDrop():openDrop());
   si.addEventListener('input',()=>{
-    const q=si.value.toLowerCase();
-    ul.querySelectorAll('.cq-sel-li').forEach(l=>{ l.style.display=(!q||l.textContent.toLowerCase().includes(q))?'':'none'; });
+    const raw=si.value.trim();
+    const q=raw.toLowerCase();
+    ul.querySelectorAll('.cq-sel-li:not(.cq-sel-customli)').forEach(l=>{
+      l.style.display=(!q||l.textContent.toLowerCase().includes(q))?'':'none';
+    });
+    if(allowCustom) updateCustomLi(raw);
     fi=-1;
   });
   btn.addEventListener('keydown',e=>{ if(['Enter',' ','ArrowDown'].includes(e.key)){e.preventDefault();openDrop();} });
@@ -716,8 +985,15 @@ function initSelect(wrap){
     if(e.key==='ArrowUp'){e.preventDefault();moveFocus(-1);}
     if(e.key==='Escape'){closeDrop();btn.focus();}
     if(e.key==='Enter'){
+      e.preventDefault();
       const vis=[...ul.querySelectorAll('.cq-sel-li:not([style*="none"])')];
-      if(vis[fi]) pickOpt(wrap,vis[fi].dataset.val,vis[fi].textContent.trim());
+      // Use the focused row; otherwise prefer a real match, falling back to the typed city.
+      let target = fi>=0 ? vis[fi]
+        : (vis.find(l=>!l.classList.contains('cq-sel-customli')) || vis.find(l=>l.classList.contains('cq-sel-customli')));
+      if(target){
+        if(target.classList.contains('cq-sel-customli')) pickOpt(wrap,target.dataset.custom,target.dataset.custom,true);
+        else pickOpt(wrap,target.dataset.val,target.textContent.trim());
+      }
     }
   });
   document.addEventListener('click',e=>{ if(!wrap.contains(e.target)) closeDrop(); });
@@ -725,20 +1001,44 @@ function initSelect(wrap){
   wrap._selClose = closeDrop;
 }
 
-function pickOpt(wrap,val,label){
+function pickOpt(wrap,val,label,isCustom){
   const key=wrap.dataset.key; if(!key) return;
-  S[key]=val;
   const btn=wrap.querySelector('.cq-sel-btn');
   btn.querySelector('.cq-sel-txt').textContent=label;
   btn.classList.add('filled');
   wrap.closest('.cq-field')?.classList.remove('has-err');
-  const hid=document.getElementById('cqHid_'+key); if(hid) hid.value=val;
-  wrap.querySelectorAll('.cq-sel-li').forEach(l=>l.classList.toggle('chosen',l.dataset.val===val));
+
+  if(key==='loc'){
+    // Pickup city accepts free text: a DB city sends pickup_location_id,
+    // a typed-in city we don't have sends pickup_custom instead.
+    const hidId=document.getElementById('cqHid_loc');
+    const hidCustom=document.getElementById('cqHid_loc_custom');
+    if(isCustom){
+      S.loc='custom'; S.locCustom=label;
+      if(hidId)     hidId.value='';
+      if(hidCustom) hidCustom.value=label;
+      wrap.querySelectorAll('.cq-sel-li').forEach(l=>l.classList.remove('chosen'));
+    } else {
+      S.loc=val; S.locCustom='';
+      if(hidId)     hidId.value=val;
+      if(hidCustom) hidCustom.value='';
+      wrap.querySelectorAll('.cq-sel-li').forEach(l=>l.classList.toggle('chosen',l.dataset.val===val));
+    }
+  } else {
+    S[key]=val;
+    const hid=document.getElementById('cqHid_'+key); if(hid) hid.value=val;
+    wrap.querySelectorAll('.cq-sel-li').forEach(l=>l.classList.toggle('chosen',l.dataset.val===val));
+    if(key==='veh'){   // a pickable vehicle is always capacity-valid → clear the warning
+      const capMsg=document.getElementById('cqVehCap'); if(capMsg) capMsg.hidden=true;
+      document.getElementById('cqF_veh')?.classList.remove('has-err');
+    }
+  }
   wrap._selClose?.();
   recalc();
 }
 
 document.querySelectorAll('.cq-sel').forEach(initSelect);
+initMultiSelect();
 
 /* ── Stepper ── */
 const travDisp=document.getElementById('cqTravDisp');
@@ -747,6 +1047,7 @@ document.querySelectorAll('.cq-step-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     S.travelers=btn.dataset.op==='+'?Math.min(50,S.travelers+1):Math.max(1,S.travelers-1);
     travDisp.textContent=travHid.value=S.travelers;
+    applyVehicleCapacity();   // keep vehicle options in sync with the passenger count
     recalc();
   });
 });
@@ -757,8 +1058,12 @@ const dropEl  =document.getElementById('cqDrop');
 pickupEl.min=todayStr;
 pickupEl.addEventListener('change',()=>{
   S.pickup=pickupEl.value;
-  dropEl.min=pickupEl.value;
-  if(dropEl.value&&dropEl.value<=pickupEl.value){dropEl.value='';S.drop='';}
+  if(S.fixedDays>0){
+    applyFixedDrop();                 // package mode: drop date follows the package length
+  } else {
+    dropEl.min=pickupEl.value;
+    if(dropEl.value&&dropEl.value<=pickupEl.value){dropEl.value='';S.drop='';}
+  }
   document.getElementById('cqF_pd')?.classList.remove('has-err');
   recalc();
 });
@@ -782,26 +1087,18 @@ document.getElementById('cqPhone').addEventListener('blur', function(){
 /* ── PRICE CALCULATION (NaN-proof) ── */
 function calcPrice(){
   if(!DATA) return null;
-  const pkg=DATA.packages.find(p=>String(p.id)===S.pkg);
   const veh=DATA.vehicles.find(v=>String(v.id)===S.veh);
-  if(!pkg||!veh||!S.pickup||!S.drop) return null;
+  if(!veh||!S.pickup||!S.drop) return null;
 
   const days=daysDiff(S.pickup,S.drop);
   if(days<=0) return null;
 
   // sn() wraps every value — can never produce NaN
-  const ppd      = sn(pkg.ppd);
-  const extraPP  = sn(pkg.extra_pp);
-  const vehRate  = sn(veh.rate);
+  const vehRate = sn(veh.rate);
+  if(vehRate===0) return {error:'Pricing not configured for this vehicle.'};
 
-  if(ppd===0 && vehRate===0) return {error:'Pricing not configured for this package.'};
-
-  const packageCost = ppd * sn(S.travelers) * days;
+  // Vehicle-only estimate — destinations/itineraries are quoted by our team, not priced here.
   const vehicleCost = vehRate * days;
-  const extraCost   = extraPP * sn(S.travelers);
-
-  const dest = DATA.dests?.find(d=>d.dest_key===pkg.dest_key);
-  const destCharge = sn(dest?.extra_per_day) * sn(S.travelers) * days;
 
   let seasonalAmt=0, seasonalPct=0;
   if(DATA.seasonal&&S.pickup){
@@ -809,32 +1106,30 @@ function calcPrice(){
     (DATA.seasonal||[]).forEach(s=>{
       if(pd>=new Date(s.start)&&pd<=new Date(s.end)){
         seasonalPct+=sn(s.pct);
-        seasonalAmt+=Math.round((packageCost+vehicleCost)*sn(s.pct)/100);
+        seasonalAmt+=Math.round(vehicleCost*sn(s.pct)/100);
       }
     });
   }
 
-  const subtotal=packageCost+vehicleCost+extraCost+destCharge+seasonalAmt;
+  const subtotal=vehicleCost+seasonalAmt;
 
   const taxLines=[];
   (DATA.taxes||[]).forEach(t=>{
     const tval=sn(t.value);
-    const base=t.apply_on==='package_cost'?packageCost:t.apply_on==='vehicle_cost'?vehicleCost:subtotal;
+    // package_cost no longer exists → such taxes fall back to the vehicle subtotal.
+    const base=t.apply_on==='vehicle_cost'?vehicleCost:subtotal;
     const amt=t.type==='percentage'?Math.round(base*tval/100):tval;
     if(amt>0) taxLines.push({name:t.name,amt});
   });
   const taxTotal=taxLines.reduce((a,t)=>a+sn(t.amt),0);
   const total=subtotal+taxTotal;
 
-  return {packageCost,vehicleCost,extraCost,destCharge,seasonalAmt,seasonalPct,subtotal,taxLines,taxTotal,total,days,pkg,veh,error:null};
+  return {vehicleCost,seasonalAmt,seasonalPct,subtotal,taxLines,taxTotal,total,days,veh,error:null};
 }
 
 function buildBdRows(r){
   const rows=[];
-  rows.push({ico:'fa-suitcase-rolling', lbl:`Package (${S.travelers}p × ${r.days}d)`, amt:r.packageCost});
   rows.push({ico:'fa-car-side',         lbl:`Vehicle (${r.days}d)`,                    amt:r.vehicleCost});
-  if(r.extraCost>0)   rows.push({ico:'fa-circle-plus',lbl:'Extra Charges',             amt:r.extraCost,   cls:'extra-row'});
-  if(r.destCharge>0)  rows.push({ico:'fa-mountain',   lbl:'Destination Surcharge',     amt:r.destCharge,  cls:'extra-row'});
   if(r.seasonalAmt>0) rows.push({ico:'fa-sun',         lbl:`Peak Season (+${r.seasonalPct}%)`, amt:r.seasonalAmt, cls:'season-row'});
   rows.push({ico:null,lbl:'Subtotal',                                                   amt:r.subtotal,    cls:'sub-row'});
   r.taxLines.forEach(t=>rows.push({ico:'fa-percent',   lbl:t.name,                     amt:sn(t.amt),     cls:'tax-row'}));
@@ -858,7 +1153,7 @@ function recalc(){
   if(!r||r.error){
     ph.hidden=false; bdRows.hidden=true; bdTotal.hidden=true;
     if(r?.error) ph.innerHTML=`<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i> ${r.error}`;
-    else ph.innerHTML='<i class="fa-solid fa-calculator"></i> Select package, vehicle &amp; dates to see your estimate';
+    else ph.innerHTML='<i class="fa-solid fa-calculator"></i> Select your vehicle &amp; dates to see your estimate';
     return;
   }
   ph.hidden=true; bdRows.hidden=false; bdTotal.hidden=false;
@@ -872,11 +1167,23 @@ function recalc(){
 /* ── Validation ── */
 function validate(){
   let ok=true;
-  ['cqSel_pkg','cqSel_loc','cqSel_veh'].forEach(id=>{
+  // At least one destination (DB or custom) is required.
+  if(!S.dest.length){ document.getElementById('cqF_dest')?.classList.add('has-err'); ok=false; }
+  else document.getElementById('cqF_dest')?.classList.remove('has-err');
+  ['cqSel_loc','cqSel_veh'].forEach(id=>{
     const wrap=document.getElementById(id);
     if(wrap?.dataset.req==='1'&&!S[wrap.dataset.key]){ wrap.closest('.cq-field')?.classList.add('has-err'); ok=false; }
     else wrap?.closest('.cq-field')?.classList.remove('has-err');
   });
+  // Capacity guard: a selected vehicle must seat all travelers.
+  const selVeh=(DATA&&DATA.vehicles||[]).find(v=>String(v.id)===String(S.veh));
+  const selCap=vehCapacity(selVeh);
+  if(S.veh && selCap>0 && selCap<S.travelers){
+    document.getElementById('cqF_veh')?.classList.add('has-err');
+    const capMsg=document.getElementById('cqVehCap');
+    if(capMsg){ capMsg.hidden=false; capMsg.textContent=`The selected vehicle cannot accommodate ${S.travelers} passengers. Please choose a vehicle with at least ${S.travelers} seats.`; }
+    ok=false;
+  }
   if(!S.pickup||S.pickup<todayStr){document.getElementById('cqF_pd')?.classList.add('has-err');ok=false;}
   else document.getElementById('cqF_pd')?.classList.remove('has-err');
   if(!S.drop||S.drop<=S.pickup){document.getElementById('cqF_dd')?.classList.add('has-err');ok=false;}
@@ -905,13 +1212,12 @@ document.getElementById('cqEstBtn').addEventListener('click',()=>{
   lastCalc=r;
 
   // Build result view
-  const pkg=DATA.packages.find(p=>String(p.id)===S.pkg);
   const loc=DATA.locations.find(l=>String(l.id)===S.loc);
   const veh=DATA.vehicles.find(v=>String(v.id)===S.veh);
 
   document.getElementById('cqResPills').innerHTML=[
-    ['fa-suitcase-rolling',pkg?.name||'—'],
-    ['fa-location-dot',    loc?.name||'—'],
+    ['fa-mountain-sun',    S.dest.map(d=>d.name).join(', ')||'—'],
+    ['fa-location-dot',    loc?.name||S.locCustom||'—'],
     ['fa-car-side',        veh?`${veh.name} (${veh.seats})`:'—'],
     ['fa-users',           `${S.travelers} Traveler${S.travelers>1?'s':''}`],
     ['fa-calendar-days',   `${r.days} Day${r.days>1?'s':''}`],
@@ -958,7 +1264,7 @@ function fillSuccess(api){
   const bd=api.breakdown||{};
   const total=sn(bd.total||api.total);
   document.getElementById('cqSuccessSummary').innerHTML=`
-    <div class="cq-success-row"><span>Package</span><strong>${api.package||'—'}</strong></div>
+    <div class="cq-success-row"><span>Destination</span><strong>${api.destination||'—'}</strong></div>
     <div class="cq-success-row"><span>Pickup</span><strong>${api.pickup||'—'}</strong></div>
     <div class="cq-success-row"><span>Vehicle</span><strong>${api.vehicle||'—'}</strong></div>
     <div class="cq-success-row"><span>Dates</span><strong>${S.pickup} → ${S.drop}</strong></div>
@@ -975,7 +1281,7 @@ function fillSuccess(api){
     const ref = api.enquiry_id ? `#${api.enquiry_id}` : '';
     const msg =
       `Hi Himachal Safar, I just submitted an enquiry${ref?` (Ref ${ref})`:''} and would like to confirm my trip.\n\n`+
-      `• Package: ${api.package||'—'}\n`+
+      `• Destination: ${api.destination||'—'}\n`+
       `• Pickup: ${api.pickup||'—'}\n`+
       `• Vehicle: ${api.vehicle||'—'}\n`+
       `• Dates: ${S.pickup} → ${S.drop}\n`+
@@ -988,15 +1294,20 @@ function fillSuccess(api){
 /* ── Reset / New Estimate ── */
 document.getElementById('cqNewBtn').addEventListener('click',()=>{
   document.getElementById('cqForm').reset();
-  S={pkg:null,loc:null,veh:null,pickup:'',drop:'',travelers:2,name:'',phone:''};
+  S={dest:[],loc:null,locCustom:'',veh:null,pickup:'',drop:'',travelers:2,name:'',phone:'',packageId:'',fixedDays:0};
   travDisp.textContent=travHid.value='2';
-  document.querySelectorAll('.cq-sel-btn').forEach(b=>{ b.querySelector('.cq-sel-txt').textContent=b.closest('.cq-sel').dataset.key==='pkg'?'Select a package…':b.closest('.cq-sel').dataset.key==='loc'?'Select your city…':'Choose your vehicle…'; b.classList.remove('filled','open'); });
+  setTitle('');
+  setPackageMode(null);
+  if(destSearch) destSearch.value='';
+  renderChips(); renderDestList('');
+  document.querySelectorAll('.cq-sel-btn').forEach(b=>{ b.querySelector('.cq-sel-txt').textContent=b.closest('.cq-sel').dataset.key==='loc'?'Select or type your city…':'Choose your vehicle…'; b.classList.remove('filled','open'); });
   document.querySelectorAll('.cq-sel-li').forEach(l=>l.classList.remove('chosen'));
+  document.querySelectorAll('.cq-sel-customli').forEach(l=>l.style.display='none');
   document.querySelectorAll('.cq-sel-drop').forEach(d=>d.classList.remove('open'));
-  document.querySelectorAll('.cq-hid_pkg,.cq-hid_loc,.cq-hid_veh').forEach(h=>{ if(h) h.value=''; });
-  document.getElementById('cqHid_pkg').value=''; document.getElementById('cqHid_loc').value=''; document.getElementById('cqHid_veh').value='';
+  document.getElementById('cqHid_loc').value=''; document.getElementById('cqHid_loc_custom').value=''; document.getElementById('cqHid_veh').value='';
   document.querySelectorAll('.cq-field.has-err').forEach(f=>f.classList.remove('has-err'));
   hideErr('cqGlobalErr'); hideErr('cqSubmitErr');
+  applyVehicleCapacity();   // travelers reset to 2 → re-enable all vehicles, clear capacity warning
   lastCalc=null;
   recalc();
   show('form');
@@ -1015,18 +1326,23 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&cqModal?.classList
 ['openBookingModal','heroBookBtn','cqFab'].forEach(id=>{
   document.getElementById(id)?.addEventListener('click',e=>{e.stopImmediatePropagation();openCalcModal('');},true);
 });
-document.querySelectorAll('[data-open-quote]').forEach(el=>{
-  el.addEventListener('click',e=>{e.preventDefault();openCalcModal(el.getAttribute('data-open-quote')||'');});
+// Delegated: also catches [data-open-quote] elements rendered AFTER this script
+// (e.g. the footer's "Plan a Custom Trip" link, which foot.php outputs later).
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-open-quote]');
+  if(!el) return;
+  e.preventDefault();
+  openCalcModal(el.getAttribute('data-open-quote')||'');
 });
 
-/* ── URL auto-open: ?calc=manali ── */
+/* ── URL auto-open: ?calc=manali (or bare ?calc= for no preselection) ── */
 const _dp=new URLSearchParams(window.location.search).get('calc');
-if(_dp) window.addEventListener('load',()=>setTimeout(()=>openCalcModal(_dp),250));
+if(_dp!==null) window.addEventListener('load',()=>setTimeout(()=>openCalcModal(_dp),250));
 
 /* ── Auto-open the quote popup 5s after landing — once per browser session.
      Skips if a ?calc= deep link already opened it, if the visitor already
      opened it manually, or if the WhatsApp lead popup is currently open. ── */
-if(!_dp){
+if(_dp===null && !window.CQ_NO_AUTOPOPUP){
   let already=false; try{ already=sessionStorage.getItem('cqShown')==='1'; }catch(e){}
   if(!already){
     setTimeout(()=>{

@@ -4,6 +4,10 @@ if (empty($_SESSION['admin_user'])) { header('Location: login.php'); exit; }
 require_once '../includes/vars.php';
 $csrf = admin_csrf_token();
 
+// Ensure the schema pieces this page needs exist (older installs may lack them).
+try { $conn->query("ALTER TABLE tour_packages ADD COLUMN destination_key VARCHAR(50) NULL"); } catch (Throwable) {}
+try { $conn->query("ALTER TABLE booking_enquiries MODIFY COLUMN status ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new'"); } catch (Throwable) {}
+
 // Status update
 if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='update_status') {
     require_admin_csrf();
@@ -15,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='update_stat
 
 // CSV Export
 if (($_GET['export']??'')==='csv') {
-    $rows=$conn->query("SELECT be.*,tp.package_name,pl.city AS pickup_city,v.vehicle_name FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id ORDER BY be.created_at DESC")->fetch_all(MYSQLI_ASSOC);
+    $rows=$conn->query("SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id ORDER BY be.created_at DESC")->fetch_all(MYSQLI_ASSOC);
     $conn->close();
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="enquiries_'.date('Y-m-d').'.csv"');
     $f=fopen('php://output','w');
-    fputcsv($f,['ID','Date','Source','Name','Mobile','Email','Package','Pickup City','Vehicle','Travelers','Pickup Date','Drop Date','Total (₹)','Status']);
+    fputcsv($f,['ID','Date','Source','Name','Mobile','Email','Destination','Pickup City','Vehicle','Travelers','Pickup Date','Drop Date','Total (₹)','Status']);
     foreach($rows as $r) fputcsv($f,[$r['id'],$r['created_at'],$r['source']??'calculator',$r['customer_name'],$r['mobile'],$r['email']??'',$r['package_name']??'',$r['pickup_city']??'',$r['vehicle_name']??'',$r['travelers'],$r['pickup_date']??'',$r['drop_date']??'',number_format((float)($r['estimated_price']??0),2),$r['status']??'new']);
     fclose($f); exit;
 }
@@ -34,15 +38,16 @@ $where=[]; $params=[]; $types='';
 if(in_array($status_f,['new','contacted','quoted','confirmed','closed'],true)){ $where[]='be.status=?'; $params[]=$status_f; $types.='s'; }
 if(in_array($source_f,['calculator','whatsapp'],true)){ $where[]='be.source=?'; $params[]=$source_f; $types.='s'; }
 if($dest_f){ $where[]='tp.destination_key=?'; $params[]=$dest_f; $types.='s'; }
-if($search_f){ $where[]='(be.customer_name LIKE ? OR be.mobile LIKE ? OR tp.package_name LIKE ?)'; $l="%$search_f%"; $params=array_merge($params,[$l,$l,$l]); $types.='sss'; }
+if($search_f){ $where[]='(be.customer_name LIKE ? OR be.mobile LIKE ? OR tp.package_name LIKE ? OR be.trip_destination LIKE ?)'; $l="%$search_f%"; $params=array_merge($params,[$l,$l,$l,$l]); $types.='ssss'; }
 $wsql=implode(' AND ',$where);
-$sql="SELECT be.*,tp.package_name,tp.destination_key,pl.city AS pickup_city,v.vehicle_name,v.seating_capacity FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id".($wsql?" WHERE $wsql":'')." ORDER BY be.created_at DESC LIMIT 200";
+$sql="SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,tp.destination_key,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name,v.seating_capacity FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id".($wsql?" WHERE $wsql":'')." ORDER BY be.created_at DESC LIMIT 200";
 $stmt=$conn->prepare($sql);
 if($params) $stmt->bind_param($types,...$params);
 $stmt->execute(); $rows=$stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
 $counts=$conn->query("SELECT status,COUNT(*) c FROM booking_enquiries GROUP BY status")->fetch_all(MYSQLI_ASSOC);
 $ct=array_column($counts,'c','status');
-$dests=array_column($conn->query("SELECT DISTINCT destination_key FROM tour_packages WHERE destination_key IS NOT NULL AND destination_key!='' ORDER BY destination_key")->fetch_all(MYSQLI_NUM), 0);
+try { $dests=array_column($conn->query("SELECT DISTINCT destination_key FROM tour_packages WHERE destination_key IS NOT NULL AND destination_key!='' ORDER BY destination_key")->fetch_all(MYSQLI_NUM), 0); }
+catch(mysqli_sql_exception){ $dests=[]; }
 $conn->close();
 $STATUS_LABELS=['new'=>'New','contacted'=>'Contacted','quoted'=>'Quoted','confirmed'=>'Confirmed','closed'=>'Closed'];
 $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','confirmed'=>'#22c55e','closed'=>'#6b7280'];
@@ -131,7 +136,7 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
     <div class="table-responsive">
       <table class="table mb-0" style="font-size:13px">
         <thead><tr>
-          <?php foreach(['#','Date','Source','Customer','Package','Trip','Vehicle','Est. Total','Status','Actions'] as $h):?>
+          <?php foreach(['#','Date','Source','Customer','Destination','Trip','Vehicle','Est. Total','Status','Actions'] as $h):?>
           <th style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted);white-space:nowrap<?= $h==='Actions'?';text-align:center':'' ?>"><?=$h?></th>
           <?php endforeach;?>
         </tr></thead>

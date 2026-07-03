@@ -107,13 +107,6 @@ $page_title = 'Help & Guide';
         </div>
 
         <div class="guide-card">
-          <div class="gc-head"><div class="gc-icon"><i class="fas fa-suitcase-rolling"></i></div>
-            <div><div class="gc-title">Tour Packages</div><div class="gc-where">Sidebar → Tour Packages</div></div></div>
-          <p>Create and edit the tour packages offered to customers in the quote calculator.</p>
-          <a class="gc-open" href="packages.php">Open Packages <i class="fas fa-arrow-right"></i></a>
-        </div>
-
-        <div class="guide-card">
           <div class="gc-head"><div class="gc-icon"><i class="fas fa-mountain"></i></div>
             <div><div class="gc-title">Destinations</div><div class="gc-where">Sidebar → Destinations</div></div></div>
           <p>The destinations (Manali, Shimla, etc.) available in the calculator. Each destination also has its own page on the website with a cover, about image and gallery (managed in Photo Gallery).</p>

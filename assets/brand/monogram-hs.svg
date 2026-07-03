@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="HS Monogram">
+  <title>Himachal Safar — HS Monogram</title>
+  <defs>
+    <linearGradient id="g" x1="40" y1="34" x2="86" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0DE9E"/>
+      <stop offset=".5" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#A8842A"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="20" fill="#0D1B2A"/>
+  <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g)" stroke-width="1.1" opacity=".7"/>
+  <text x="60" y="80" text-anchor="middle"
+        font-family="'Cormorant Garamond','Playfair Display',Georgia,serif"
+        font-size="62" font-weight="600" letter-spacing="-4">
+    <tspan fill="#F4EFE6">H</tspan><tspan fill="url(#g)">S</tspan>
+  </text>
+  <path d="M52 34 L60 25 L68 34" fill="none" stroke="url(#g)" stroke-width="2"
+        stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

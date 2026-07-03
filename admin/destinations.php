@@ -24,8 +24,36 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
     }
     if ($action==='delete'){ $id=(int)($_POST['id']??0); if($id){ $conn->query("DELETE FROM destinations WHERE id=$id"); audit_log('dest_delete',"id=$id"); $msg='ok:Deleted.'; } }
     if ($action==='toggle'){ $id=(int)($_POST['id']??0); if($id){ $conn->query("UPDATE destinations SET active=IF(active=1,0,1) WHERE id=$id"); $msg='ok:Status toggled.'; } }
+
+    // Promote a traveller-suggested custom destination into the real destinations list.
+    if ($action==='promote_suggestion'){
+        $sid=(int)($_POST['id']??0);
+        $sname=trim($_POST['name']??'');
+        if($sid && $sname!==''){
+            // Build a unique dest_key slug from the name.
+            $base=preg_replace('/[^a-z0-9_]/','',str_replace(' ','_',strtolower($sname)));
+            if($base==='') $base='dest';
+            $key=$base; $n=1;
+            while($conn->query("SELECT 1 FROM destinations WHERE dest_key='".$conn->real_escape_string($key)."' LIMIT 1")->num_rows){ $key=$base.'_'.(++$n); }
+            try{
+                $st=$conn->prepare('INSERT INTO destinations (name,dest_key,extra_per_day,sort_order,active) VALUES (?,?,0,0,1)');
+                $st->bind_param('ss',$sname,$key); $st->execute(); $st->close();
+                $conn->query("UPDATE destination_suggestions SET status='added' WHERE id=$sid");
+                audit_log('dest_promote',"$sname ($key)");
+                $msg='ok:“'.$sname.'” added to destinations.';
+            }catch(mysqli_sql_exception $e){ $msg='error:'.$e->getMessage(); }
+        }
+    }
+    if ($action==='dismiss_suggestion'){
+        $sid=(int)($_POST['id']??0);
+        if($sid){ $conn->query("UPDATE destination_suggestions SET status='dismissed' WHERE id=$sid"); $msg='ok:Suggestion dismissed.'; }
+    }
 }
 $dests = $conn->query("SELECT * FROM destinations ORDER BY sort_order ASC,name ASC")->fetch_all(MYSQLI_ASSOC);
+// Pending traveller-suggested destinations (table may not exist until the migration runs).
+$suggestions = [];
+try { $suggestions = $conn->query("SELECT * FROM destination_suggestions WHERE status='pending' ORDER BY request_count DESC, last_requested_at DESC")->fetch_all(MYSQLI_ASSOC); }
+catch(mysqli_sql_exception) {}
 $conn->close();
 ?><!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="csrf-token" content="<?=h($csrf)?>"><title>Destinations — Admin</title>
@@ -44,6 +72,52 @@ $conn->close();
   <?php if($msg):[$t,$tx]=explode(':',$msg,2);?>
   <div class="alert alert-<?=$t==='ok'?'success':'danger'?> alert-dismissible fade show py-2 mb-3"><?=h($tx)?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
   <?php endif;?>
+
+  <?php if($suggestions):?>
+  <div class="admin-card mb-3" style="border-left:3px solid var(--lime,#c8a75d)">
+    <div class="d-flex align-items-center gap-2 px-3 pt-3 pb-2">
+      <i class="fas fa-lightbulb" style="color:var(--lime,#c8a75d)"></i>
+      <strong style="color:var(--ink)">Suggested by travellers</strong>
+      <span class="badge bg-secondary"><?=count($suggestions)?></span>
+      <span style="font-size:12px;color:var(--muted)">— custom destinations entered on the quote form. Promote the popular ones.</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table mb-0" style="font-size:13.5px">
+        <thead><tr>
+          <th style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted)">Destination</th>
+          <th style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted)">Requests</th>
+          <th style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted)">Last Asked</th>
+          <th style="width:190px"></th>
+        </tr></thead>
+        <tbody>
+        <?php foreach($suggestions as $sg):?>
+        <tr>
+          <td style="font-weight:600;color:var(--ink)"><?=h($sg['name'])?></td>
+          <td><span class="badge bg-success"><?=(int)$sg['request_count']?>×</span></td>
+          <td style="color:var(--muted)"><?=h(date('d M Y',strtotime($sg['last_requested_at'])))?></td>
+          <td><div class="d-flex gap-1">
+            <form method="post" style="display:inline">
+              <input type="hidden" name="action" value="promote_suggestion">
+              <input type="hidden" name="id" value="<?=(int)$sg['id']?>">
+              <input type="hidden" name="name" value="<?=h($sg['name'])?>">
+              <input type="hidden" name="csrf_token" value="<?=h($csrf)?>">
+              <button class="btn btn-sm btn-primary-gold" type="submit"><i class="fas fa-plus"></i> Add</button>
+            </form>
+            <form method="post" style="display:inline" onsubmit="return confirm('Dismiss this suggestion?')">
+              <input type="hidden" name="action" value="dismiss_suggestion">
+              <input type="hidden" name="id" value="<?=(int)$sg['id']?>">
+              <input type="hidden" name="csrf_token" value="<?=h($csrf)?>">
+              <button class="btn btn-sm btn-icon" type="submit" title="Dismiss"><i class="fas fa-xmark"></i></button>
+            </form>
+          </div></td>
+        </tr>
+        <?php endforeach;?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <?php endif;?>
+
   <div class="admin-card">
     <div class="table-responsive">
       <table class="table mb-0" style="font-size:13.5px">

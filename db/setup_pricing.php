@@ -43,23 +43,16 @@ $queries = [
     active         TINYINT(1) DEFAULT 1
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-  // Add extra charge column to tour_packages
-  "ALTER TABLE tour_packages
-     ADD COLUMN IF NOT EXISTS additional_charge_per_person DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Flat fee per person (e.g. guide, permits)'
-       AFTER base_price_per_day",
-
-  // Ensure booking_enquiries has full breakdown columns
-  "ALTER TABLE booking_enquiries
-     ADD COLUMN IF NOT EXISTS package_cost    DECIMAL(10,2) DEFAULT 0 AFTER estimated_price,
-     ADD COLUMN IF NOT EXISTS vehicle_cost    DECIMAL(10,2) DEFAULT 0 AFTER package_cost,
-     ADD COLUMN IF NOT EXISTS extra_charges   DECIMAL(10,2) DEFAULT 0 AFTER vehicle_cost,
-     ADD COLUMN IF NOT EXISTS tax_amount      DECIMAL(10,2) DEFAULT 0 AFTER extra_charges,
-     ADD COLUMN IF NOT EXISTS breakdown_json  JSON          DEFAULT NULL AFTER tax_amount,
-     ADD COLUMN IF NOT EXISTS status         ENUM('new','contacted','confirmed','cancelled') DEFAULT 'new' AFTER breakdown_json,
-     ADD COLUMN IF NOT EXISTS notes          TEXT DEFAULT NULL AFTER status,
-     ADD COLUMN IF NOT EXISTS source         VARCHAR(20) DEFAULT 'calculator' AFTER notes,
-     MODIFY COLUMN pickup_date DATE NULL,
-     MODIFY COLUMN drop_date   DATE NULL",
+  // Traveller-suggested custom destinations (collected from the quote form for admin review)
+  "CREATE TABLE IF NOT EXISTS destination_suggestions (
+    id                INT AUTO_INCREMENT PRIMARY KEY,
+    name              VARCHAR(120) NOT NULL,
+    name_norm         VARCHAR(120) NOT NULL UNIQUE COMMENT 'lower(trim(name)) for dedupe',
+    request_count     INT NOT NULL DEFAULT 1,
+    status            ENUM('pending','added','dismissed') DEFAULT 'pending',
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
   // Seed destinations
   "INSERT IGNORE INTO destinations (name, dest_key, extra_per_day, sort_order) VALUES
@@ -92,6 +85,55 @@ h2{margin-bottom:1rem}a{color:#c8a75d}</style></head><body>
 
 $ok=0;$fail=0;
 foreach($queries as $q){
+  try { $conn->query($q); echo "<li class='ok'>✓ ".htmlspecialchars(substr(trim($q),0,80))."…</li>"; $ok++; }
+  catch(mysqli_sql_exception $e){ echo "<li class='err'>✗ ".htmlspecialchars($e->getMessage())."</li>"; $fail++; }
+}
+
+/* ── Column upgrades for existing installs ──
+   MySQL (unlike MariaDB) has no "ADD COLUMN IF NOT EXISTS", so each column is
+   checked against information_schema and added individually. */
+function col_exists(mysqli $c, string $table, string $col): bool {
+  $t = $c->real_escape_string($table); $co = $c->real_escape_string($col);
+  $r = $c->query("SELECT 1 FROM information_schema.COLUMNS
+                   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$t' AND COLUMN_NAME = '$co' LIMIT 1");
+  return $r && $r->num_rows > 0;
+}
+
+$columnUpgrades = [
+  // table, column, definition
+  ['tour_packages',     'additional_charge_per_person', "DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Flat fee per person (e.g. guide, permits)' AFTER base_price_per_day"],
+  ['tour_packages',     'destination_key',              "VARCHAR(50) NULL"],
+  ['booking_enquiries', 'trip_destination',             "VARCHAR(500) DEFAULT NULL AFTER package_id"],
+  ['booking_enquiries', 'pickup_custom',                "VARCHAR(120) DEFAULT NULL AFTER pickup_location_id"],
+  ['booking_enquiries', 'package_cost',                 "DECIMAL(10,2) DEFAULT 0 AFTER estimated_price"],
+  ['booking_enquiries', 'vehicle_cost',                 "DECIMAL(10,2) DEFAULT 0 AFTER package_cost"],
+  ['booking_enquiries', 'extra_charges',                "DECIMAL(10,2) DEFAULT 0 AFTER vehicle_cost"],
+  ['booking_enquiries', 'tax_amount',                   "DECIMAL(10,2) DEFAULT 0 AFTER extra_charges"],
+  ['booking_enquiries', 'breakdown_json',               "JSON DEFAULT NULL AFTER tax_amount"],
+  ['booking_enquiries', 'status',                       "ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new' AFTER breakdown_json"],
+  ['booking_enquiries', 'notes',                        "TEXT DEFAULT NULL AFTER status"],
+  ['booking_enquiries', 'source',                       "VARCHAR(20) DEFAULT 'calculator' AFTER notes"],
+];
+foreach ($columnUpgrades as [$tbl, $col, $def]) {
+  try {
+    if (col_exists($conn, $tbl, $col)) {
+      echo "<li class='ok'>✓ $tbl.$col already present</li>"; $ok++;
+    } else {
+      $conn->query("ALTER TABLE `$tbl` ADD COLUMN `$col` $def");
+      echo "<li class='ok'>✓ Added $tbl.$col</li>"; $ok++;
+    }
+  } catch (mysqli_sql_exception $e) {
+    echo "<li class='err'>✗ $tbl.$col — " . htmlspecialchars($e->getMessage()) . '</li>'; $fail++;
+  }
+}
+
+// Widen/relax columns that changed meaning over time. Safe to re-run.
+foreach ([
+  "ALTER TABLE booking_enquiries MODIFY COLUMN status ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new'",
+  "ALTER TABLE booking_enquiries MODIFY COLUMN trip_destination VARCHAR(500) NULL",
+  "ALTER TABLE booking_enquiries MODIFY COLUMN pickup_date DATE NULL",
+  "ALTER TABLE booking_enquiries MODIFY COLUMN drop_date   DATE NULL",
+] as $q) {
   try { $conn->query($q); echo "<li class='ok'>✓ ".htmlspecialchars(substr(trim($q),0,80))."…</li>"; $ok++; }
   catch(mysqli_sql_exception $e){ echo "<li class='err'>✗ ".htmlspecialchars($e->getMessage())."</li>"; $fail++; }
 }

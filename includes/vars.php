@@ -101,16 +101,43 @@ function audit_log(string $action, string $details = ''): void {
 const PHOTO_DESTS    = ['manali','shimla','dharamshala','dalhousie','spiti','general'];
 const PHOTO_SLOT_CAP = ['home_hero' => 5];
 
+// Extra single-photo homepage slots (general bucket) — admin-replaceable decorative images.
+const PHOTO_HOME_EXTRA = ['home_story', 'home_banner', 'home_contact'];
+
+// Per-destination fallback covers — used ONLY when no admin photo is uploaded yet,
+// so destination pages never render a broken <img>.
+const DEST_DEFAULT_IMG = [
+  'manali'      => 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1600&q=85',
+  'shimla'      => 'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=1600&q=85',
+  'dharamshala' => 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1600&q=85',
+  'dalhousie'   => 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=85',
+  'spiti'       => 'https://images.unsplash.com/photo-1504457047772-27faf1c00561?auto=format&fit=crop&w=1600&q=85',
+];
+
 function photo_slot_cap(string $slot): int {
   return PHOTO_SLOT_CAP[$slot] ?? 1;
 }
 
 function photo_slot_valid(string $slot): bool {
   if ($slot === 'home_hero') return true;
+  if (in_array($slot, PHOTO_HOME_EXTRA, true)) return true;
   foreach (PHOTO_DESTS as $d) {
     if ($slot === "{$d}_hero" || $slot === "{$d}_about") return true;
   }
   return false;
+}
+
+// Resolve a destination hero/about image to a usable src, falling back to the
+// destination's default cover so the page is never broken.
+function dest_img_src(?array $photo, string $dest): string {
+  if ($photo && !empty($photo['filename'])) return 'uploads/photos/' . $photo['filename'];
+  return DEST_DEFAULT_IMG[$dest] ?? DEST_DEFAULT_IMG['manali'];
+}
+
+// First photo filename assigned to a slot, as a website src, or the given fallback.
+function slot_img_src(?mysqli $conn, string $slot, string $fallback): string {
+  $f = photos_in_slot($conn, $slot)[0]['filename'] ?? null;
+  return $f ? 'uploads/photos/' . $f : $fallback;
 }
 
 function photos_in_slot(?mysqli $conn, string $slot): array {
@@ -273,11 +300,16 @@ if (!function_exists('optimize_image_for_website')) {
   }
 }
 
-// Fetch both settings in one query instead of two separate calls.
+// Fetch all public-facing contact/social settings in one query.
 $_settings = [];
 if ($conn instanceof mysqli) {
     try {
-        $res = $conn->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('agency_whatsapp','agency_phone')");
+        $res = $conn->query(
+            "SELECT setting_key, setting_value FROM settings WHERE setting_key IN (
+                'agency_whatsapp','agency_phone','agency_phone2','agency_email','agency_location',
+                'social_facebook','social_instagram','social_youtube'
+            )"
+        );
         if ($res) foreach ($res->fetch_all(MYSQLI_ASSOC) as $row) $_settings[$row['setting_key']] = $row['setting_value'];
     } catch (mysqli_sql_exception) {}
 }
@@ -285,6 +317,21 @@ $whatsappNumber = preg_replace('/[^0-9]/', '', $_settings['agency_whatsapp'] ?? 
 $phoneRaw       = $_settings['agency_phone'] ?? '+91 98765 43210';
 $phoneDisplay   = $phoneRaw;
 $phoneTel       = '+' . preg_replace('/[^0-9]/', '', $phoneRaw);
+
+// Optional second phone number — shown only when set.
+$phone2Raw      = trim($_settings['agency_phone2'] ?? '');
+$phone2Display  = $phone2Raw;
+$phone2Tel      = $phone2Raw !== '' ? '+' . preg_replace('/[^0-9]/', '', $phone2Raw) : '';
+
+// Email, location and social links — admin-editable in Settings, with sensible fallbacks.
+$bizEmail       = trim($_settings['agency_email'] ?? '') ?: (getenv('AGENCY_EMAIL') ?: 'info@himachalsafar.com');
+$agencyLocation = trim($_settings['agency_location'] ?? '') ?: 'Bilaspur, Himachal Pradesh';
+$socialLinks = array_filter([
+    'facebook'  => trim($_settings['social_facebook']  ?? '') ?: (getenv('SOCIAL_FACEBOOK')  ?: ''),
+    'instagram' => trim($_settings['social_instagram'] ?? '') ?: (getenv('SOCIAL_INSTAGRAM') ?: ''),
+    'youtube'   => trim($_settings['social_youtube']   ?? '') ?: (getenv('SOCIAL_YOUTUBE')   ?: ''),
+]);
+
 $defaultMessage = rawurlencode('Hi Himachal Safar, I want a private Himachal trip quote.');
 if (empty($_SESSION['lead_form_token'])) {
   $_SESSION['lead_form_token'] = bin2hex(random_bytes(16));

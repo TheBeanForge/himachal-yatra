@@ -241,6 +241,33 @@ $page_title = 'Photo Gallery';
           </div>
         </div>
 
+        <!-- Homepage decorative images -->
+        <?php
+          $homeExtra = [
+            'home_story'   => 'Story image',
+            'home_banner'  => 'Scenic banner',
+            'home_contact' => 'Contact background',
+          ];
+        ?>
+        <div class="ov-row">
+          <div class="ov-label"><i class="fas fa-image"></i> Homepage extras</div>
+          <div class="ov-slots">
+            <?php foreach ($homeExtra as $slot => $lbl):
+              $ex = $slotPhotos[$slot][0] ?? null; ?>
+            <div class="ov-slot">
+              <?php if ($ex): ?>
+                <button type="button" class="ov-up" onclick="pickForSlot('<?= $slot ?>')" title="Click to replace this image">
+                  <img class="ov-thumb" src="../uploads/photos/<?= h($ex['filename']) ?>" alt=""><span class="ov-replace">Replace</span>
+                </button>
+              <?php else: ?>
+                <button type="button" class="ov-add" onclick="pickForSlot('<?= $slot ?>')" title="Upload this homepage image"><i class="fas fa-plus"></i> Add</button>
+              <?php endif; ?>
+              <small><?= h($lbl) ?></small>
+            </div>
+            <?php endforeach; ?>
+          </div>
+        </div>
+
         <!-- Destinations -->
         <?php foreach (['manali','shimla','dharamshala','dalhousie','spiti'] as $d):
           $cover = $slotPhotos["{$d}_hero"][0]  ?? null;

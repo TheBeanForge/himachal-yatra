@@ -1,10 +1,11 @@
 // ── Theme switcher (runs before DOMContentLoaded to avoid flash) ──
-// Only two themes are supported: 'dark' and 'light'. Anything else
-// (e.g. a legacy 'blue' value) falls back to 'dark'.
+// Themes: 'light' (default — luxury paper editorial), 'dark', 'pine', 'sky'.
+// Anything else (e.g. a legacy value) falls back to the default.
 const ALLOWED_THEMES = ['dark', 'light', 'pine', 'sky'];
+const DEFAULT_THEME  = 'light';
 (function () {
   let saved = localStorage.getItem('site-theme');
-  if (!ALLOWED_THEMES.includes(saved)) { saved = 'dark'; localStorage.setItem('site-theme', 'dark'); }
+  if (!ALLOWED_THEMES.includes(saved)) { saved = DEFAULT_THEME; localStorage.setItem('site-theme', DEFAULT_THEME); }
   document.documentElement.setAttribute('data-theme', saved);
 })();
 
@@ -12,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Theme switcher ──
   let currentTheme = localStorage.getItem('site-theme');
-  if (!ALLOWED_THEMES.includes(currentTheme)) currentTheme = 'dark';
+  if (!ALLOWED_THEMES.includes(currentTheme)) currentTheme = DEFAULT_THEME;
   const syncThemeButtons = (active) => {
     document.querySelectorAll('.theme-btn').forEach(b => {
       const on = b.dataset.theme === active;
