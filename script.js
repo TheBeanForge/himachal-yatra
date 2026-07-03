@@ -158,6 +158,105 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.openCalcModal === 'function') window.openCalcModal('');
   });
 
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Back to top ──
+  const backTop = document.getElementById('backTop');
+  if (backTop) {
+    window.addEventListener('scroll', () => {
+      backTop.classList.toggle('show', window.scrollY > 640);
+    }, { passive: true });
+    backTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+  }
+
+  // ── Stagger grid reveals ──
+  // Cards inside a grid rise one after another instead of all at once.
+  document.querySelectorAll(
+    '.lux-dest-grid, .lux-routes-grid, .lux-why-grid, .lux-fleet-grid, .lux-steps,' +
+    '.lux-quotes-grid, .lux-stats-grid, .highlights-grid, .season-grid, .dest-route-cards, .pkg-grid'
+  ).forEach((grid) => {
+    [...grid.children].forEach((el, i) => {
+      if (el.className.includes('reveal')) el.style.transitionDelay = `${Math.min(i * 90, 450)}ms`;
+    });
+  });
+
+  // ── Hero parallax (scroll) ──
+  const heroBg = document.querySelector('.lux-hero .hero-bg, .dest-hero-bg');
+  if (heroBg && !reduceMotion) {
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y < window.innerHeight * 1.2) heroBg.style.setProperty('translate', `0 ${y * 0.18}px`);
+        ticking = false;
+      });
+    }, { passive: true });
+  }
+
+  // ── Card tilt (pointer devices only, subtle) ──
+  if (!reduceMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll('.lux-card, .pkg-card, .lux-fleet-card').forEach((card) => {
+      let raf = 0;
+      card.addEventListener('pointermove', (e) => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const r = card.getBoundingClientRect();
+          const rx = ((e.clientY - r.top) / r.height - 0.5) * -3.5;
+          const ry = ((e.clientX - r.left) / r.width - 0.5) * 3.5;
+          card.style.transform = `translateY(-8px) perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+        });
+      });
+      card.addEventListener('pointerleave', () => {
+        cancelAnimationFrame(raf);
+        card.style.transform = '';
+      });
+    });
+  }
+
+  // ── Gallery lightbox (destination pages) ──
+  const galleryImgs = [...document.querySelectorAll('.gallery-item img')];
+  if (galleryImgs.length) {
+    const overlay = document.createElement('div');
+    overlay.className = 'lb-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', 'Photo viewer');
+    overlay.innerHTML =
+      '<button class="lb-close" aria-label="Close photo viewer"><i class="fa-solid fa-xmark"></i></button>' +
+      '<button class="lb-prev" aria-label="Previous photo"><i class="fa-solid fa-chevron-left"></i></button>' +
+      '<img alt="">' +
+      '<button class="lb-next" aria-label="Next photo"><i class="fa-solid fa-chevron-right"></i></button>' +
+      '<span class="lb-count"></span>';
+    document.body.appendChild(overlay);
+    const lbImg = overlay.querySelector('img');
+    const lbCount = overlay.querySelector('.lb-count');
+    let idx = 0;
+
+    const showAt = (i) => {
+      idx = (i + galleryImgs.length) % galleryImgs.length;
+      lbImg.src = galleryImgs[idx].src;
+      lbImg.alt = galleryImgs[idx].alt || '';
+      lbCount.textContent = `${idx + 1} / ${galleryImgs.length}`;
+    };
+    const openLb = (i) => { showAt(i); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; };
+    const closeLb = () => { overlay.classList.remove('open'); document.body.style.overflow = ''; };
+
+    galleryImgs.forEach((img, i) => img.addEventListener('click', () => openLb(i)));
+    overlay.querySelector('.lb-close').addEventListener('click', closeLb);
+    overlay.querySelector('.lb-prev').addEventListener('click', () => showAt(idx - 1));
+    overlay.querySelector('.lb-next').addEventListener('click', () => showAt(idx + 1));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeLb(); });
+    document.addEventListener('keydown', (e) => {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLb();
+      if (e.key === 'ArrowLeft') showAt(idx - 1);
+      if (e.key === 'ArrowRight') showAt(idx + 1);
+    });
+  }
+
   // ── Horizontal Review Slider ──
   const track    = document.getElementById('reviewTrack');
   const prevBtn  = document.getElementById('reviewPrev');

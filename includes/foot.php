@@ -104,6 +104,11 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 
+  <!-- Back to top -->
+  <button type="button" class="back-top" id="backTop" aria-label="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+
   <!-- Mobile CTA: Call · WhatsApp · Get Quote. The Quote link deep-links to the homepage
        calculator as a fallback; on pages that include calc_modal.php the [data-open-quote]
        handler intercepts it and opens the popup in place. -->
