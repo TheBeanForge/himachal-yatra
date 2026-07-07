@@ -29,7 +29,7 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
           <!-- About -->
           <div class="footer-brand">
             <a class="footer-logo-full" href="<?php echo $fBase ?: '#home'; ?>" aria-label="Himachal Safar">
-              <img src="assets/logo.svg" alt="Himachal Safar" width="200" height="46" loading="lazy">
+              <img src="assets/logo.svg" alt="Himachal Safar" width="228" height="46" loading="lazy">
             </a>
             <h3 class="footer-about-heading">Born in the Mountains.<br>Built for the Road.</h3>
             <p>Founded by mountain-road specialists who have driven every major Himachal route in all seasons. Verified drivers, transparent fares and a travel desk that stays reachable from departure to drop. No middlemen — just us, you and the mountains.</p>

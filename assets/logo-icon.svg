@@ -1,30 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Himachal Safar">
-  <title>Himachal Safar</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Himachal Safar">
+  <title>Himachal Safar — Summit Route mark</title>
   <defs>
-    <linearGradient id="gold" x1="20" y1="12" x2="102" y2="108" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F0D891"/>
-      <stop offset="0.45" stop-color="#C8A75D"/>
-      <stop offset="1" stop-color="#8F7134"/>
+    <linearGradient id="hsBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#58ABEC"/>
+      <stop offset="1" stop-color="#14528B"/>
     </linearGradient>
-    <linearGradient id="ivory" x1="38" y1="24" x2="82" y2="82" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFF8DF"/>
-      <stop offset="1" stop-color="#D8C17A"/>
+    <linearGradient id="hsPeak" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E9F4FE"/>
     </linearGradient>
+    <linearGradient id="hsFacet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D9ECFB"/>
+      <stop offset="1" stop-color="#B3D7F3"/>
+    </linearGradient>
+    <clipPath id="hsClip"><rect width="64" height="64" rx="15"/></clipPath>
   </defs>
 
-  <circle cx="60" cy="60" r="56" fill="#0B0D12"/>
-  <path d="M17 77C23 38 55 18 94 25" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="43" cy="39" r="10" fill="url(#gold)" opacity=".95"/>
+  <rect width="64" height="64" rx="15" fill="url(#hsBg)"/>
 
-  <path d="M17 80 38 52 49 65 63 36 94 80Z" fill="#11151D"/>
-  <path d="M38 52 49 65 58 57 63 36 94 80 73 66 62 80 49 65 34 80Z" fill="url(#gold)"/>
-  <path d="M63 36 56 57 64 52 72 61Z" fill="url(#ivory)"/>
-  <path d="M38 52 34 66 43 61 49 65Z" fill="#F4EFE6" opacity=".88"/>
+  <g clip-path="url(#hsClip)">
+    <!-- high-altitude sky -->
+    <circle cx="11" cy="13" r="1"   fill="#FFFFFF" opacity=".65"/>
+    <circle cx="19" cy="7.5" r=".75" fill="#FFFFFF" opacity=".5"/>
+    <circle cx="8"  cy="23" r=".7"  fill="#FFFFFF" opacity=".4"/>
+    <circle cx="47" cy="15" r="8.5" fill="#FFFFFF" opacity=".16"/>
+    <circle cx="47" cy="15" r="5.2" fill="#FFFFFF" opacity=".96"/>
 
-  <path d="M19 91C39 83 62 79 96 81" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
-  <path d="M29 96C49 88 71 87 103 92" fill="none" stroke="#F4EFE6" stroke-width="2.2" stroke-linecap="round" opacity=".78"/>
-  <path d="M54 88 61 86M73 86 81 86" stroke="#0B0D12" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    <!-- far ridges -->
+    <path d="M-2 49 L13 29 L24 41 L27 49 Z" fill="#A9D4F4" opacity=".62"/>
+    <path d="M36 49 L49 32 L66 49 Z" fill="#93C6EE" opacity=".55"/>
 
-  <path d="M24 72c5-6 10-9 15-10" stroke="#C8A75D" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
-  <path d="M78 31c4-2 8-2 12 0" stroke="#C8A75D" stroke-width="2" stroke-linecap="round" opacity=".75"/>
+    <!-- the peak -->
+    <path d="M3 64 L28 14 L61 64 Z" fill="url(#hsPeak)"/>
+    <path d="M28 14 L61 64 L30 64 Z" fill="url(#hsFacet)"/>
+
+    <!-- the route, switchbacking to the summit -->
+    <path d="M35 65 C18 54 44 46 29 39 C21.5 35.5 33.5 29.5 28.5 21.5"
+          fill="none" stroke="#175A96" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M35 65 C18 54 44 46 29 39 C21.5 35.5 33.5 29.5 28.5 21.5"
+          fill="none" stroke="#EAF5FF" stroke-width="1.1" stroke-linecap="round"
+          stroke-dasharray="3.2 3.4" opacity=".85"/>
+  </g>
 </svg>

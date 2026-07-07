@@ -358,7 +358,7 @@ img { max-width: 100%; display: block; }
   line-height: 1.05; text-transform: uppercase;
   white-space: nowrap;
 }
-.brand-main span { color: var(--gold); }
+.brand-main span { color: var(--skyblue); }
 .brand-sub { display: none; }
 
 /* Nav links — quiet, precise, Apple-calm */

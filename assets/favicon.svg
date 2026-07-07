@@ -1,5 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#0B0B0D"/>
-  <path d="M10 46 L26 20 L36 36 L42 28 L54 46 Z" fill="#D6C7A1"/>
-  <circle cx="44" cy="18" r="6" fill="#F2E8D0"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Himachal Safar">
+  <title>Himachal Safar</title>
+  <defs>
+    <linearGradient id="fvBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#58ABEC"/>
+      <stop offset="1" stop-color="#14528B"/>
+    </linearGradient>
+    <clipPath id="fvClip"><rect width="64" height="64" rx="16"/></clipPath>
+  </defs>
+
+  <rect width="64" height="64" rx="16" fill="url(#fvBg)"/>
+
+  <g clip-path="url(#fvClip)">
+    <circle cx="46" cy="15" r="6" fill="#FFFFFF" opacity=".95"/>
+    <path d="M0 64 L28 11 L64 64 Z" fill="#FFFFFF"/>
+    <path d="M28 11 L64 64 L30 64 Z" fill="#C5E0F7"/>
+    <path d="M35 66 C16 54 46 46 29 38 C20 33.5 34 28 28.5 19"
+          fill="none" stroke="#14528B" stroke-width="6" stroke-linecap="round"/>
+    <path d="M35 66 C16 54 46 46 29 38 C20 33.5 34 28 28.5 19"
+          fill="none" stroke="#EAF5FF" stroke-width="1.5" stroke-linecap="round"
+          stroke-dasharray="4 4.5" opacity=".9"/>
+  </g>
 </svg>
