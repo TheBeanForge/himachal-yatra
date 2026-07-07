@@ -8,14 +8,42 @@
   <div class="cq-modal-backdrop" data-cq-close></div>
   <div class="cq-modal-dialog" role="dialog" aria-modal="true" aria-label="Instant quote booking form">
     <button type="button" class="cq-modal-x" data-cq-close aria-label="Close quote form"><i class="fa-solid fa-xmark"></i></button>
+
+    <!-- Brand rail (desktop) — sets the scene, states the promise -->
+    <aside class="cq-rail" aria-hidden="true">
+      <div class="cq-rail-scrim"></div>
+      <div class="cq-rail-body">
+        <img class="cq-rail-logo" src="assets/logo-icon.svg" width="44" height="44" alt="">
+        <p class="cq-rail-ey">Private Himachal Concierge</p>
+        <h3 class="cq-rail-title">One form.<br>Your whole journey, planned.</h3>
+        <ul class="cq-rail-list">
+          <li><i class="fa-solid fa-bolt"></i> Instant estimate — no waiting</li>
+          <li><i class="fa-brands fa-whatsapp"></i> Travel desk replies in ~2 hours</li>
+          <li><i class="fa-solid fa-lock"></i> No advance to get a quote</li>
+          <li><i class="fa-solid fa-shield-halved"></i> Verified mountain drivers</li>
+        </ul>
+        <div class="cq-rail-trust">
+          <span><strong>12,000+</strong> journeys</span>
+          <span class="cq-rail-dot"></span>
+          <span><strong>4.9★</strong> guest rating</span>
+        </div>
+      </div>
+    </aside>
+
     <div class="cq-inline" id="cqInline">
       <div class="cq-card" id="cqCard">
 
+    <!-- Journey progress: Details → Estimate → Confirmed -->
+    <div class="cq-progress" id="cqProgress" data-step="1" aria-hidden="true">
+      <div class="cq-prog-step" data-s="1"><span class="cq-prog-num">1</span><span class="cq-prog-lbl">Trip details</span></div>
+      <div class="cq-prog-line"></div>
+      <div class="cq-prog-step" data-s="2"><span class="cq-prog-num">2</span><span class="cq-prog-lbl">Estimate</span></div>
+      <div class="cq-prog-line"></div>
+      <div class="cq-prog-step" data-s="3"><span class="cq-prog-num">3</span><span class="cq-prog-lbl">Confirmed</span></div>
+    </div>
+
     <!-- Header -->
     <div class="cq-header">
-      <div class="cq-header-icon">
-        <img src="assets/logo-icon.svg" width="36" height="36" alt="">
-      </div>
       <div>
         <h2 class="cq-title" id="cqTitle">Plan Your Himachal Journey</h2>
         <p class="cq-subtitle" id="cqSubtitle">Tell us a little about your trip — we&rsquo;ll tailor an instant estimate. Free, no obligation.</p>
@@ -261,14 +289,98 @@
 }
 .cq-modal-dialog {
   position: relative; z-index: 1; margin: auto;
-  width: 100%; max-width: 640px; max-height: 92vh;
-  display: flex; flex-direction: column;
+  width: 100%; max-width: 960px; max-height: 92vh;
+  display: flex; flex-direction: row; align-items: stretch;
   background: var(--surf-1); border: var(--glass-brd, 1px solid var(--line));
   border-radius: 24px; overflow: hidden;
   box-shadow: 0 40px 110px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.12);
   animation: cqPop .32s cubic-bezier(.22,1,.36,1);
 }
 [data-theme="light"] .cq-modal-dialog { background: #fdfdfb; }
+
+/* ── Brand rail (left panel, desktop) ── */
+.cq-rail {
+  position: relative; flex: 0 0 320px; overflow: hidden;
+  background:
+    linear-gradient(200deg, rgba(216,179,106,.16), transparent 45%),
+    url('assets/photos/hero-winter.png') center/cover no-repeat,
+    #0A1426;
+  display: flex; align-items: flex-end;
+}
+.cq-rail-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,15,30,.42) 0%, rgba(7,15,30,.86) 78%, rgba(7,15,30,.94) 100%); }
+.cq-rail-body { position: relative; z-index: 1; padding: 32px 30px 30px; }
+.cq-rail-logo { display: block; margin-bottom: 18px; filter: drop-shadow(0 4px 14px rgba(0,0,0,.4)); }
+.cq-rail-ey {
+  font: 700 10px var(--font-body); letter-spacing: .3em; text-transform: uppercase;
+  color: var(--gold-3, #EED9A6); margin: 0 0 10px;
+}
+.cq-rail-title {
+  font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; line-height: 1.3;
+  color: #fff; margin: 0 0 20px;
+}
+.cq-rail-list { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 11px; }
+.cq-rail-list li { display: flex; align-items: center; gap: 11px; font: 500 .84rem var(--font-body); color: rgba(255,255,255,.85); }
+.cq-rail-list i {
+  width: 28px; height: 28px; flex-shrink: 0; display: grid; place-items: center;
+  border-radius: 9px; font-size: .74rem;
+  background: rgba(216,179,106,.14); border: 1px solid rgba(216,179,106,.3);
+  color: var(--gold-3, #EED9A6);
+}
+.cq-rail-list li i.fa-whatsapp { background: rgba(37,211,102,.14); border-color: rgba(37,211,102,.32); color: #7DF0AC; }
+.cq-rail-trust {
+  display: flex; align-items: center; gap: 12px;
+  padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14);
+  font: 500 .78rem var(--font-body); color: rgba(255,255,255,.62);
+}
+.cq-rail-trust strong { color: #fff; font-weight: 800; }
+.cq-rail-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold-3, #EED9A6); }
+@media (max-width: 899px) { .cq-rail { display: none; } .cq-modal-dialog { max-width: 640px; } }
+
+/* ── Journey progress (Details → Estimate → Confirmed) ── */
+.cq-progress {
+  display: flex; align-items: center; gap: 10px;
+  padding: 1.15rem 3.6rem .35rem 1.75rem;   /* right inset clears the ✕ button */
+}
+.cq-prog-step { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.cq-prog-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 700 11px var(--font-body);
+  color: var(--muted); background: var(--surf-3); border: 1.5px solid var(--line);
+  transition: background .35s, color .35s, border-color .35s, box-shadow .35s;
+}
+.cq-prog-lbl {
+  font: 600 10.5px var(--font-body); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); transition: color .35s;
+}
+.cq-prog-line { flex: 1; height: 1.5px; border-radius: 2px; background: var(--line); position: relative; overflow: hidden; }
+.cq-prog-line::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--grad-gold, var(--lime));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .5s cubic-bezier(.22,1,.36,1);
+}
+/* active + completed states, driven by data-step on the wrapper */
+.cq-progress[data-step="1"] .cq-prog-step[data-s="1"] .cq-prog-num,
+.cq-progress[data-step="2"] .cq-prog-step[data-s="2"] .cq-prog-num,
+.cq-progress[data-step="3"] .cq-prog-step[data-s="3"] .cq-prog-num {
+  background: var(--grad-gold, var(--lime)); color: #10151d; border-color: transparent;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lime) 18%, transparent);
+}
+.cq-progress[data-step="1"] .cq-prog-step[data-s="1"] .cq-prog-lbl,
+.cq-progress[data-step="2"] .cq-prog-step[data-s="2"] .cq-prog-lbl,
+.cq-progress[data-step="3"] .cq-prog-step[data-s="3"] .cq-prog-lbl { color: var(--charcoal); }
+.cq-progress[data-step="2"] .cq-prog-step[data-s="1"] .cq-prog-num,
+.cq-progress[data-step="3"] .cq-prog-step[data-s="1"] .cq-prog-num,
+.cq-progress[data-step="3"] .cq-prog-step[data-s="2"] .cq-prog-num {
+  background: var(--gold-light); color: var(--lime); border-color: color-mix(in srgb, var(--lime) 45%, transparent);
+}
+.cq-progress[data-step="2"] .cq-prog-line:first-of-type::after,
+.cq-progress[data-step="3"] .cq-prog-line::after { transform: scaleX(1); }
+@media (max-width: 580px) {
+  .cq-progress { padding: 1rem 3.2rem .2rem 1.1rem; }
+  .cq-prog-lbl { display: none; }
+}
 @keyframes cqFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes cqPop  { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
 .cq-modal-x {
@@ -282,7 +394,7 @@
 .cq-modal-x:hover { background: var(--lime); color: #000; transform: rotate(90deg); }
 
 /* Inline card — fills the dialog; the dialog supplies the panel surface. */
-.cq-inline { width: 100%; overflow-y: auto; }
+.cq-inline { flex: 1; min-width: 0; overflow-y: auto; }
 .cq-card {
   width: 100%; padding: 0; display: flex; flex-direction: column;
   background: transparent;
@@ -311,7 +423,7 @@
 /* Header */
 .cq-header {
   display: flex; align-items: center; gap: 1rem;
-  padding: 1.4rem 1.75rem 1.2rem; border-bottom: 1px solid var(--line);
+  padding: .8rem 1.75rem 1.1rem; border-bottom: 1px solid var(--line);
   flex-shrink: 0;
 }
 .cq-header-icon {
@@ -732,18 +844,30 @@ const CQ_TEL = "<?= h($phoneTel) ?>";
      floating button, ?calc= deep-link) and optionally preselects a destination. ── */
 const cqModal = document.getElementById('cqModal');
 
+/* localStorage helpers — popup frequency state survives across visits */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+let cqAutoOpened=false;   // this open was triggered by the engagement engine
+let cqSubmitted=false;    // an enquiry was submitted in this open
+
 function openModal(){
   if(!cqModal) return;
   cqModal.classList.add('open');
   cqModal.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';   // lock background scroll
-  try{ sessionStorage.setItem('cqShown','1'); }catch(e){}  // mark shown so the 5s auto-popup won't re-fire
+  try{ sessionStorage.setItem('cqShown','1'); }catch(e){}  // once per session
 }
 function closeModal(){
   if(!cqModal) return;
   cqModal.classList.remove('open');
   cqModal.setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  // Dismissing an AUTO-opened popup without submitting → stay quiet for 3 days.
+  if(cqAutoOpened && !cqSubmitted){
+    lsSet('cqSnoozeUntil', String(Date.now() + 3*24*60*60*1000));
+  }
+  cqAutoOpened=false;
 }
 
 window.openCalcModal = function(destKey, pkg){
@@ -760,6 +884,9 @@ function show(state){
   stateForm.hidden = state!=='form';
   stateRes.hidden  = state!=='result';
   stateSuc.hidden  = state!=='success';
+  // Journey progress: Details(1) → Estimate(2) → Confirmed(3)
+  const prog=document.getElementById('cqProgress');
+  if(prog) prog.dataset.step = state==='success' ? '3' : (state==='result' ? '2' : '1');
 }
 
 /* ── Data loading ── */
@@ -1250,6 +1377,8 @@ document.getElementById('cqSubmitBtn').addEventListener('click', async()=>{
     });
     const json=await res.json().catch(()=>({}));
     if(res.ok&&json.ok){
+      cqSubmitted=true;
+      lsSet('cqDone','1');            // enquiry submitted → never auto-open again
       fillSuccess(json);
       show('success');
       cqCard.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1343,17 +1472,60 @@ document.addEventListener('click',e=>{
 const _dp=new URLSearchParams(window.location.search).get('calc');
 if(_dp!==null) window.addEventListener('load',()=>setTimeout(()=>openCalcModal(_dp),250));
 
-/* ── Auto-open the quote popup 5s after landing — once per browser session.
-     Skips if a ?calc= deep link already opened it, if the visitor already
-     opened it manually, or if the WhatsApp lead popup is currently open. ── */
+/* ── "Engaged visitor" auto-open policy ──
+   Opens only after real interest — whichever comes first:
+     · visitor scrolls 50% of the page
+     · 40 seconds on the page
+     · exit-intent (desktop: cursor leaves toward the tab bar)
+   Frequency caps:
+     · once per browser session
+     · snoozed 3 days after being dismissed without submitting
+     · max 3 auto-opens per rolling 30 days
+     · never again once an enquiry has been submitted (cqDone)
+   Manual opens (CTA buttons) are never limited. ── */
 if(_dp===null && !window.CQ_NO_AUTOPOPUP){
-  let already=false; try{ already=sessionStorage.getItem('cqShown')==='1'; }catch(e){}
-  if(!already){
-    setTimeout(()=>{
+  const DAY=24*60*60*1000;
+  const now=Date.now();
+  let shownSession=false; try{ shownSession=sessionStorage.getItem('cqShown')==='1'; }catch(e){}
+  let hist=[]; try{ hist=JSON.parse(lsGet('cqAutoHist')||'[]'); }catch(e){}
+  if(!Array.isArray(hist)) hist=[];
+  hist=hist.filter(t=>now-t<30*DAY);
+  const eligible =
+    !shownSession &&
+    lsGet('cqDone')!=='1' &&
+    now>parseInt(lsGet('cqSnoozeUntil')||'0',10) &&
+    hist.length<3;
+
+  if(eligible){
+    let fired=false;
+    const fire=()=>{
+      if(fired) return;
+      if(cqModal?.classList.contains('open')) return;
+      if(document.getElementById('wlModal')?.classList.contains('open')) return;
       let shown=false; try{ shown=sessionStorage.getItem('cqShown')==='1'; }catch(e){}
-      const waOpen=document.getElementById('wlModal')?.classList.contains('open');
-      if(!shown && !cqModal?.classList.contains('open') && !waOpen) openCalcModal('');
-    }, 5000);
+      if(shown){ cleanup(); return; }          // opened manually in the meantime
+      fired=true; cleanup();
+      hist.push(Date.now());
+      lsSet('cqAutoHist', JSON.stringify(hist));
+      cqAutoOpened=true;
+      openCalcModal('');
+    };
+    const onScroll=()=>{
+      const d=document.documentElement;
+      const max=d.scrollHeight-window.innerHeight;
+      if(max>200 && d.scrollTop/max>=.5) fire();
+    };
+    const onExit=e=>{ if(!e.relatedTarget && e.clientY<=0) fire(); };
+    const dwell=setTimeout(fire, 40000);
+    const cleanup=()=>{
+      clearTimeout(dwell);
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('mouseout', onExit);
+    };
+    window.addEventListener('scroll', onScroll, {passive:true});
+    if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+      document.addEventListener('mouseout', onExit);
+    }
   }
 }
 
