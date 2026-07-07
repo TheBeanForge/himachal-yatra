@@ -48,6 +48,24 @@ $counts=$conn->query("SELECT status,COUNT(*) c FROM booking_enquiries GROUP BY s
 $ct=array_column($counts,'c','status');
 try { $dests=array_column($conn->query("SELECT DISTINCT destination_key FROM tour_packages WHERE destination_key IS NOT NULL AND destination_key!='' ORDER BY destination_key")->fetch_all(MYSQLI_NUM), 0); }
 catch(mysqli_sql_exception){ $dests=[]; }
+
+// ── 30-day analytics: enquiries per day + headline numbers ──
+$chart = array_fill(0, 30, 0);          // index 0 = 29 days ago … 29 = today
+$chartDates = [];
+for ($i = 0; $i < 30; $i++) $chartDates[$i] = date('Y-m-d', strtotime('-' . (29 - $i) . ' days'));
+$sumEst30 = 0.0; $count30 = 0;
+try {
+    $r = $conn->query(
+        "SELECT DATE(created_at) d, COUNT(*) c, COALESCE(SUM(estimated_price),0) s
+           FROM booking_enquiries
+          WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
+          GROUP BY DATE(created_at)"
+    )->fetch_all(MYSQLI_ASSOC);
+    $byDay = array_column($r, null, 'd');
+    foreach ($chartDates as $i => $d) $chart[$i] = (int)($byDay[$d]['c'] ?? 0);
+    foreach ($r as $row) { $count30 += (int)$row['c']; $sumEst30 += (float)$row['s']; }
+} catch (mysqli_sql_exception) {}
+$chartMax = max(1, max($chart));
 $conn->close();
 $STATUS_LABELS=['new'=>'New','contacted'=>'Contacted','quoted'=>'Quoted','confirmed'=>'Confirmed','closed'=>'Closed'];
 $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','confirmed'=>'#22c55e','closed'=>'#6b7280'];
@@ -59,6 +77,29 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
 <link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet">
 <style>
 .enq-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 20px;min-width:110px}
+
+/* ── 30-day trend chart — single-series bars in the theme accent ── */
+.enq-chart-card{position:relative;padding:20px 24px 14px}
+.enq-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.enq-chart-title{font:700 13.5px 'Inter',sans-serif;color:var(--ink)}
+.enq-chart-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.enq-chart{
+  display:flex;align-items:flex-end;gap:2px;height:120px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(to top,transparent 0,transparent calc(50% - 1px),color-mix(in srgb,var(--border) 55%,transparent) 50%,transparent calc(50% + 1px));
+}
+.enq-bar-slot{position:relative;flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:default}
+.enq-bar-slot:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.enq-bar{width:100%;max-width:22px;border-radius:4px 4px 0 0;background:var(--accent);min-height:0;transition:filter .15s}
+.enq-bar-slot:hover .enq-bar{filter:brightness(1.15)}
+.enq-bar-lbl{font:700 10.5px 'Inter',sans-serif;color:var(--ink);margin-bottom:3px}
+.enq-chart-axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);padding-top:6px}
+.enq-tip{
+  position:absolute;z-index:5;pointer-events:none;white-space:nowrap;
+  background:var(--ink);color:var(--surface);font:600 11.5px 'Inter',sans-serif;
+  padding:5px 10px;border-radius:7px;box-shadow:0 6px 18px rgba(0,0,0,.25);
+  transform:translate(-50%,-100%)
+}
 .enq-stat-val{font-size:1.6rem;font-weight:900;font-family:'Montserrat',sans-serif;color:var(--ink);line-height:1}
 .enq-stat-lbl{font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted);margin-top:4px}
 .status-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;color:#fff}
@@ -110,6 +151,32 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
       <div class="enq-stat-lbl"><?=$sl?></div>
     </div>
     <?php endforeach;?>
+  </div>
+
+  <!-- 30-day trend -->
+  <div class="admin-card enq-chart-card mb-4">
+    <div class="enq-chart-head">
+      <div>
+        <div class="enq-chart-title">Enquiries — last 30 days</div>
+        <div class="enq-chart-sub"><?= $count30 ?> enquiries · est. value ₹<?= number_format($sumEst30) ?></div>
+      </div>
+    </div>
+    <div class="enq-chart" id="enqChart" role="img" aria-label="Bar chart of enquiries per day for the last 30 days. <?= $count30 ?> total.">
+      <?php foreach ($chart as $i => $c):
+        $hpct = $c > 0 ? max(6, (int)round($c / $chartMax * 100)) : 0;
+        $isPeak = $c > 0 && $c === $chartMax; ?>
+      <div class="enq-bar-slot" data-date="<?= date('d M', strtotime($chartDates[$i])) ?>" data-count="<?= $c ?>">
+        <?php if ($isPeak): ?><span class="enq-bar-lbl"><?= $c ?></span><?php endif; ?>
+        <div class="enq-bar" style="height:<?= $hpct ?>%"></div>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <div class="enq-chart-axis">
+      <span><?= date('d M', strtotime($chartDates[0])) ?></span>
+      <span><?= date('d M', strtotime($chartDates[14])) ?></span>
+      <span>Today</span>
+    </div>
+    <div class="enq-tip" id="enqTip" hidden></div>
   </div>
 
   <!-- Filters -->
@@ -246,4 +313,22 @@ function viewBreakdown(r){
   document.getElementById('bdModalBody').innerHTML=html;
   bdModal.show();
 }
+
+// ── 30-day chart tooltip ──
+(function(){
+  var chart=document.getElementById('enqChart'), tip=document.getElementById('enqTip');
+  if(!chart||!tip) return;
+  var card=chart.closest('.enq-chart-card');
+  chart.addEventListener('pointermove',function(e){
+    var slot=e.target.closest('.enq-bar-slot');
+    if(!slot){ tip.hidden=true; return; }
+    var n=slot.dataset.count, d=slot.dataset.date;
+    tip.textContent=d+' — '+n+' '+(n==='1'?'enquiry':'enquiries');
+    var cr=card.getBoundingClientRect(), sr=slot.getBoundingClientRect();
+    tip.style.left=(sr.left-cr.left+sr.width/2)+'px';
+    tip.style.top=(sr.top-cr.top-6)+'px';
+    tip.hidden=false;
+  });
+  chart.addEventListener('pointerleave',function(){ tip.hidden=true; });
+})();
 </script></body></html>

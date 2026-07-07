@@ -420,7 +420,9 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
           <span class="lux-eyebrow">Guest Stories</span>
           <h2 class="lux-h2">In Their Words</h2>
         </div>
-        <div class="lux-quotes-grid">
+        <div class="lux-quotes-wrap">
+          <button type="button" class="lq-nav lq-prev" id="lqPrev" aria-label="Previous reviews"><i class="fa-solid fa-arrow-left"></i></button>
+          <div class="lux-quotes-grid" id="lqTrack" tabindex="0" aria-label="Guest reviews">
           <?php foreach ($lux_reviews as $rv):
             $rvRating = max(0, min(5, (int)($rv['rating'] ?? 0))); ?>
           <figure class="lux-quote reveal">
@@ -441,7 +443,10 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
             <figcaption><span><?= h($rv['name']) ?></span><?= $rv['city'] ? ' · ' . h($rv['city']) : '' ?></figcaption>
           </figure>
           <?php endforeach; ?>
+          </div>
+          <button type="button" class="lq-nav lq-next" id="lqNext" aria-label="Next reviews"><i class="fa-solid fa-arrow-right"></i></button>
         </div>
+        <div class="lq-dots" id="lqDots" aria-hidden="true"></div>
       </div>
     </section>
 

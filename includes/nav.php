@@ -27,11 +27,9 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
 
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav mx-auto align-items-lg-center">
-        <!-- theme toggle injected by JS -->
         <li class="nav-item">
           <a class="nav-link <?php echo !$activeDest && !$base ? 'active' : ''; ?>" href="<?php echo $home; ?>">Home</a>
         </li>
-        <li class="nav-item"><a class="nav-link" href="<?php echo $al('about'); ?>">Experiences</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle js-dropdown-toggle <?php echo $activeDest ? 'active' : ''; ?>"
              href="#" role="button" aria-haspopup="true" aria-expanded="false">
@@ -46,8 +44,8 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
           </ul>
         </li>
         <li class="nav-item"><a class="nav-link <?php echo basename($_SERVER['PHP_SELF'])==='packages.php'?'active':''; ?>" href="packages.php">Packages</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?php echo $al('why'); ?>">Why Us</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('fleet'); ?>">Fleet</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?php echo $al('about'); ?>">Experiences</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('reviews'); ?>">Reviews</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('contact'); ?>">Contact</a></li>
       </ul>
@@ -67,6 +65,11 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
           <i class="fa-solid fa-cloud" aria-hidden="true"></i>
         </button>
       </div>
+
+      <!-- Nav CTA — opens the quote popup; href is the no-modal fallback -->
+      <a class="nav-cta" href="index.php?calc=" data-open-quote="">
+        <i class="fa-solid fa-route" aria-hidden="true"></i> Plan Trip
+      </a>
 
     </div>
 

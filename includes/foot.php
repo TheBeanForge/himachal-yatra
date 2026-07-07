@@ -6,6 +6,24 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
   <footer class="footer">
     <div class="footer-top">
       <div class="container mx-auto px-3">
+
+        <!-- Newsletter — journey notes -->
+        <div class="footer-news">
+          <div class="footer-news-text">
+            <h3>Journey Notes</h3>
+            <p>Seasonal routes, travel windows and quiet corners of Himachal — a short note, only when it matters.</p>
+          </div>
+          <form class="footer-news-form" id="nlForm" novalidate>
+            <input type="hidden" name="csrf_token" value="<?php echo h($_SESSION['lead_form_token'] ?? ''); ?>">
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
+            <div class="footer-news-row">
+              <input type="email" name="email" id="nlEmail" placeholder="Your email address" autocomplete="email" aria-label="Email address" required>
+              <button type="submit" id="nlBtn"><span>Subscribe</span><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+            </div>
+            <p class="footer-news-status" id="nlStatus" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
         <div class="footer-grid">
 
           <!-- About -->

@@ -268,6 +268,14 @@ CREATE TABLE IF NOT EXISTS booking_enquiries (
   KEY idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Newsletter subscribers — footer "Journey Notes" form (admin/subscribers.php)
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  email      VARCHAR(190) NOT NULL UNIQUE,
+  source     VARCHAR(30) DEFAULT 'footer',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Traveller-suggested custom destinations (quote form free-text entries, for admin review)
 CREATE TABLE IF NOT EXISTS destination_suggestions (
   id                INT AUTO_INCREMENT PRIMARY KEY,

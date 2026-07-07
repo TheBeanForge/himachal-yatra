@@ -100,7 +100,7 @@ if ($conn instanceof mysqli) {
           ['fa-train',          'Kalka–Shimla Railway','UNESCO heritage toy train through 102 tunnels and 18 viaducts. One of the most scenic rail journeys in India.'],
           ['fa-hot-tub',        'Tattapani',         'Hot sulphur springs on the banks of Sutlej River, 51 km from Shimla. Perfect for relaxation.'],
           ['fa-apple-whole',    'Narkanda',          'Apple orchard country at 2,700 m. Skiing in winter, Hatu Peak and breathtaking Himalayan panoramas.'],
-          ['fa-temple',         'The Ridge',         'Open space in heart of Shimla. Gaiety Cultural Complex, Christ Church and stunning views of snow-capped mountains.'],
+          ['fa-archway',        'The Ridge',         'Open space in heart of Shimla. Gaiety Cultural Complex, Christ Church and stunning views of snow-capped mountains.'],
         ];
         foreach ($highlights as $hl): ?>
         <div class="highlight-card reveal">

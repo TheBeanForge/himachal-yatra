@@ -73,6 +73,11 @@
         <i class="fas fa-road fa-fw"></i> Route Photos
       </a>
     </li>
+    <li>
+      <a href="subscribers.php" class="sidebar-link <?= $cur==='subscribers.php'?'active':'' ?>">
+        <i class="fas fa-envelope-open-text fa-fw"></i> Subscribers
+      </a>
+    </li>
   </ul>
 
   <?php if (($_SESSION['admin_user']['role'] ?? '') === 'superadmin'): ?>

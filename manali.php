@@ -97,7 +97,7 @@ if ($conn instanceof mysqli) {
           ['fa-skiing',        'Solang Valley',     'Adventure hub — skiing, zorbing, paragliding, rope crossing. 14 km from Manali town.'],
           ['fa-place-of-worship','Hadimba Temple',  '16th-century wooden temple in a cedar forest. Dedicated to Goddess Hadimba — serene and sacred.'],
           ['fa-city',          'Old Manali',        'Hippie cafés, budget stays, art shops and the charming Manu Temple above the Beas River.'],
-          ['fa-castle',        'Naggar Castle',     '500-year-old stone castle, now a heritage hotel. Stunning views over the Kullu Valley.'],
+          ['fa-landmark',        'Naggar Castle',     '500-year-old stone castle, now a heritage hotel. Stunning views over the Kullu Valley.'],
           ['fa-water',         'Beas River',        'White-water rafting stretches from Pirdi to Jhiri. River walks and riverside camping available.'],
           ['fa-moon',          'Chandratal Lake',   '14,100 ft crescent-shaped lake. One of the most beautiful high-altitude lakes in the world.'],
           ['fa-motorcycle',    'Leh via Manali',    'The legendary Manali–Leh highway — one of the highest motorable roads on earth at 5,328 m.'],

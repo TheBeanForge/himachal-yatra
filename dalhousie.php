@@ -97,7 +97,7 @@ if ($conn instanceof mysqli) {
           ['fa-mountain',      'Dainkund Peak',     'Highest point near Dalhousie at 2,755 m. A 2-km trek with panoramic 360° views of the Chamba Valley.'],
           ['fa-water',         'Chamera Lake',      'A beautiful reservoir lake on the Ravi River. Boating, picnicking and scenic views — perfect family outing.'],
           ['fa-person-hiking', 'Bakrota Hills Walk','A 5-km circular walk through oak and rhododendron forests. Best walk in Dalhousie for sunrise views.'],
-          ['fa-temple',        'Kalatop Wildlife',  'Kalatop-Khajjiar Wildlife Sanctuary — Himalayan black bear, barking deer and incredible birdlife in Deodar forest.'],
+          ['fa-paw',            'Kalatop Wildlife',  'Kalatop-Khajjiar Wildlife Sanctuary — Himalayan black bear, barking deer and incredible birdlife in Deodar forest.'],
           ['fa-church',        'St. John\'s Church', 'Beautiful 1863 Gothic church in the heart of Dalhousie. A peaceful colonial-era landmark.'],
           ['fa-person-walking','Gandhi Chowk',      'Lively central square with shops, restaurants and Subhash Baoli — the historic spring visited by Subhas Chandra Bose.'],
           ['fa-monument',      'Chamba Town',       '56 km from Dalhousie. Ancient Chamba Kingdom palaces, Lakshmi Narayan temples and the famous Manimahesh Lake.'],

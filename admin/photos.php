@@ -160,7 +160,13 @@ $page_title = 'Photo Gallery';
 .ov-note i{color:var(--accent);margin-top:1px}
 .ov-count{font-size:12px;color:var(--muted)}
 .ov-count b{color:var(--ink)}
-@media(max-width:768px){.upload-form{grid-template-columns:1fr}.ov-label{min-width:0;width:100%}}
+@media(max-width:768px){
+  .upload-form{grid-template-columns:1fr}
+  .upload-form .form-field{min-width:0}
+  /* long caption ("CHOOSE JPG/PNG/WEBP…") must wrap instead of forcing the grid wider */
+  .file-label{white-space:normal;height:auto;min-height:42px;padding:10px 14px;line-height:1.4}
+  .ov-label{min-width:0;width:100%}
+}
 </style>
 </head>
 <body>

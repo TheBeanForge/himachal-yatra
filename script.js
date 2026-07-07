@@ -217,6 +217,77 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ── Newsletter (footer, site-wide) ──
+  const nlForm = document.getElementById('nlForm');
+  nlForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('nlStatus');
+    const btn = document.getElementById('nlBtn');
+    const email = document.getElementById('nlEmail')?.value.trim() || '';
+    const say = (msg, cls) => { if (status) { status.textContent = msg; status.className = `footer-news-status ${cls}`; } };
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say('Please enter a valid email address.', 'err'); return; }
+    if (btn) btn.disabled = true;
+    try {
+      const res = await fetch('api/subscribe.php', { method: 'POST', body: new FormData(nlForm), headers: { Accept: 'application/json' } });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        nlForm.reset();
+        say('You’re on the list — see you in the mountains.', 'ok');
+      } else {
+        say(data.error || 'Could not subscribe. Please try again.', 'err');
+      }
+    } catch {
+      say('Network error. Please try again.', 'err');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
+
+  // ── Testimonials carousel (homepage) ──
+  const lqTrack = document.getElementById('lqTrack');
+  if (lqTrack) {
+    const lqCards = [...lqTrack.querySelectorAll('.lux-quote')];
+    const lqDots = document.getElementById('lqDots');
+    const step = () => (lqCards[0]?.offsetWidth ?? 320) + 28; // card + gap
+    const maxLeft = () => lqTrack.scrollWidth - lqTrack.clientWidth - 4;
+
+    lqCards.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.type = 'button';
+      d.className = 'lq-dot' + (i === 0 ? ' active' : '');
+      d.addEventListener('click', () => { stopLqAuto(); lqTrack.scrollTo({ left: i * step() }); });
+      lqDots?.appendChild(d);
+    });
+
+    const syncLq = () => {
+      const idx = Math.min(lqCards.length - 1, Math.round(lqTrack.scrollLeft / step()));
+      lqDots?.querySelectorAll('.lq-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+      const prev = document.getElementById('lqPrev');
+      const next = document.getElementById('lqNext');
+      if (prev) prev.toggleAttribute('disabled', lqTrack.scrollLeft <= 2);
+      if (next) next.toggleAttribute('disabled', lqTrack.scrollLeft >= maxLeft());
+    };
+    lqTrack.addEventListener('scroll', syncLq, { passive: true });
+    syncLq();
+
+    document.getElementById('lqPrev')?.addEventListener('click', () => { stopLqAuto(); lqTrack.scrollBy({ left: -step() }); });
+    document.getElementById('lqNext')?.addEventListener('click', () => { stopLqAuto(); lqTrack.scrollBy({ left: step() }); });
+
+    // Gentle auto-advance; any interaction hands control back to the reader.
+    let lqTimer = null;
+    const startLqAuto = () => {
+      if (reduceMotion || lqCards.length < 2) return;
+      lqTimer = setInterval(() => {
+        lqTrack.scrollTo({ left: lqTrack.scrollLeft >= maxLeft() ? 0 : lqTrack.scrollLeft + step() });
+      }, 6500);
+    };
+    const stopLqAuto = () => { clearInterval(lqTimer); lqTimer = null; };
+    startLqAuto();
+    ['mouseenter', 'pointerdown', 'focusin'].forEach((ev) => lqTrack.addEventListener(ev, stopLqAuto));
+    lqTrack.addEventListener('mouseleave', () => { if (!lqTimer) startLqAuto(); });
+  }
+
   // ── Gallery lightbox (destination pages) ──
   const galleryImgs = [...document.querySelectorAll('.gallery-item img')];
   if (galleryImgs.length) {
