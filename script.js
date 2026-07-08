@@ -2,7 +2,7 @@
 // Themes: 'light' (default — luxury paper editorial), 'dark', 'pine', 'sky'.
 // Anything else (e.g. a legacy value) falls back to the default.
 const ALLOWED_THEMES = ['dark', 'light', 'pine', 'sky'];
-const DEFAULT_THEME  = 'light';
+const DEFAULT_THEME  = 'pine';
 (function () {
   let saved = localStorage.getItem('site-theme');
   if (!ALLOWED_THEMES.includes(saved)) { saved = DEFAULT_THEME; localStorage.setItem('site-theme', DEFAULT_THEME); }

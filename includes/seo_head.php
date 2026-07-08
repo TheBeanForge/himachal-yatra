@@ -20,7 +20,7 @@ $bizEmail  = $bizEmail ?? (getenv('AGENCY_EMAIL') ?: 'info@himachalsafar.com');
 <link rel="canonical" href="<?php echo h($canonical); ?>">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#070F1E" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#F3F6FB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ECF3EA" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Himachal Safar">
 <meta property="og:locale" content="en_IN">

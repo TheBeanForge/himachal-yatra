@@ -46,7 +46,6 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
               <a href="<?php echo h($url); ?>" target="_blank" rel="noopener" aria-label="<?php echo h($label); ?>"><i class="fa-brands fa-<?php echo $icon; ?>"></i></a>
               <?php endforeach; ?>
             </div>
-            <p class="footer-founders">Founded by Vishal Thakur &amp; Abhishek Thakur</p>
           </div>
 
           <!-- Quick Links -->
@@ -112,6 +111,7 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
     <div class="container mx-auto px-3">
       <div class="footer-bottom">
         <span>&copy; <?php echo date('Y'); ?> Himachal Safar. All Rights Reserved.</span>
+        <span class="footer-founders">Founded by Vishal Thakur &amp; Abhishek Thakur</span>
         <span><a href="privacy.php">Privacy Policy</a> &nbsp;|&nbsp; <a href="terms.php">Terms &amp; Conditions</a></span>
       </div>
     </div>
