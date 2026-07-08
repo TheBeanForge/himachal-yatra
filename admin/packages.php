@@ -250,7 +250,10 @@ textarea.pk-input { height:auto; padding:12px 14px; resize:vertical; }
             <td>
               <div style="font-weight:600;color:var(--ink)">
                 <?= htmlspecialchars($p['package_name']) ?>
-                <?php $nn=(int)($p['duration_nights']??0); $dd=(int)($p['duration_days']??0); if ($nn>0 || $dd>0): ?>
+                <?php
+                  $nn=(int)($p['duration_nights']??0); $dd=(int)($p['duration_days']??0);
+                  if ($dd>0 && $nn===0) $nn=$dd-1;   // nights default to days−1, matching the public site
+                  if ($nn>0 || $dd>0): ?>
                 <span style="margin-left:8px;font-size:11px;font-weight:700;color:var(--accent);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);padding:1px 7px;border-radius:6px"><?= $nn>0&&$dd>0 ? "{$dd}D/{$nn}N" : ($dd>0 ? "{$dd}D" : "{$nn}N") ?></span>
                 <?php endif; ?>
                 <?php if (!empty($p['is_bestseller'])): ?>

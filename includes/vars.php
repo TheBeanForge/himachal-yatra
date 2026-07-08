@@ -9,9 +9,9 @@ header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 
 /*
- * Shared-hosting setup:
- * Edit these values after uploading the site. No separate hidden config file
- * is required.
+ * Local XAMPP configuration. For himachalsafar.in use vars-production.php
+ * (saved in your Downloads folder) — upload it to the server as
+ * includes/vars.php when deploying.
  */
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');

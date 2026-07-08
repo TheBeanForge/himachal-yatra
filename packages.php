@@ -64,6 +64,7 @@ function package_dummy_image(array $package, int $index): string {
           $waMsg = 'Hi Himachal Safar, I am interested in the "' . $p['package_name'] . '" package. Please share the itinerary and a quote.';
           $waUrl = 'https://wa.me/' . h($whatsappNumber) . '?text=' . rawurlencode($waMsg);
           $nn = (int)($p['duration_nights'] ?? 0); $dd = (int)($p['duration_days'] ?? 0);
+          if ($dd > 0 && $nn === 0) $nn = $dd - 1;   // nights default to days−1 (standard tour convention)
           $badge = ($nn > 0 && $dd > 0) ? "{$dd}D/{$nn}N" : ($dd > 0 ? "{$dd}D" : ($nn > 0 ? "{$nn}N" : 'Taxi Tour'));
           $best = !empty($p['is_bestseller']);
           $cat  = trim($p['category'] ?? '');
