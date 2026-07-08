@@ -1577,7 +1577,6 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   transition: background .3s, color .3s, transform .3s, border-color .3s;
 }
 .footer-social a:hover { background: var(--grad-gold); border-color: transparent; color: #10151d; transform: translateY(-3px); }
-.footer-founders { font-size: 12.5px; color: rgba(255,255,255,.38); letter-spacing: .04em; }
 .footer-col h3 {
   font-family: var(--font-body); font-size: 11.5px; font-weight: 700;
   letter-spacing: .28em; text-transform: uppercase;
@@ -1603,7 +1602,7 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
 .footer-contact-item span { min-width: 0; overflow-wrap: anywhere; line-height: 1.5; }
 .footer-contact-item a { color: rgba(255,255,255,.6); transition: color .25s; }
 .footer-contact-item a:hover { color: #fff; }
-.footer-trust { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+.footer-trust { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 .footer-trust span {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: 12px; font-weight: 700; letter-spacing: .06em;

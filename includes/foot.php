@@ -32,7 +32,11 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
               <img src="assets/logo.svg" alt="Himachal Safar" width="228" height="46" loading="lazy">
             </a>
             <h3 class="footer-about-heading">Born in the Mountains.<br>Built for the Road.</h3>
-            <p>Founded by mountain-road specialists who have driven every major Himachal route in all seasons. Verified drivers, transparent fares and a travel desk that stays reachable from departure to drop. No middlemen — just us, you and the mountains.</p>
+            <div class="footer-trust">
+              <span><i class="fa-solid fa-shield-halved"></i> Verified Drivers</span>
+              <span><i class="fa-solid fa-headset"></i> 24/7 Support</span>
+            </div>
+            <p>Founded by Vishal Thakur &amp; Abhishek Thakur — mountain-road specialists who have driven every major Himachal route in all seasons. Transparent fares and a travel desk that stays reachable from departure to drop. No middlemen — just us, you and the mountains.</p>
             <div class="footer-social">
               <?php
                 // Profile URLs are admin-editable in Settings; unset ones are skipped (no dead links).
@@ -98,10 +102,6 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
               <i class="fa-solid fa-location-dot"></i>
               <span><?php echo h($agencyLocation); ?></span>
             </div>
-            <div class="footer-trust">
-              <span><i class="fa-solid fa-shield-halved"></i> Verified Drivers</span>
-              <span><i class="fa-solid fa-headset"></i> 24/7 Support</span>
-            </div>
           </div>
 
         </div>
@@ -111,7 +111,6 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
     <div class="container mx-auto px-3">
       <div class="footer-bottom">
         <span>&copy; <?php echo date('Y'); ?> Himachal Safar. All Rights Reserved.</span>
-        <span class="footer-founders">Founded by Vishal Thakur &amp; Abhishek Thakur</span>
         <span><a href="privacy.php">Privacy Policy</a> &nbsp;|&nbsp; <a href="terms.php">Terms &amp; Conditions</a></span>
       </div>
     </div>
