@@ -1706,6 +1706,21 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
 .legal-wrap ul { margin: 0 0 14px 1.2rem; }
 .legal-wrap a { color: var(--royal); }
 .legal-note { margin-top: 34px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted) !important; font-size: 13px; }
+.legal-table-wrap { overflow-x: auto; margin: 18px 0 8px; }
+.legal-table {
+  width: 100%; border-collapse: collapse; font-size: 14.5px;
+  border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+}
+.legal-table th {
+  text-align: left; padding: 12px 18px;
+  font: 700 11px var(--font-body); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--gold-2); background: var(--gold-light);
+  border-bottom: 1px solid var(--line);
+}
+.legal-table td { padding: 12px 18px; color: var(--text-2); border-bottom: 1px solid var(--line); }
+.legal-table tbody tr:last-child td { border-bottom: none; }
+.legal-table td strong { color: var(--charcoal); }
+.legal-table tbody tr:hover td { background: color-mix(in srgb, var(--gold) 4%, transparent); }
 
 /* ═══ NAV RESPONSIVE (mobile glass menu) ═══ */
 @media (max-width: 991px) {

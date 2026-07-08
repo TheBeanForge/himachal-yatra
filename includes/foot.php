@@ -111,7 +111,7 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
     <div class="container mx-auto px-3">
       <div class="footer-bottom">
         <span>&copy; <?php echo date('Y'); ?> Himachal Safar. All Rights Reserved.</span>
-        <span><a href="privacy.php">Privacy Policy</a> &nbsp;|&nbsp; <a href="terms.php">Terms &amp; Conditions</a></span>
+        <span><a href="privacy.php">Privacy Policy</a> &nbsp;|&nbsp; <a href="terms.php">Terms &amp; Conditions</a> &nbsp;|&nbsp; <a href="cancellation.php">Cancellation Policy</a></span>
       </div>
     </div>
   </footer>

@@ -45,8 +45,12 @@ require_once 'includes/vars.php';
         taxes and toll/parking charges are as stated in your quote.</p>
 
         <h2>Cancellations &amp; Changes</h2>
-        <p>Cancellation and rescheduling terms depend on the trip and notice period and will be shared
-        at confirmation. Mountain travel may be affected by weather and road conditions beyond our control.</p>
+        <p>Refunds of the advance are tiered by notice period: <strong>100% with 20+ days' notice</strong>,
+        75% at 10–19 days, 50% at 5–9 days, 25% at 48 hours–4 days, and no refund under 48 hours or for
+        no-shows. One free reschedule is included when requested at least 72 hours before pickup. If
+        <em>we</em> cancel due to weather, road closures or vehicle issues, you receive a full refund or a
+        free reschedule — your choice. Full details, including how refunds are paid, are in our
+        <a href="cancellation.php">Cancellation &amp; Refund Policy</a>.</p>
 
         <h2>Liability</h2>
         <p>We arrange experienced drivers and well-maintained vehicles, but we are not liable for delays or

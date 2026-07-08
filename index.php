@@ -6,7 +6,8 @@ require_once 'includes/vars.php';
 // Admin-selected homepage hero slideshow photos (up to 5). Empty → local seasonal fallback slides.
 $heroSlides = array_slice(photos_in_slot($conn ?? null, 'home_hero'), 0, 5);
 
-// Active fleet vehicles (admin-managed, with photos). Empty → hardcoded fallback in the fleet section.
+// Active fleet vehicles — only what the admin has added (Admin → Vehicles) is
+// shown; there are no hardcoded defaults. No vehicles → the section is hidden.
 $dbFleet = [];
 if ($conn instanceof mysqli) {
     try {
@@ -14,10 +15,6 @@ if ($conn instanceof mysqli) {
         if ($rf) $dbFleet = $rf->fetch_all(MYSQLI_ASSOC);
     } catch (mysqli_sql_exception) {}
 }
-// Only switch the website fleet to the admin's vehicles once at least one has a
-// photo — until then keep the polished default cards so the page never looks bare.
-$fleetHasPhoto = false;
-foreach ($dbFleet as $v) { if (!empty($v['photo'])) { $fleetHasPhoto = true; break; } }
 
 // Load approved reviews (newest first). Falls back to a curated seed array when the table is empty / DB is down.
 $db_reviews = [];
@@ -329,7 +326,8 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
       </div>
     </section>
 
-    <!-- ═══ 5b · FLEET ═══ -->
+    <!-- ═══ 5b · FLEET — admin-managed vehicles only; hidden when none exist ═══ -->
+    <?php if ($dbFleet): ?>
     <section class="lux-section lux-fleet" id="fleet">
       <div class="lux-container">
         <div class="lux-head reveal">
@@ -338,55 +336,31 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
           <p class="lux-fleet-note">Clean sedans, premium SUVs and group vehicles, chosen for Himachal terrain. Tell us your route, guests and luggage &mdash; we&rsquo;ll recommend the right one before quoting.</p>
         </div>
         <div class="lux-fleet-grid">
-          <?php if ($fleetHasPhoto): ?>
-            <?php foreach ($dbFleet as $v): ?>
-            <article class="lux-fleet-card reveal">
-              <div class="lux-fleet-media">
-                <?php if (!empty($v['photo'])): ?>
-                <img src="uploads/photos/<?= h($v['photo']) ?>" alt="<?= h($v['vehicle_name']) ?> &mdash; Himachal cab" loading="lazy" decoding="async" width="900" height="560">
-                <?php else: ?>
-                <div class="lux-fleet-ph"><i class="fa-solid fa-car-side"></i></div>
-                <?php endif; ?>
-              </div>
-              <div class="lux-fleet-body">
-                <h3 class="lux-fleet-name"><?= h($v['vehicle_name']) ?></h3>
-                <div class="lux-fleet-meta">
-                  <span><i class="fa-regular fa-user"></i> <?= h($v['seating_capacity']) ?></span>
-                  <span><i class="fa-regular fa-snowflake"></i> AC</span>
-                </div>
-              </div>
-            </article>
-            <?php endforeach; ?>
-          <?php else:
-          $fleet = [
-            ['Swift Dzire',        '1-3 Guests',  'AC', 'Efficient city pickups and short hill transfers',  'https://commons.wikimedia.org/wiki/Special:FilePath/Suzuki%20Dzire%201.2%20GL%202019.jpg?width=900'],
-            ['Innova Hycross',     '4-6 Guests',  'AC', 'Premium comfort for families and longer routes',    'https://commons.wikimedia.org/wiki/Special:FilePath/2022%20Toyota%20Kijang%20Innova%20Zenix%20V%20%28front%29.jpg?width=900'],
-            ['Innova Crysta',      '4-6 Guests',  'AC', 'Preferred SUV for Manali, Shimla and Dharamshala',  'https://commons.wikimedia.org/wiki/Special:FilePath/Toyota%20Innova%20Crysta.jpg?width=900'],
-            ['Tempo Traveller 12', '7-12 Guests', 'AC', 'Comfortable group tours with luggage space',        'https://commons.wikimedia.org/wiki/Special:FilePath/Force%20Traveller%20Luxury.jpg?width=900'],
-            ['Tempo Traveller 17', '13+ Guests',  'AC', 'Large group and corporate Himachal journeys',       'https://commons.wikimedia.org/wiki/Special:FilePath/Force%20Motors%20-%20Traveller%2026%20-%20Agra%202014-05-14%204222.JPG?width=900'],
-          ];
-          foreach ($fleet as $car): ?>
+          <?php foreach ($dbFleet as $v): ?>
           <article class="lux-fleet-card reveal">
             <div class="lux-fleet-media">
-              <img src="<?= h($car[4]) ?>" alt="<?= h($car[0]) ?> Himachal Pradesh" loading="lazy" decoding="async" width="900" height="560">
+              <?php if (!empty($v['photo'])): ?>
+              <img src="uploads/photos/<?= h($v['photo']) ?>" alt="<?= h($v['vehicle_name']) ?> &mdash; Himachal cab" loading="lazy" decoding="async" width="900" height="560">
+              <?php else: ?>
+              <div class="lux-fleet-ph"><i class="fa-solid fa-car-side"></i></div>
+              <?php endif; ?>
             </div>
             <div class="lux-fleet-body">
-              <h3 class="lux-fleet-name"><?= h($car[0]) ?></h3>
+              <h3 class="lux-fleet-name"><?= h($v['vehicle_name']) ?></h3>
               <div class="lux-fleet-meta">
-                <span><i class="fa-regular fa-user"></i> <?= h($car[1]) ?></span>
-                <span><i class="fa-regular fa-snowflake"></i> <?= h($car[2]) ?></span>
+                <span><i class="fa-regular fa-user"></i> <?= h($v['seating_capacity']) ?></span>
+                <span><i class="fa-regular fa-snowflake"></i> AC</span>
               </div>
-              <p class="lux-fleet-desc"><?= h($car[3]) ?></p>
             </div>
           </article>
           <?php endforeach; ?>
-          <?php endif; ?>
         </div>
         <div class="lux-fleet-cta reveal">
           <button type="button" class="lux-btn lux-btn-gold" data-open-quote="">Get a Vehicle Recommendation</button>
         </div>
       </div>
     </section>
+    <?php endif; ?>
 
     <!-- ═══ 5c · HOW IT WORKS ═══ -->
     <section class="lux-section lux-steps-sec" id="how">

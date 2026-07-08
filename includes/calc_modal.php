@@ -237,6 +237,11 @@
           Indicative estimate. Final price confirmed after reviewing your route &amp; requirements.
           Includes accommodation &amp; transport. Excludes meals, entry tickets &amp; personal expenses.
         </p>
+        <p class="cq-disclaimer" style="margin-top:.4rem">
+          <i class="fa-solid fa-rotate-left"></i>
+          Flexible booking — full refund with 20+ days' notice and one free reschedule up to 72 hours
+          before pickup. <a href="cancellation.php" target="_blank" rel="noopener" style="color:var(--lime)">Cancellation policy</a>
+        </p>
       </div>
     </div><!-- /cqStateResult -->
 
