@@ -42,6 +42,9 @@ $page_title = 'Route Photos';
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="csrf-token" content="<?= htmlspecialchars(admin_csrf_token()) ?>"/>
 <title>Route Photos — Admin</title>
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/brand/mark-192.png">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 <link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet"/>

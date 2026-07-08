@@ -18,7 +18,10 @@ $bizEmail  = $bizEmail ?? (getenv('AGENCY_EMAIL') ?: 'info@himachalsafar.com');
 <meta name="geo.region" content="IN-HP">
 <meta name="geo.placename" content="Himachal Pradesh, India">
 <link rel="canonical" href="<?php echo h($canonical); ?>">
-<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/brand/mark-96.png" type="image/png" sizes="96x96">
+<link rel="apple-touch-icon" href="assets/brand/mark-192.png">
 <meta name="theme-color" content="#070F1E" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#ECF3EA" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
