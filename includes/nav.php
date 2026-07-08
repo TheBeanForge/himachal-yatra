@@ -50,20 +50,20 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('contact'); ?>">Contact</a></li>
       </ul>
 
-      <!-- Theme Toggle -->
-      <div class="theme-switcher" id="themeSwitcher" role="group" aria-label="Colour theme">
-        <button class="theme-btn" data-theme="dark" title="Dark" aria-label="Dark theme" aria-pressed="false">
-          <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      <!-- Theme dropdown -->
+      <div class="theme-dd" id="themeSwitcher">
+        <button type="button" class="theme-dd-btn" id="themeDdBtn"
+                aria-haspopup="listbox" aria-expanded="false" aria-label="Change colour theme">
+          <i class="fa-solid fa-sun theme-dd-ic" aria-hidden="true"></i>
+          <span class="theme-dd-txt">Ivory White</span>
+          <i class="fa-solid fa-chevron-down theme-dd-arr" aria-hidden="true"></i>
         </button>
-        <button class="theme-btn active" data-theme="light" title="Light" aria-label="Light theme" aria-pressed="true">
-          <i class="fa-solid fa-sun" aria-hidden="true"></i>
-        </button>
-        <button class="theme-btn" data-theme="pine" title="Pine (forest)" aria-label="Pine forest theme" aria-pressed="false">
-          <i class="fa-solid fa-tree" aria-hidden="true"></i>
-        </button>
-        <button class="theme-btn" data-theme="sky" title="Sky (blue &amp; white)" aria-label="Sky blue and white theme" aria-pressed="false">
-          <i class="fa-solid fa-cloud" aria-hidden="true"></i>
-        </button>
+        <ul class="theme-dd-menu" role="listbox" aria-label="Colour theme">
+          <li><button type="button" class="theme-opt" role="option" data-set-theme="light"><i class="fa-solid fa-sun"></i> Ivory White</button></li>
+          <li><button type="button" class="theme-opt" role="option" data-set-theme="dark"><i class="fa-solid fa-moon"></i> Midnight Blue</button></li>
+          <li><button type="button" class="theme-opt" role="option" data-set-theme="pine"><i class="fa-solid fa-tree"></i> Pine Green</button></li>
+          <li><button type="button" class="theme-opt" role="option" data-set-theme="sky"><i class="fa-solid fa-cloud"></i> Ocean Blue</button></li>
+        </ul>
       </div>
 
       <!-- Nav CTA — opens the quote popup; href is the no-modal fallback -->

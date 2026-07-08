@@ -11,24 +11,53 @@ const DEFAULT_THEME  = 'light';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ── Theme switcher ──
+  // ── Theme dropdown ──
+  const THEME_META = {
+    light: { icon: 'fa-sun',   label: 'Ivory White' },
+    dark:  { icon: 'fa-moon',  label: 'Midnight Blue' },
+    pine:  { icon: 'fa-tree',  label: 'Pine Green' },
+    sky:   { icon: 'fa-cloud', label: 'Ocean Blue' },
+  };
   let currentTheme = localStorage.getItem('site-theme');
   if (!ALLOWED_THEMES.includes(currentTheme)) currentTheme = DEFAULT_THEME;
-  const syncThemeButtons = (active) => {
-    document.querySelectorAll('.theme-btn').forEach(b => {
-      const on = b.dataset.theme === active;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+
+  const themeDd = document.querySelector('.theme-dd');
+  const themeDdBtn = document.getElementById('themeDdBtn');
+  const syncThemeDd = (active) => {
+    const meta = THEME_META[active] || THEME_META[DEFAULT_THEME];
+    const ic = themeDd?.querySelector('.theme-dd-ic');
+    const tx = themeDd?.querySelector('.theme-dd-txt');
+    if (ic) ic.className = `fa-solid ${meta.icon} theme-dd-ic`;
+    if (tx) tx.textContent = meta.label;
+    themeDd?.querySelectorAll('.theme-opt').forEach((o) => {
+      o.classList.toggle('active', o.dataset.setTheme === active);
+      o.setAttribute('aria-selected', o.dataset.setTheme === active ? 'true' : 'false');
     });
   };
-  syncThemeButtons(currentTheme);
-  document.querySelectorAll('.theme-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const theme = btn.dataset.theme;
+  const setThemeDdOpen = (open) => {
+    themeDd?.classList.toggle('open', open);
+    themeDdBtn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+  syncThemeDd(currentTheme);
+
+  themeDdBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setThemeDdOpen(!themeDd.classList.contains('open'));
+  });
+  themeDd?.querySelectorAll('.theme-opt').forEach((opt) => {
+    opt.addEventListener('click', () => {
+      const theme = opt.dataset.setTheme;
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('site-theme', theme);
-      syncThemeButtons(theme);
+      syncThemeDd(theme);
+      setThemeDdOpen(false);
     });
+  });
+  document.addEventListener('click', (e) => {
+    if (themeDd?.classList.contains('open') && !themeDd.contains(e.target)) setThemeDdOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && themeDd?.classList.contains('open')) { setThemeDdOpen(false); themeDdBtn?.focus(); }
   });
 
   // ── Bright-background header contrast ──
