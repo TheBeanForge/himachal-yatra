@@ -54,8 +54,8 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
       <div class="theme-dd" id="themeSwitcher">
         <button type="button" class="theme-dd-btn" id="themeDdBtn"
                 aria-haspopup="listbox" aria-expanded="false" aria-label="Change colour theme">
-          <i class="fa-solid fa-tree theme-dd-ic" aria-hidden="true"></i>
-          <span class="theme-dd-txt">Pine Green</span>
+          <i class="fa-solid fa-moon theme-dd-ic" aria-hidden="true"></i>
+          <span class="theme-dd-txt">Midnight Blue</span>
           <i class="fa-solid fa-chevron-down theme-dd-arr" aria-hidden="true"></i>
         </button>
         <ul class="theme-dd-menu" role="listbox" aria-label="Colour theme">

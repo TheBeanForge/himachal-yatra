@@ -22,8 +22,7 @@ $bizEmail  = $bizEmail ?? (getenv('AGENCY_EMAIL') ?: 'info@himachalsafar.com');
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/brand/mark-96.png" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="assets/brand/mark-192.png">
-<meta name="theme-color" content="#070F1E" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#ECF3EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#070F1E">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Himachal Safar">
 <meta property="og:locale" content="en_IN">
