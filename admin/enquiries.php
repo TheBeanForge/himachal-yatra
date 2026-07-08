@@ -8,6 +8,77 @@ $csrf = admin_csrf_token();
 try { $conn->query("ALTER TABLE tour_packages ADD COLUMN destination_key VARCHAR(50) NULL"); } catch (Throwable) {}
 try { $conn->query("ALTER TABLE booking_enquiries MODIFY COLUMN status ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new'"); } catch (Throwable) {}
 
+// ── Log a direct-call lead (staff-entered, e.g. customer phoned the number on the site) ──
+$leadMsg='';
+if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='add_lead') {
+    require_admin_csrf();
+    $name   = mb_substr(trim($_POST['customer_name']??''),0,100);
+    $mobile = preg_replace('/[^0-9+]/','', $_POST['mobile']??'');
+    $email  = filter_var(trim($_POST['email']??''), FILTER_VALIDATE_EMAIL) ? trim($_POST['email']) : '';
+    $destTx = mb_substr(trim($_POST['trip_destination']??''),0,500);
+    $locId  = (int)($_POST['pickup_location_id']??0);
+    $locCus = mb_substr(trim($_POST['pickup_custom']??''),0,120);
+    $vehId  = (int)($_POST['vehicle_id']??0);
+    $trav   = max(1,min(50,(int)($_POST['travelers']??1)));
+    $pd     = trim($_POST['pickup_date']??'');
+    $dd     = trim($_POST['drop_date']??'');
+    $notes  = mb_substr(trim($_POST['notes']??''),0,1000);
+    $stNew  = in_array($_POST['status']??'',['new','contacted','quoted','confirmed','closed'],true)?$_POST['status']:'contacted';
+
+    if (mb_strlen($name)<2 || strlen($mobile)<10) {
+        $leadMsg='error:Customer name and a valid mobile number are required.';
+    } else {
+        // Price estimate — identical math to the public calculator
+        // (vehicle daily rate × days + seasonal surcharge + taxes).
+        $est=null; $vehCost=0.0; $seasAmt=0.0; $taxTot=0.0; $bj=null;
+        $pdOk = $pd!=='' && DateTime::createFromFormat('Y-m-d',$pd)!==false;
+        $ddOk = $dd!=='' && DateTime::createFromFormat('Y-m-d',$dd)!==false;
+        if ($vehId && $pdOk && $ddOk && $dd>$pd) {
+            $s=$conn->prepare('SELECT daily_rate FROM vehicles WHERE id=?');
+            $s->bind_param('i',$vehId); $s->execute();
+            $rate=(float)($s->get_result()->fetch_assoc()['daily_rate']??0); $s->close();
+            $days=max(1,(new DateTime($dd))->diff(new DateTime($pd))->days);
+            if ($rate>0) {
+                $vehCost=$rate*$days;
+                $s=$conn->prepare('SELECT COALESCE(SUM(surcharge_pct),0) sp FROM seasonal_pricing WHERE active=1 AND start_date<=? AND end_date>=?');
+                $s->bind_param('ss',$pd,$pd); $s->execute();
+                $pct=(float)($s->get_result()->fetch_assoc()['sp']??0); $s->close();
+                $seasAmt=round($vehCost*$pct/100,2);
+                $sub=$vehCost+$seasAmt;
+                $taxLines=[];
+                foreach($conn->query("SELECT name,type,value,apply_on FROM taxes_fees WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC) as $t){
+                    $tv=(float)$t['value'];
+                    $base=$t['apply_on']==='vehicle_cost'?$vehCost:$sub;
+                    $amt=$t['type']==='percentage'?round($base*$tv/100,2):$tv;
+                    if($amt>0){ $taxLines[]=['name'=>$t['name'],'amount'=>$amt]; $taxTot+=$amt; }
+                }
+                $est=round($sub+$taxTot,2);
+                $bj=json_encode(['package_cost'=>0,'vehicle_cost'=>$vehCost,'extra_pp_cost'=>0,'dest_charge'=>0,
+                                 'seasonal_amt'=>$seasAmt,'seasonal_pct'=>$pct,'subtotal'=>$sub,
+                                 'tax_lines'=>$taxLines,'tax_total'=>$taxTot,'total'=>$est,'days'=>$days,'travelers'=>$trav]);
+            }
+        }
+        $locIdDb = ($locId>0 && $locCus==='') ? $locId : null;
+        $vehIdDb = $vehId ?: null;
+        $pdDb = $pdOk ? $pd : null;
+        $ddDb = $ddOk ? $dd : null;
+        $src = 'direct_call';
+        $s=$conn->prepare(
+            'INSERT INTO booking_enquiries
+             (trip_destination,pickup_location_id,pickup_custom,vehicle_id,customer_name,mobile,email,
+              travelers,pickup_date,drop_date,estimated_price,package_cost,vehicle_cost,extra_charges,
+              tax_amount,breakdown_json,status,notes,source)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?)'
+        );
+        $s->bind_param('sisisssissddddssss',
+            $destTx,$locIdDb,$locCus,$vehIdDb,$name,$mobile,$email,
+            $trav,$pdDb,$ddDb,$est,$vehCost,$seasAmt,$taxTot,$bj,$stNew,$notes,$src);
+        $s->execute(); $newId=$conn->insert_id; $s->close();
+        audit_log('lead_add',"Direct-call lead #$newId: $name ($mobile)");
+        $leadMsg='ok:Direct-call lead saved'.($est!==null?' — estimate ₹'.number_format($est):'').'.';
+    }
+}
+
 // Status update
 if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='update_status') {
     require_admin_csrf();
@@ -36,7 +107,7 @@ $source_f  = $_GET['source']??'';
 $search_f  = trim($_GET['q']??'');
 $where=[]; $params=[]; $types='';
 if(in_array($status_f,['new','contacted','quoted','confirmed','closed'],true)){ $where[]='be.status=?'; $params[]=$status_f; $types.='s'; }
-if(in_array($source_f,['calculator','whatsapp'],true)){ $where[]='be.source=?'; $params[]=$source_f; $types.='s'; }
+if(in_array($source_f,['calculator','whatsapp','direct_call'],true)){ $where[]='be.source=?'; $params[]=$source_f; $types.='s'; }
 if($dest_f){ $where[]='tp.destination_key=?'; $params[]=$dest_f; $types.='s'; }
 if($search_f){ $where[]='(be.customer_name LIKE ? OR be.mobile LIKE ? OR tp.package_name LIKE ? OR be.trip_destination LIKE ?)'; $l="%$search_f%"; $params=array_merge($params,[$l,$l,$l,$l]); $types.='ssss'; }
 $wsql=implode(' AND ',$where);
@@ -66,6 +137,14 @@ try {
     foreach ($r as $row) { $count30 += (int)$row['c']; $sumEst30 += (float)$row['s']; }
 } catch (mysqli_sql_exception) {}
 $chartMax = max(1, max($chart));
+
+// Form data for the "Log Call Lead" modal (each degrades to [] on older schemas).
+$fm = ['vehicles'=>[], 'locations'=>[], 'dests'=>[], 'taxes'=>[], 'seasonal'=>[]];
+try { $fm['vehicles']  = $conn->query("SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY daily_rate ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
+try { $fm['locations'] = $conn->query("SELECT id,city FROM pickup_locations WHERE active=1 ORDER BY sort_order ASC,city ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
+try { $fm['dests']     = array_column($conn->query("SELECT name FROM destinations WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC),'name'); } catch(Throwable) {}
+try { $fm['taxes']     = $conn->query("SELECT name,type,value,apply_on FROM taxes_fees WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
+try { $fm['seasonal']  = $conn->query("SELECT start_date,end_date,surcharge_pct FROM seasonal_pricing WHERE active=1 AND end_date>=CURDATE()")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
 $conn->close();
 $STATUS_LABELS=['new'=>'New','contacted'=>'Contacted','quoted'=>'Quoted','confirmed'=>'Confirmed','closed'=>'Closed'];
 $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','confirmed'=>'#22c55e','closed'=>'#6b7280'];
@@ -143,11 +222,20 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
 
   <!-- Header -->
   <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-    <div><h1 class="admin-page-title mb-0">Quote Enquiries</h1><p class="admin-page-sub mb-0">All calculator submissions — <?= array_sum($ct) ?> total</p></div>
-    <a href="?export=csv<?=$status_f?"&status=$status_f":''?>" class="btn btn-sm" style="border:1.5px solid var(--border);color:var(--muted);font-size:12px">
-      <i class="fas fa-download"></i> Export CSV
-    </a>
+    <div><h1 class="admin-page-title mb-0">Leads</h1><p class="admin-page-sub mb-0">Calculator, WhatsApp &amp; direct-call leads — <?= array_sum($ct) ?> total</p></div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button type="button" class="btn-primary-gold" data-bs-toggle="modal" data-bs-target="#addLeadModal">
+        <i class="fas fa-phone-volume"></i> Log Call Lead
+      </button>
+      <a href="?export=csv<?=$status_f?"&status=$status_f":''?>" class="btn btn-sm d-inline-flex align-items-center" style="border:1.5px solid var(--border);color:var(--muted);font-size:12px">
+        <i class="fas fa-download">&nbsp;</i> Export CSV
+      </a>
+    </div>
   </div>
+
+  <?php if($leadMsg): [$lt,$ltx]=explode(':',$leadMsg,2); ?>
+  <div class="alert alert-<?=$lt==='ok'?'success':'danger'?> alert-dismissible fade show py-2 mb-3"><?=h($ltx)?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+  <?php endif; ?>
 
   <!-- Stats -->
   <div class="d-flex gap-3 flex-wrap mb-4">
@@ -200,8 +288,9 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
     </select>
     <select name="source" class="form-select admin-input" style="max-width:140px">
       <option value="">All Sources</option>
-      <option value="calculator" <?=$source_f==='calculator'?'selected':''?>>Calculator</option>
-      <option value="whatsapp"   <?=$source_f==='whatsapp'?'selected':''?>>WhatsApp</option>
+      <option value="calculator"  <?=$source_f==='calculator'?'selected':''?>>Calculator</option>
+      <option value="whatsapp"    <?=$source_f==='whatsapp'?'selected':''?>>WhatsApp</option>
+      <option value="direct_call" <?=$source_f==='direct_call'?'selected':''?>>Direct Call</option>
     </select>
     <button class="btn btn-primary-gold btn-sm" type="submit"><i class="fas fa-search"></i> Filter</button>
     <a href="enquiries.php" class="btn btn-sm" style="border:1px solid var(--border);color:var(--muted)">Clear</a>
@@ -225,10 +314,12 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
           <td style="color:var(--muted);font-size:12px"><?=(int)$r['id']?></td>
           <td style="white-space:nowrap;font-size:12px;color:var(--muted)"><?=date('d M Y',strtotime($r['created_at']))?><br><?=date('h:i A',strtotime($r['created_at']))?></td>
           <td>
-            <?php $src=$r['source']??'calculator'; $isWa=($src==='whatsapp'); ?>
-            <span class="status-pill" style="background:<?=$isWa?'#25D366':'#B8A16A'?>;color:<?=$isWa?'#06231a':'#1a1a1a'?>">
-              <?=$isWa?'WhatsApp':'Calculator'?>
-            </span>
+            <?php
+              $src=$r['source']??'calculator';
+              $srcMap=['whatsapp'=>['WhatsApp','#25D366','#06231a'],'direct_call'=>['Direct Call','#4A90D9','#ffffff']];
+              [$srcLbl,$srcBg,$srcFg]=$srcMap[$src]??['Calculator','#B8A16A','#1a1a1a'];
+            ?>
+            <span class="status-pill" style="background:<?=$srcBg?>;color:<?=$srcFg?>"><?=$srcLbl?></span>
           </td>
           <td>
             <div style="font-weight:600;color:var(--ink)"><?=h($r['customer_name'])?></div>
@@ -273,6 +364,102 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
 
 </main></div>
 
+<!-- Log Call Lead Modal -->
+<div class="modal fade" id="addLeadModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content" style="background:var(--surface);border:1px solid var(--border)">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="<?=h($csrf)?>">
+    <input type="hidden" name="action" value="add_lead">
+    <div class="modal-header" style="border-color:var(--border)">
+      <h5 class="modal-title" style="color:var(--ink)"><i class="fas fa-phone-volume" style="color:var(--accent)"></i> &nbsp;Log a Direct-Call Lead</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1)"></button>
+    </div>
+    <div class="modal-body" style="font-size:13.5px">
+      <p style="color:var(--muted);font-size:12.5px;margin:0 0 16px">Customer called on the phone? Capture their details here — pick the vehicle and dates to read them the same estimate the website gives, then save. The lead lands in this inbox tagged <b>Direct Call</b>.</p>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Customer name *</label>
+          <input type="text" name="customer_name" class="form-control admin-input" required maxlength="100" placeholder="Full name">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Mobile *</label>
+          <input type="tel" name="mobile" class="form-control admin-input" required minlength="10" maxlength="15" placeholder="98765 43210">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Email</label>
+          <input type="email" name="email" class="form-control admin-input" placeholder="Optional">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Destination(s)</label>
+          <input type="text" name="trip_destination" class="form-control admin-input" list="alDests" placeholder="e.g. Manali, Kasol">
+          <datalist id="alDests">
+            <?php foreach($fm['dests'] as $dn):?><option value="<?=h($dn)?>"></option><?php endforeach;?>
+          </datalist>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Pickup city</label>
+          <select name="pickup_location_id" class="form-select admin-input">
+            <option value="0">— Select —</option>
+            <?php foreach($fm['locations'] as $l):?><option value="<?=(int)$l['id']?>"><?=h($l['city'])?></option><?php endforeach;?>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">…or custom city</label>
+          <input type="text" name="pickup_custom" class="form-control admin-input" maxlength="120" placeholder="If not listed">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Vehicle</label>
+          <select name="vehicle_id" id="alVeh" class="form-select admin-input">
+            <option value="0">— Select for estimate —</option>
+            <?php foreach($fm['vehicles'] as $v):?>
+            <option value="<?=(int)$v['id']?>"><?=h($v['vehicle_name'])?> — <?=h($v['seating_capacity'])?> (₹<?=number_format((float)$v['daily_rate'])?>/day)</option>
+            <?php endforeach;?>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Pickup date</label>
+          <input type="date" name="pickup_date" id="alPd" class="form-control admin-input">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Drop date</label>
+          <input type="date" name="drop_date" id="alDd" class="form-control admin-input">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Travelers</label>
+          <input type="number" name="travelers" id="alTrav" class="form-control admin-input" value="2" min="1" max="50">
+        </div>
+
+        <div class="col-12">
+          <div id="alEstBox" style="border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;background:var(--surface-2)">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Live estimate — read this to the customer</div>
+            <div id="alEstRows" style="color:var(--ink-2);font-size:12.5px">Select a vehicle and both dates to see the estimate.</div>
+            <div id="alEstTotal" style="font:800 20px 'Poppins','Inter',sans-serif;color:var(--accent);margin-top:4px"></div>
+          </div>
+        </div>
+
+        <div class="col-md-9">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Call notes</label>
+          <input type="text" name="notes" class="form-control admin-input" maxlength="1000" placeholder="e.g. Prefers evening pickup, will confirm by Friday">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)">Status</label>
+          <select name="status" class="form-select admin-input">
+            <?php foreach($STATUS_LABELS as $sk=>$sl):?>
+            <option value="<?=$sk?>" <?=$sk==='contacted'?'selected':''?>><?=$sl?></option>
+            <?php endforeach;?>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="border-color:var(--border)">
+      <button type="button" class="btn-clear" data-bs-dismiss="modal">Cancel</button>
+      <button type="submit" class="btn-primary-gold"><i class="fas fa-floppy-disk"></i> Save Lead</button>
+    </div>
+  </form>
+</div></div></div>
+
 <!-- Breakdown Modal -->
 <div class="modal fade" id="bdModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content" style="background:var(--surface);border:1px solid var(--border)">
   <div class="modal-header" style="border-color:var(--border)"><h5 class="modal-title" style="color:var(--ink)">Enquiry Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1)"></button></div>
@@ -297,7 +484,7 @@ document.querySelectorAll('.status-sel').forEach(sel=>{
 function viewBreakdown(r){
   const bd=r.breakdown_json?JSON.parse(r.breakdown_json):{};
   const fmt=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
-  const srcLabel=(r.source==='whatsapp')?'WhatsApp pre-chat':'Calculator';
+  const srcLabel=(r.source==='whatsapp')?'WhatsApp pre-chat':(r.source==='direct_call'?'Direct call (staff-entered)':'Calculator');
   const dates=(r.pickup_date&&r.drop_date)?`${r.pickup_date} → ${r.drop_date}<br>${r.travelers} travelers`:'—';
   let html=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
     <div><b>Customer</b><br>${r.customer_name}<br>${r.mobile}${r.email?'<br>'+r.email:''}</div>
@@ -321,6 +508,39 @@ function viewBreakdown(r){
   document.getElementById('bdModalBody').innerHTML=html;
   bdModal.show();
 }
+
+// ── Live estimate in the Log Call Lead modal (same math as the public calculator) ──
+(function(){
+  var FM = <?= json_encode([
+      'vehicles' => array_map(fn($v)=>['id'=>(int)$v['id'],'rate'=>(float)$v['daily_rate']], $fm['vehicles']),
+      'taxes'    => array_map(fn($t)=>['name'=>$t['name'],'type'=>$t['type'],'value'=>(float)$t['value'],'apply_on'=>$t['apply_on']], $fm['taxes']),
+      'seasonal' => array_map(fn($s)=>['start'=>$s['start_date'],'end'=>$s['end_date'],'pct'=>(float)$s['surcharge_pct']], $fm['seasonal']),
+  ]) ?>;
+  var veh=document.getElementById('alVeh'), pd=document.getElementById('alPd'), dd=document.getElementById('alDd');
+  if(!veh) return;
+  var rows=document.getElementById('alEstRows'), total=document.getElementById('alEstTotal');
+  var fmt=function(n){ return '₹'+Math.round(n).toLocaleString('en-IN'); };
+  function recalc(){
+    var v=FM.vehicles.find(function(x){return String(x.id)===veh.value;});
+    if(!v||!pd.value||!dd.value||dd.value<=pd.value){
+      rows.textContent='Select a vehicle and both dates to see the estimate.'; total.textContent=''; return;
+    }
+    var days=Math.max(1,Math.round((new Date(dd.value)-new Date(pd.value))/864e5));
+    var vehCost=v.rate*days, pct=0;
+    FM.seasonal.forEach(function(s){ if(pd.value>=s.start&&pd.value<=s.end) pct+=s.pct; });
+    var seas=Math.round(vehCost*pct/100), sub=vehCost+seas, taxT=0, parts=[];
+    parts.push('Vehicle ('+days+'d × '+fmt(v.rate)+') = '+fmt(vehCost));
+    if(seas>0) parts.push('Season +'+pct+'% = '+fmt(seas));
+    FM.taxes.forEach(function(t){
+      var base=t.apply_on==='vehicle_cost'?vehCost:sub;
+      var amt=t.type==='percentage'?Math.round(base*t.value/100):t.value;
+      if(amt>0){ taxT+=amt; parts.push(t.name+' = '+fmt(amt)); }
+    });
+    rows.textContent=parts.join('  ·  ');
+    total.textContent='Total: '+fmt(sub+taxT);
+  }
+  [veh,pd,dd].forEach(function(el){ el.addEventListener('change',recalc); el.addEventListener('input',recalc); });
+})();
 
 // ── 30-day chart tooltip ──
 (function(){
