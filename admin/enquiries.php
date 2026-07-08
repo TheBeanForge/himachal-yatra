@@ -76,7 +76,12 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <link href="assets/admin.css?v=<?php echo @filemtime(__DIR__ . '/assets/admin.css'); ?>" rel="stylesheet">
 <style>
-.enq-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 20px;min-width:110px}
+.enq-stat{
+  background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);
+  border-radius:12px;padding:14px 20px;min-width:112px;
+  box-shadow:var(--card-shadow);transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s;
+}
+.enq-stat:hover{transform:translateY(-2px)}
 
 /* ── 30-day trend chart — single-series bars in the theme accent ── */
 .enq-chart-card{position:relative;padding:20px 24px 14px}
@@ -146,7 +151,7 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
     <?php $total=array_sum($ct); ?>
     <div class="enq-stat"><div class="enq-stat-val"><?=$total?></div><div class="enq-stat-lbl">Total</div></div>
     <?php foreach($STATUS_LABELS as $sk=>$sl):?>
-    <div class="enq-stat" style="border-color:<?=$STATUS_COLORS[$sk]?>22">
+    <div class="enq-stat" style="border-left-color:<?=$STATUS_COLORS[$sk]?>">
       <div class="enq-stat-val" style="color:<?=$STATUS_COLORS[$sk]?>"><?=$ct[$sk]??0?></div>
       <div class="enq-stat-lbl"><?=$sl?></div>
     </div>

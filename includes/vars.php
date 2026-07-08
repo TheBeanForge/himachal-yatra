@@ -40,6 +40,25 @@ function db_connect(): ?mysqli {
 
 $conn = db_connect();
 
+// Admin pages can't do anything without the database — show a clear, friendly
+// notice instead of a fatal "Call to a member function on null" further down.
+// (Public pages and APIs degrade gracefully on their own and are unaffected.)
+if (!($conn instanceof mysqli)
+    && strpos(str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME'] ?? ''), '/admin/') !== false) {
+    http_response_code(503);
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Database unavailable</title>'
+       . '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#070F1E;font-family:system-ui,sans-serif}'
+       . '.box{max-width:440px;text-align:center;padding:44px 40px;background:#0D1930;border:1px solid rgba(255,255,255,.12);border-radius:20px}'
+       . '.box .ic{font-size:40px}h1{font-size:19px;color:#F2F6FC;margin:14px 0 10px}p{font-size:14px;line-height:1.7;color:#C4D0E2;margin:0 0 6px}'
+       . 'code{background:#13233F;padding:2px 8px;border-radius:6px;color:#EED9A6;font-size:12.5px}'
+       . 'a{display:inline-block;margin-top:20px;padding:11px 24px;border-radius:999px;background:linear-gradient(135deg,#E4C685,#A9822F);color:#10151d;font-weight:700;font-size:13px;text-decoration:none}</style></head>'
+       . '<body><div class="box"><div class="ic">&#128268;</div><h1>Database not reachable</h1>'
+       . '<p>The admin panel could not connect to MySQL.</p>'
+       . '<p>If this is your local machine, start <strong>MySQL</strong> from the XAMPP Control Panel. On hosting, check the credentials in <code>includes/vars.php</code>.</p>'
+       . '<a href="javascript:location.reload()">Try again</a></div></body></html>';
+    exit;
+}
+
 function app_setting($key, $default = '') {
   global $conn;
   if (!$conn instanceof mysqli) return $default;
