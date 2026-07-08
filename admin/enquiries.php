@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='update_stat
 
 // CSV Export
 if (($_GET['export']??'')==='csv') {
-    $rows=$conn->query("SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id ORDER BY be.created_at DESC")->fetch_all(MYSQLI_ASSOC);
+    $rows=$conn->query("SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id ORDER BY be.created_at DESC, be.id DESC")->fetch_all(MYSQLI_ASSOC);
     $conn->close();
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="enquiries_'.date('Y-m-d').'.csv"');
@@ -111,7 +111,7 @@ if(in_array($source_f,['calculator','whatsapp','direct_call'],true)){ $where[]='
 if($dest_f){ $where[]='tp.destination_key=?'; $params[]=$dest_f; $types.='s'; }
 if($search_f){ $where[]='(be.customer_name LIKE ? OR be.mobile LIKE ? OR tp.package_name LIKE ? OR be.trip_destination LIKE ?)'; $l="%$search_f%"; $params=array_merge($params,[$l,$l,$l,$l]); $types.='ssss'; }
 $wsql=implode(' AND ',$where);
-$sql="SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,tp.destination_key,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name,v.seating_capacity FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id".($wsql?" WHERE $wsql":'')." ORDER BY be.created_at DESC LIMIT 200";
+$sql="SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,tp.destination_key,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name,v.seating_capacity FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id".($wsql?" WHERE $wsql":'')." ORDER BY be.created_at DESC, be.id DESC LIMIT 200";
 $stmt=$conn->prepare($sql);
 if($params) $stmt->bind_param($types,...$params);
 $stmt->execute(); $rows=$stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
