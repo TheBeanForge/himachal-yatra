@@ -176,20 +176,26 @@ foreach ($taxes_rows as $t) {
 
 $total = round($subtotal + $tax_total, 2);
 
+// Advance to confirm (admin-configurable %) — informational split of the total.
+$advance_pct    = max(5, min(100, (int)app_setting('advance_percent', '25')));
+$advance_amount = round($total * $advance_pct / 100, 2);
+
 // Build breakdown — all values are raw floats, never formatted strings
 $breakdown = [
-    'package_cost'  => round($package_cost,  2),
-    'vehicle_cost'  => round($vehicle_cost,  2),
-    'extra_pp_cost' => round($extra_pp_cost, 2),
-    'dest_charge'   => round($dest_charge,   2),
-    'seasonal_amt'  => round($seasonal_amt,  2),
-    'seasonal_pct'  => $seasonal_pct,
-    'subtotal'      => round($subtotal,      2),
-    'tax_lines'     => $tax_lines,
-    'tax_total'     => round($tax_total,     2),
-    'total'         => $total,
-    'days'          => $days,
-    'travelers'     => $travelers,
+    'package_cost'   => round($package_cost,  2),
+    'vehicle_cost'   => round($vehicle_cost,  2),
+    'extra_pp_cost'  => round($extra_pp_cost, 2),
+    'dest_charge'    => round($dest_charge,   2),
+    'seasonal_amt'   => round($seasonal_amt,  2),
+    'seasonal_pct'   => $seasonal_pct,
+    'subtotal'       => round($subtotal,      2),
+    'tax_lines'      => $tax_lines,
+    'tax_total'      => round($tax_total,     2),
+    'total'          => $total,
+    'advance_pct'    => $advance_pct,
+    'advance_amount' => $advance_amount,
+    'days'           => $days,
+    'travelers'      => $travelers,
 ];
 
 // Save enquiry

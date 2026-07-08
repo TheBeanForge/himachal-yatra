@@ -903,7 +903,7 @@ async function loadData(){
     buildSelectLists();
   }catch(e){
     console.warn('Quote data load failed',e);
-    DATA={packages:[],locations:[],vehicles:[],taxes:[],dests:[],seasonal:[]};
+    DATA={packages:[],locations:[],vehicles:[],taxes:[],dests:[],seasonal:[],advance_pct:25};
   }
 }
 
@@ -1260,7 +1260,11 @@ function calcPrice(){
   const taxTotal=taxLines.reduce((a,t)=>a+sn(t.amt),0);
   const total=subtotal+taxTotal;
 
-  return {vehicleCost,seasonalAmt,seasonalPct,subtotal,taxLines,taxTotal,total,days,veh,error:null};
+  // Advance to confirm — % from admin Settings (via quote data), default 25.
+  const advPct=sn(DATA.advance_pct)||25;
+  const advance=Math.round(total*advPct/100);
+
+  return {vehicleCost,seasonalAmt,seasonalPct,subtotal,taxLines,taxTotal,total,advPct,advance,days,veh,error:null};
 }
 
 function buildBdRows(r){
@@ -1295,8 +1299,9 @@ function recalc(){
   ph.hidden=true; bdRows.hidden=false; bdTotal.hidden=false;
   bdRows.innerHTML=buildBdRows(r);
   document.getElementById('cqBdAmt').textContent=fmtINR(r.total);
-  document.getElementById('cqBdMeta').textContent=
-    `${S.travelers} traveler${S.travelers>1?'s':''} · ${r.days} day${r.days>1?'s':''} · ${r.veh.name}`;
+  document.getElementById('cqBdMeta').innerHTML=
+    `${S.travelers} traveler${S.travelers>1?'s':''} · ${r.days} day${r.days>1?'s':''} · ${r.veh.name}`+
+    `<br><b>${fmtINR(r.advance)}</b> advance (${r.advPct}%) to confirm · balance on trip`;
   lastCalc=r;
 }
 
@@ -1361,7 +1366,9 @@ document.getElementById('cqEstBtn').addEventListener('click',()=>{
 
   document.getElementById('cqResRows').innerHTML=buildBdRows(r);
   document.getElementById('cqResAmt').textContent=fmtINR(r.total);
-  document.getElementById('cqResMeta').textContent=`${S.travelers} travelers · ${r.days} days · ${veh?.name||''}`;
+  document.getElementById('cqResMeta').innerHTML=
+    `${S.travelers} travelers · ${r.days} days · ${veh?.name||''}`+
+    `<br><b>${fmtINR(r.advance)}</b> advance (${r.advPct}%) to confirm · balance on trip`;
 
   show('result');
   cqCard.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1401,6 +1408,8 @@ function fillSuccess(api){
   // Use API response breakdown (server-authoritative) with sn() wrapping
   const bd=api.breakdown||{};
   const total=sn(bd.total||api.total);
+  const advPct=sn(bd.advance_pct)||sn(DATA&&DATA.advance_pct)||25;
+  const advance=sn(bd.advance_amount)||Math.round(total*advPct/100);
   document.getElementById('cqSuccessSummary').innerHTML=`
     <div class="cq-success-row"><span>Destination</span><strong>${api.destination||'—'}</strong></div>
     <div class="cq-success-row"><span>Pickup</span><strong>${api.pickup||'—'}</strong></div>
@@ -1410,6 +1419,12 @@ function fillSuccess(api){
     <div class="cq-success-row" style="padding-top:.5rem;border-top:1px solid var(--line);margin-top:.3rem">
       <span><strong>Estimated Total</strong></span>
       <strong class="cq-success-total">${fmtINR(total)}</strong>
+    </div>
+    <div class="cq-success-row">
+      <span>Advance to confirm (${advPct}%)</span><strong>${fmtINR(advance)}</strong>
+    </div>
+    <div class="cq-success-row">
+      <span>Balance on trip</span><strong>${fmtINR(total-advance)}</strong>
     </div>
   `;
 
@@ -1424,7 +1439,8 @@ function fillSuccess(api){
       `• Vehicle: ${api.vehicle||'—'}\n`+
       `• Dates: ${S.pickup} → ${S.drop}\n`+
       `• Travelers: ${sn(api.travelers)}\n`+
-      `• Estimated total: ${fmtINR(total)}`;
+      `• Estimated total: ${fmtINR(total)}\n`+
+      `• Advance to confirm (${advPct}%): ${fmtINR(advance)}`;
     waBtn.href = `https://wa.me/${CQ_WA}?text=${encodeURIComponent(msg)}`;
   }
 }

@@ -37,7 +37,8 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
   ('agency_location',  'Bilaspur, Himachal Pradesh'),
   ('social_facebook',  ''),
   ('social_instagram', ''),
-  ('social_youtube',   '');
+  ('social_youtube',   ''),
+  ('advance_percent',  '25');
 
 -- Admin users (multi-user login)
 CREATE TABLE IF NOT EXISTS admin_users (

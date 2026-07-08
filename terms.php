@@ -41,13 +41,15 @@ require_once 'includes/vars.php';
         directly.</p>
 
         <h2>Payments</h2>
-        <p>Payment terms (advance and balance) are communicated at the time of confirmation. Applicable
+        <?php $advPct = max(5, min(100, (int)app_setting('advance_percent', '25'))); ?>
+        <p>A booking is confirmed on payment of an advance of <strong><?= $advPct ?>% of the estimated
+        total</strong>; the balance is payable during the trip as agreed at confirmation. Applicable
         taxes and toll/parking charges are as stated in your quote.</p>
 
         <h2>Cancellations &amp; Changes</h2>
         <p>Refunds of the advance are tiered by notice period: <strong>100% with 20+ days' notice</strong>,
-        75% at 10–19 days, 50% at 5–9 days, 25% at 48 hours–4 days, and no refund under 48 hours or for
-        no-shows. One free reschedule is included when requested at least 72 hours before pickup. If
+        75% at 10–19 days, 50% at 5–9 days, and <strong>no refund with less than 5 days' notice</strong> or
+        for no-shows. One free reschedule is included when requested at least 72 hours before pickup. If
         <em>we</em> cancel due to weather, road closures or vehicle issues, you receive a full refund or a
         free reschedule — your choice. Full details, including how refunds are paid, are in our
         <a href="cancellation.php">Cancellation &amp; Refund Policy</a>.</p>

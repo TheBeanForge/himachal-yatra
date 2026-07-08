@@ -32,10 +32,11 @@ require_once 'includes/vars.php';
         <h1>Cancellation &amp; Refund Policy</h1>
         <p class="legal-updated">Last updated: <?php echo date('F Y'); ?></p>
 
+        <?php $advPct = max(5, min(100, (int)app_setting('advance_percent', '25'))); ?>
         <p>Plans change — especially in the mountains. This policy explains exactly what happens
         if you cancel or reschedule a confirmed booking, so there are no surprises. It applies to
-        the <strong>advance amount</strong> paid at confirmation; the balance is only ever collected
-        for trips that run.</p>
+        the <strong>advance amount</strong> (currently <?= $advPct ?>% of the estimated total) paid
+        at confirmation; the balance is only ever collected for trips that run.</p>
 
         <h2>Refunds by notice period</h2>
         <p>Notice is counted from the moment you inform us to your scheduled pickup time.</p>
@@ -48,8 +49,7 @@ require_once 'includes/vars.php';
               <tr><td>20 days or more</td><td><strong>100%</strong> — full refund</td></tr>
               <tr><td>10 – 19 days</td><td><strong>75%</strong></td></tr>
               <tr><td>5 – 9 days</td><td><strong>50%</strong></td></tr>
-              <tr><td>48 hours – 4 days</td><td><strong>25%</strong></td></tr>
-              <tr><td>Less than 48 hours / no-show</td><td>No refund</td></tr>
+              <tr><td>Less than 5 days / no-show</td><td>No refund</td></tr>
             </tbody>
           </table>
         </div>

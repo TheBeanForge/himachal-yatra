@@ -54,5 +54,8 @@ $taxes     = array_map('cast_tax',      safe_rows($conn, ["SELECT id,name,type,v
 $dests     = array_map('cast_dest',     safe_rows($conn, ["SELECT id,name,dest_key,extra_per_day FROM destinations WHERE active=1 ORDER BY sort_order ASC"]));
 $seasonal  = array_map('cast_seasonal', safe_rows($conn, ["SELECT name,start_date,end_date,surcharge_pct FROM seasonal_pricing WHERE active=1 AND end_date >= CURDATE() ORDER BY start_date ASC"]));
 
+// Advance % collected to confirm a booking (admin-configurable in Settings).
+$advance_pct = max(5, min(100, (int)app_setting('advance_percent', '25')));
+
 $conn->close();
-echo json_encode(compact('packages','locations','vehicles','taxes','dests','seasonal'), JSON_UNESCAPED_UNICODE);
+echo json_encode(compact('packages','locations','vehicles','taxes','dests','seasonal','advance_pct'), JSON_UNESCAPED_UNICODE);

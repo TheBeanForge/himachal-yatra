@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'social_facebook'  => substr($clean_url($_POST['social_facebook']  ?? ''), 0, 255),
         'social_instagram' => substr($clean_url($_POST['social_instagram'] ?? ''), 0, 255),
         'social_youtube'   => substr($clean_url($_POST['social_youtube']   ?? ''), 0, 255),
+        // Advance collected to confirm a booking — % of the estimated total (5–100).
+        'advance_percent'  => (string)max(5, min(100, (int)($_POST['advance_percent'] ?? 25))),
     ];
     try {
         $stmt = $conn->prepare('INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
@@ -133,6 +135,15 @@ $page_title = 'Settings';
           <div class="set-field full">
             <label>Location <span class="hint">— shown in the footer &amp; SEO</span></label>
             <input class="set-input" type="text" name="agency_location" value="<?= htmlspecialchars($settings['agency_location'] ?? '') ?>" placeholder="Bilaspur, Himachal Pradesh">
+          </div>
+        </div>
+
+        <div class="set-section mt"><i class="fas fa-indian-rupee-sign"></i> Booking</div>
+        <div class="set-grid">
+          <div class="set-field">
+            <label>Advance to Confirm <span class="hint">— % of the estimated total collected when a booking is confirmed. Shown in every quote and used by the cancellation policy.</span></label>
+            <input class="set-input" type="number" name="advance_percent" min="5" max="100" step="1"
+                   value="<?= (int)($settings['advance_percent'] ?? 25) ?>" placeholder="25">
           </div>
         </div>
 

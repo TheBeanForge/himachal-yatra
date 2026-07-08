@@ -53,9 +53,12 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='add_lead') 
                     if($amt>0){ $taxLines[]=['name'=>$t['name'],'amount'=>$amt]; $taxTot+=$amt; }
                 }
                 $est=round($sub+$taxTot,2);
+                $advP=max(5,min(100,(int)app_setting('advance_percent','25')));
                 $bj=json_encode(['package_cost'=>0,'vehicle_cost'=>$vehCost,'extra_pp_cost'=>0,'dest_charge'=>0,
                                  'seasonal_amt'=>$seasAmt,'seasonal_pct'=>$pct,'subtotal'=>$sub,
-                                 'tax_lines'=>$taxLines,'tax_total'=>$taxTot,'total'=>$est,'days'=>$days,'travelers'=>$trav]);
+                                 'tax_lines'=>$taxLines,'tax_total'=>$taxTot,'total'=>$est,
+                                 'advance_pct'=>$advP,'advance_amount'=>round($est*$advP/100,2),
+                                 'days'=>$days,'travelers'=>$trav]);
             }
         }
         $locIdDb = ($locId>0 && $locCus==='') ? $locId : null;
@@ -145,6 +148,7 @@ try { $fm['locations'] = $conn->query("SELECT id,city FROM pickup_locations WHER
 try { $fm['dests']     = array_column($conn->query("SELECT name FROM destinations WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC),'name'); } catch(Throwable) {}
 try { $fm['taxes']     = $conn->query("SELECT name,type,value,apply_on FROM taxes_fees WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
 try { $fm['seasonal']  = $conn->query("SELECT start_date,end_date,surcharge_pct FROM seasonal_pricing WHERE active=1 AND end_date>=CURDATE()")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
+$advPct = max(5, min(100, (int)app_setting('advance_percent', '25')));   // advance-to-confirm %
 $conn->close();
 $STATUS_LABELS=['new'=>'New','contacted'=>'Contacted','quoted'=>'Quoted','confirmed'=>'Confirmed','closed'=>'Closed'];
 $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','confirmed'=>'#22c55e','closed'=>'#6b7280'];
@@ -338,11 +342,12 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
           </td>
           <td style="font-size:12.5px"><?=h($r['vehicle_name']??'—')?></td>
           <td style="font-weight:800;color:var(--lime);font-size:14px;white-space:nowrap">
-            <?php if($r['estimated_price']!==null && $r['estimated_price']!==''):?>
+            <?php if($r['estimated_price']!==null && $r['estimated_price']!==''):
+              $rowAdvPct=(int)($bd['advance_pct']??$advPct);
+              $rowAdv=(float)($bd['advance_amount']??round((float)$r['estimated_price']*$rowAdvPct/100,2));
+            ?>
             ₹<?=number_format((float)$r['estimated_price'],0)?>
-            <?php if($bd):?>
-            <div class="bd-preview"><?=$bd['days']??0?> days · ₹<?=number_format($bd['package_cost']??0,0)?> pkg</div>
-            <?php endif;?>
+            <div class="bd-preview">Advance ₹<?=number_format($rowAdv,0)?> (<?=$rowAdvPct?>%)<?php if($bd):?> · <?=$bd['days']??0?> days<?php endif;?></div>
             <?php else:?><span style="color:var(--muted);font-weight:400">—</span><?php endif;?>
           </td>
           <td>
@@ -503,6 +508,8 @@ function viewBreakdown(r){
       <tr style="font-weight:600"><td>Subtotal</td><td class="text-end">${fmt(bd.subtotal)}</td></tr>
       ${(bd.tax_lines||[]).map(t=>`<tr style="color:var(--muted)"><td>${t.name}</td><td class="text-end">${fmt(t.amount)}</td></tr>`).join('')}
       <tr style="font-weight:900;font-size:15px;color:var(--lime)"><td>TOTAL</td><td class="text-end">${fmt(bd.total)}</td></tr>
+      ${bd.advance_amount?`<tr style="font-weight:700;color:var(--accent)"><td>Advance to confirm (${bd.advance_pct||''}%)</td><td class="text-end">${fmt(bd.advance_amount)}</td></tr>
+      <tr style="color:var(--muted)"><td>Balance on trip</td><td class="text-end">${fmt(bd.total-bd.advance_amount)}</td></tr>`:''}
     </table>`;
   }
   document.getElementById('bdModalBody').innerHTML=html;
@@ -515,6 +522,7 @@ function viewBreakdown(r){
       'vehicles' => array_map(fn($v)=>['id'=>(int)$v['id'],'rate'=>(float)$v['daily_rate']], $fm['vehicles']),
       'taxes'    => array_map(fn($t)=>['name'=>$t['name'],'type'=>$t['type'],'value'=>(float)$t['value'],'apply_on'=>$t['apply_on']], $fm['taxes']),
       'seasonal' => array_map(fn($s)=>['start'=>$s['start_date'],'end'=>$s['end_date'],'pct'=>(float)$s['surcharge_pct']], $fm['seasonal']),
+      'advPct'   => $advPct,
   ]) ?>;
   var veh=document.getElementById('alVeh'), pd=document.getElementById('alPd'), dd=document.getElementById('alDd');
   if(!veh) return;
@@ -537,7 +545,9 @@ function viewBreakdown(r){
       if(amt>0){ taxT+=amt; parts.push(t.name+' = '+fmt(amt)); }
     });
     rows.textContent=parts.join('  ·  ');
-    total.textContent='Total: '+fmt(sub+taxT);
+    var grand=sub+taxT, adv=Math.round(grand*FM.advPct/100);
+    total.innerHTML='Total: '+fmt(grand)
+      +' <span style="font:600 12.5px \'Inter\',sans-serif;color:var(--ink-2)">· Advance to confirm ('+FM.advPct+'%): <b>'+fmt(adv)+'</b> · Balance: '+fmt(grand-adv)+'</span>';
   }
   [veh,pd,dd].forEach(function(el){ el.addEventListener('change',recalc); el.addEventListener('input',recalc); });
 })();
