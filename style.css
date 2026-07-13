@@ -1599,6 +1599,13 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
   border-radius: 12px; color: var(--gold-3); font-size: 13px;
 }
+/* Phone & WhatsApp chips read green, like the apps they open */
+.footer-contact-item i.fa-phone,
+.footer-contact-item i.fa-whatsapp {
+  color: #2EE577;
+  background: rgba(46, 229, 119, .10);
+  border-color: rgba(46, 229, 119, .30);
+}
 .footer-contact-item span { min-width: 0; overflow-wrap: anywhere; line-height: 1.5; }
 .footer-contact-item a { color: rgba(255,255,255,.6); transition: color .25s; }
 .footer-contact-item a:hover { color: #fff; }
@@ -1677,7 +1684,8 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   transition: background .25s, color .25s, transform .2s;
 }
 .mobile-cta a:active, .mobile-cta button:active { transform: scale(.96); }
-.mobile-cta a:first-child { background: color-mix(in srgb, var(--charcoal) 8%, transparent); }
+/* Call button — phone-green, like a dialer icon */
+.mobile-cta a[href^="tel:"] { color: #1DA851; background: rgba(37, 211, 102, .13); }
 .mobile-cta a[data-wa-lead] { color: #1DA851; }
 .mobile-cta a[data-open-quote] { background: var(--grad-gold); color: #10151d; box-shadow: 0 6px 18px color-mix(in srgb, var(--gold) 32%, transparent); }
 @media (max-width: 767px) {

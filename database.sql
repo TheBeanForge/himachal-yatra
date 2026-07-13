@@ -182,6 +182,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
   photo            VARCHAR(255) NULL,
   seating_capacity VARCHAR(20)  NOT NULL,
   daily_rate       DECIMAL(10,2) NOT NULL DEFAULT 3000.00,
+  sort_order       INT NOT NULL DEFAULT 0,
   status           ENUM('active','inactive') DEFAULT 'active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

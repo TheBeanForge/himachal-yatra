@@ -11,6 +11,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// A body bigger than PHP's post_max_size arrives with $_POST and $_FILES
+// completely empty — without this check that surfaces as a baffling CSRF
+// failure. Typical trigger: multi-MB phone-camera photos on Android.
+if (empty($_POST) && empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+    http_response_code(413);
+    echo json_encode(['success' => false, 'error' => 'Your photo is too large for the server. Please pick a smaller photo, or submit without one.']);
+    exit;
+}
+
 // Honeypot — silently accept and discard if filled (a bot field)
 if (!empty($_POST['website'] ?? '')) {
     echo json_encode(['success' => true]);
@@ -52,7 +61,15 @@ $text  = mb_substr($text,  0, 1500, 'UTF-8');
 // Optional photo upload
 $photo_filename = '';
 $file = $_FILES['photo'] ?? null;
-if ($file && ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+$fileErr = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+if (in_array($fileErr, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+    // Photo exceeded upload_max_filesize — tell the user instead of silently
+    // dropping their photo (the review text alone would otherwise be saved).
+    http_response_code(413);
+    echo json_encode(['success' => false, 'error' => 'Your photo is too large for the server. Please pick a smaller photo, or submit without one.']);
+    exit;
+}
+if ($file && $fileErr === UPLOAD_ERR_OK) {
     if ($file['size'] > 5 * 1024 * 1024) {
         http_response_code(413);
         echo json_encode(['success' => false, 'error' => 'Photo too large (max 5 MB).']);

@@ -674,6 +674,9 @@
   transition: border-color .2s, color .2s;
 }
 .cq-btn-outline:hover { border-color: var(--lime); color: var(--lime); }
+/* "Call now" reads phone-green, like a dialer icon */
+#cqCallBtn i { color: #22C55E; }
+#cqCallBtn:hover { border-color: #22C55E; color: #22C55E; }
 /* WhatsApp handoff button (success screen) */
 .cq-btn-wa {
   width: 100%; height: 52px; border: none; border-radius: 999px;

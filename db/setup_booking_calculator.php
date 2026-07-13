@@ -37,6 +37,7 @@ $queries = [
     photo            VARCHAR(255) NULL,
     seating_capacity VARCHAR(20)  NOT NULL,
     daily_rate       DECIMAL(10,2) NOT NULL DEFAULT 3000.00,
+    sort_order       INT NOT NULL DEFAULT 0,
     status           ENUM('active','inactive') DEFAULT 'active'
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
@@ -82,17 +83,8 @@ $queries = [
     (11, 'Kullu Manali Tour',            5,  2300, 'Kullu • Kasol • Manikaran • Manali • Solang Valley'),
     (12, 'Chail Kufri Tour',             3,  1700, 'Shimla • Chail • Kufri • Naldehra')",
 
-  // Seed vehicles
-  "INSERT IGNORE INTO vehicles (id, vehicle_name, seating_capacity, daily_rate) VALUES
-    (1, 'Swift Dzire',              '4+1', 2500),
-    (2, 'Toyota Etios',             '4+1', 2500),
-    (3, 'Honda Amaze',              '4+1', 2600),
-    (4, 'Ertiga',                   '6+1', 3000),
-    (5, 'Innova',                   '7+1', 3500),
-    (6, 'Innova Crysta',            '7+1', 4000),
-    (7, 'Urbania',                  '10+1',6000),
-    (8, 'Tempo Traveller (12 Str)', '12+1',7000),
-    (9, 'Tempo Traveller (17 Str)', '17+1',8500)",
+  // No vehicle seeds — the fleet contains only what the admin adds in
+  // Admin → Vehicles, so the website never shows demo/static vehicles.
 
   // Seed pickup locations (add if not present — uses existing table)
   "INSERT IGNORE INTO pickup_locations (city, sort_order, active) VALUES

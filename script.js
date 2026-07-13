@@ -463,6 +463,42 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Write Review Form → API → admin moderation queue ──
+
+  // Shrink a phone-camera photo in the browser before upload. Android photos
+  // are routinely 8–15 MB — bigger than most servers' post limits, and slow on
+  // mobile data. Returns a JPEG ≤ 1600px; falls back to the original file if
+  // the image can't be decoded (the server still validates size and type).
+  async function compressReviewPhoto(file) {
+    if (!file || (file.size <= 600 * 1024 && /^image\/(jpeg|png|webp)$/.test(file.type))) return file;
+    try {
+      let img = await createImageBitmap(file).catch(() => null);
+      if (!img) {
+        img = await new Promise((ok, err) => {
+          const el = new Image();
+          const url = URL.createObjectURL(file);
+          el.onload = () => { URL.revokeObjectURL(url); ok(el); };
+          el.onerror = () => { URL.revokeObjectURL(url); err(new Error('decode')); };
+          el.src = url;
+        });
+      }
+      const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+      if (!w || !h) return file;
+      const scale  = Math.min(1, 1600 / Math.max(w, h));
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.max(1, Math.round(w * scale));
+      canvas.height = Math.max(1, Math.round(h * scale));
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      if (img.close) img.close();
+      for (const q of [0.85, 0.75, 0.62]) {
+        const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', q));
+        if (blob && blob.size <= 1.5 * 1024 * 1024) {
+          return new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+        }
+      }
+      return file;
+    } catch { return file; }
+  }
+
   const wrForm = document.getElementById('writeReviewForm');
   wrForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -475,16 +511,26 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const fd = new FormData(wrForm);
-    fd.append('rating', String(rating));
-    // Token shared with the lead form (vars.php)
-    if (!fd.get('csrf_token')) fd.set('csrf_token', document.querySelector('input[name="csrf_token"]')?.value || '');
-
     if (submit) { submit.disabled = true; submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting…'; }
     if (status) { status.textContent = ''; }
 
+    const fd = new FormData(wrForm);
+    fd.set('rating', String(rating));
+    // Token shared with the lead form (vars.php)
+    if (!fd.get('csrf_token')) fd.set('csrf_token', document.querySelector('input[name="csrf_token"]')?.value || '');
+    const photo = wrForm.querySelector('#wrPhoto')?.files?.[0];
+    if (photo) fd.set('photo', await compressReviewPhoto(photo));
+
+    const send = () => fetch('api/submit_review.php', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+
     try {
-      const res  = await fetch('api/submit_review.php', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+      let res = await send();
+      if (res.status === 419) {
+        // Session expired since the page was loaded (restored mobile tab) —
+        // fetch a fresh token and retry once, invisibly to the user.
+        const tk = await fetch('api/get_form_token.php', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+        if (tk?.token) { fd.set('csrf_token', tk.token); res = await send(); }
+      }
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
         wrForm.reset();

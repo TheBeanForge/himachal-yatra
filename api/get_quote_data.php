@@ -49,7 +49,11 @@ $packages  = array_map('cast_package', safe_rows($conn, [
     "SELECT id,package_name,duration_days,base_price_per_day,description FROM tour_packages WHERE status='active' ORDER BY package_name ASC",
 ]));
 $locations = safe_rows($conn, ["SELECT id,city AS name FROM pickup_locations WHERE active=1 ORDER BY sort_order ASC,city ASC"]);
-$vehicles  = array_map('cast_vehicle',  safe_rows($conn, ["SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY daily_rate ASC"]));
+$vehicles  = array_map('cast_vehicle',  safe_rows($conn, [
+    // Admin-set serial order; older installs without sort_order fall back to price order.
+    "SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY sort_order ASC, id ASC",
+    "SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY daily_rate ASC",
+]));
 $taxes     = array_map('cast_tax',      safe_rows($conn, ["SELECT id,name,type,value,apply_on FROM taxes_fees WHERE active=1 ORDER BY sort_order ASC"]));
 $dests     = array_map('cast_dest',     safe_rows($conn, ["SELECT id,name,dest_key,extra_per_day FROM destinations WHERE active=1 ORDER BY sort_order ASC"]));
 $seasonal  = array_map('cast_seasonal', safe_rows($conn, ["SELECT name,start_date,end_date,surcharge_pct FROM seasonal_pricing WHERE active=1 AND end_date >= CURDATE() ORDER BY start_date ASC"]));

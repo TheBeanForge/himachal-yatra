@@ -10,10 +10,14 @@ $heroSlides = array_slice(photos_in_slot($conn ?? null, 'home_hero'), 0, 5);
 // shown; there are no hardcoded defaults. No vehicles → the section is hidden.
 $dbFleet = [];
 if ($conn instanceof mysqli) {
-    try {
-        $rf = $conn->query("SELECT vehicle_name, photo, seating_capacity FROM vehicles WHERE status='active' ORDER BY daily_rate ASC");
-        if ($rf) $dbFleet = $rf->fetch_all(MYSQLI_ASSOC);
-    } catch (mysqli_sql_exception) {}
+    // Admin-set serial order first; older installs without sort_order fall back to price order.
+    foreach (["SELECT vehicle_name, photo, seating_capacity FROM vehicles WHERE status='active' ORDER BY sort_order ASC, id ASC",
+              "SELECT vehicle_name, photo, seating_capacity FROM vehicles WHERE status='active' ORDER BY daily_rate ASC"] as $fleetSql) {
+        try {
+            $rf = $conn->query($fleetSql);
+            if ($rf) { $dbFleet = $rf->fetch_all(MYSQLI_ASSOC); break; }
+        } catch (mysqli_sql_exception) {}
+    }
 }
 
 // Load approved reviews (newest first). Falls back to a curated seed array when the table is empty / DB is down.
@@ -448,9 +452,9 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
               <i class="fa-regular fa-star" data-val="4"></i>
               <i class="fa-regular fa-star" data-val="5"></i>
             </div>
-            <input type="hidden" id="selectedRating" value="0">
           </div>
-          <form class="wr-form" id="writeReviewForm" enctype="multipart/form-data">
+          <form class="wr-form" id="writeReviewForm" action="api/submit_review.php" method="post" enctype="multipart/form-data">
+            <input type="hidden" id="selectedRating" name="rating" value="0">
             <input type="hidden" name="csrf_token" value="<?php echo h($_SESSION['lead_form_token']); ?>">
             <input class="hp-field" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
             <div class="lux-form-row">
