@@ -7,6 +7,12 @@ $csrf = admin_csrf_token();
 // Ensure the schema pieces this page needs exist (older installs may lack them).
 try { $conn->query("ALTER TABLE tour_packages ADD COLUMN destination_key VARCHAR(50) NULL"); } catch (Throwable) {}
 try { $conn->query("ALTER TABLE booking_enquiries MODIFY COLUMN status ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new'"); } catch (Throwable) {}
+try { $conn->query("ALTER TABLE booking_enquiries ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0"); } catch (Throwable) {}
+
+// Opening the leads inbox marks everything as read — the sidebar bell badge
+// counts unread leads only, so it clears here and re-lights on the next
+// arrival (a read/unread model, independent of the lead's workflow status).
+try { $conn->query("UPDATE booking_enquiries SET is_read=1 WHERE is_read=0"); } catch (Throwable) {}
 
 // ── Log a direct-call lead (staff-entered, e.g. customer phoned the number on the site) ──
 $leadMsg='';
@@ -143,7 +149,9 @@ $chartMax = max(1, max($chart));
 
 // Form data for the "Log Call Lead" modal (each degrades to [] on older schemas).
 $fm = ['vehicles'=>[], 'locations'=>[], 'dests'=>[], 'taxes'=>[], 'seasonal'=>[]];
-try { $fm['vehicles']  = $conn->query("SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY daily_rate ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
+// Same serial order the admin arranged in Vehicles (fallback for pre-sort_order installs).
+try { $fm['vehicles']  = $conn->query("SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY sort_order ASC,id ASC")->fetch_all(MYSQLI_ASSOC); }
+catch(Throwable) { try { $fm['vehicles'] = $conn->query("SELECT id,vehicle_name,seating_capacity,daily_rate FROM vehicles WHERE status='active' ORDER BY daily_rate ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {} }
 try { $fm['locations'] = $conn->query("SELECT id,city FROM pickup_locations WHERE active=1 ORDER BY sort_order ASC,city ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}
 try { $fm['dests']     = array_column($conn->query("SELECT name FROM destinations WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC),'name'); } catch(Throwable) {}
 try { $fm['taxes']     = $conn->query("SELECT name,type,value,apply_on FROM taxes_fees WHERE active=1 ORDER BY sort_order ASC")->fetch_all(MYSQLI_ASSOC); } catch(Throwable) {}

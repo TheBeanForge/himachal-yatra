@@ -913,16 +913,17 @@ async function loadData(){
 function buildSelectLists(){
   // Destinations are rendered by the multi-select (renderDestList); loc & veh stay single-select.
   fillList('cqUl_loc',  DATA.locations, l=>l.name||'?',                            l=>String(l.id));
-  fillList('cqUl_veh',  DATA.vehicles,  v=>`${v.name||'?'} — ${v.seats||'?'} Seater`, v=>String(v.id), v=>vehCapacity(v));
+  fillList('cqUl_veh',  DATA.vehicles,  v=>`${v.name||'?'} — ${v.seats||'?'} Seater`, v=>String(v.id), v=>vehCapacity(v),
+           'No cab types are listed right now — tap "WhatsApp" below and our travel desk will suggest the right vehicle.');
   applyVehicleCapacity();
   renderDestList('');
 }
 
-function fillList(ulId, items, labelFn, valFn, capFn){
+function fillList(ulId, items, labelFn, valFn, capFn, emptyMsg){
   const ul=document.getElementById(ulId); if(!ul) return;
   ul.innerHTML=items.length
     ? items.map(it=>`<li class="cq-sel-li" data-val="${valFn(it)}"${capFn?` data-cap="${capFn(it)}"`:''}>${labelFn(it)}</li>`).join('')
-    : '<li class="cq-sel-empty">No options available</li>';
+    : `<li class="cq-sel-empty">${emptyMsg||'No options available'}</li>`;
   ul.querySelectorAll('.cq-sel-li').forEach(li=>
     li.addEventListener('click',()=>{
       if(li.classList.contains('cq-li-disabled')) return;   // capacity-blocked: not selectable

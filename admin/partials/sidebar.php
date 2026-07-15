@@ -20,8 +20,9 @@
         $__active = $cur === 'enquiries.php' && $__curStatus === $__sk;
     ?>
     <li>
-      <a href="enquiries.php<?= $__sk ? '?status='.$__sk : '' ?>" class="sidebar-link <?= $__active ? 'active' : '' ?>">
+      <a href="enquiries.php<?= $__sk ? '?status='.$__sk : '' ?>" class="sidebar-link <?= $__active ? 'active' : '' ?>"<?= $__sk === 'new' ? ' id="sbNewLink"' : '' ?>>
         <i class="fas <?= $__ic ?> fa-fw"></i> <?= $__lbl ?>
+        <?php if ($__sk === 'new'): ?><span class="sb-newbadge" id="sbNewBadge" hidden></span><?php endif; ?>
       </a>
     </li>
     <?php endforeach; ?>
@@ -131,4 +132,33 @@ document.addEventListener('DOMContentLoaded', function () {
     if (startX - e.changedTouches[0].clientX > 60) closeSidebar();
   }, { passive: true });
 });
+
+// ── New-lead alert on the "New" menu item: red badge counts 1…5 then "5+",
+//    and the bell rings when a lead arrives while the admin is working. ──
+(function () {
+  var link  = document.getElementById('sbNewLink');
+  var badge = document.getElementById('sbNewBadge');
+  if (!link || !badge) return;
+  var last = -1;
+  function refresh() {
+    fetch('../api/admin_new_leads_count.php', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || typeof d.count !== 'number') return;
+        var n = d.count;
+        badge.hidden = n < 1;
+        badge.textContent = n > 5 ? '5+' : String(n);
+        link.title = n === 0 ? 'No unread leads' : (n === 1 ? '1 unread lead' : n + ' unread leads');
+        if (n > 0 && last >= 0 && n > last) {
+          link.classList.remove('ringing');
+          void link.offsetWidth;   // restart the animation
+          link.classList.add('ringing');
+        }
+        last = n;
+      })
+      .catch(function () {});
+  }
+  refresh();
+  setInterval(refresh, 60000);
+})();
 </script>

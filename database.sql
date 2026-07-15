@@ -264,6 +264,7 @@ CREATE TABLE IF NOT EXISTS booking_enquiries (
   tax_amount          DECIMAL(10,2) DEFAULT 0,
   breakdown_json      JSON DEFAULT NULL,
   status              ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new',
+  is_read             TINYINT(1) NOT NULL DEFAULT 0,
   notes               TEXT DEFAULT NULL,
   source              VARCHAR(20) DEFAULT 'calculator',
   created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

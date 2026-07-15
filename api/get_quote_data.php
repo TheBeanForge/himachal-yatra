@@ -44,6 +44,8 @@ function safe_rows(mysqli $conn, array $sqls): array {
 }
 
 $packages  = array_map('cast_package', safe_rows($conn, [
+    // Same order the admin arranged on the Tour Packages page.
+    "SELECT id,package_name,duration_days,base_price_per_day,COALESCE(additional_charge_per_person,0) AS additional_charge_per_person,destination_key,description FROM tour_packages WHERE status='active' ORDER BY sort_order ASC, package_name ASC",
     "SELECT id,package_name,duration_days,base_price_per_day,COALESCE(additional_charge_per_person,0) AS additional_charge_per_person,destination_key,description FROM tour_packages WHERE status='active' ORDER BY package_name ASC",
     // Older installs: no destination_key / additional_charge_per_person columns yet.
     "SELECT id,package_name,duration_days,base_price_per_day,description FROM tour_packages WHERE status='active' ORDER BY package_name ASC",
