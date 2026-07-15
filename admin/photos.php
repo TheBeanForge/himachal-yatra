@@ -408,7 +408,8 @@ document.getElementById('slotUpload').addEventListener('change', async function 
   const panel = document.querySelector('.ov-panel');
   if (panel) { panel.style.opacity = '.5'; panel.style.pointerEvents = 'none'; }
   const fd = new FormData();
-  fd.append('photo', this.files[0]);
+  const small = window.shrinkAdminPhoto ? await window.shrinkAdminPhoto(this.files[0]).catch(() => null) : null;
+  fd.append('photo', small || this.files[0]);
   fd.append('slot', _targetSlot);
   try {
     const res  = await fetch('../api/upload_to_slot.php', { method: 'POST', body: fd, headers: csrfHeader });
@@ -457,6 +458,9 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
   try {
     const fd = new FormData(e.target);
+    const orig  = e.target.querySelector('input[type="file"]')?.files?.[0];
+    const small = orig && window.shrinkAdminPhoto ? await window.shrinkAdminPhoto(orig).catch(() => null) : null;
+    if (small) fd.set('photo', small);
     const res = await fetch('../api/upload_photo.php', { method: 'POST', body: fd, headers: csrfHeader });
     const data = await res.json();
     if (data.ok) {
@@ -536,5 +540,6 @@ async function reorder(id, direction) {
   });
 }
 </script>
+<script src="assets/photo-shrink.js?v=<?php echo @filemtime(__DIR__ . '/assets/photo-shrink.js'); ?>"></script>
 </body>
 </html>

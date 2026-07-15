@@ -49,7 +49,11 @@ function package_dummy_image(array $package, int $index): string {
 }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+    // Body exceeded PHP's post_max_size (a huge photo) — PHP dropped the whole
+    // form, so without this check the admin would see a baffling CSRF error.
+    $msg = 'error:That photo is too large for the server — nothing was saved. Please use a photo under 5 MB and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_admin_csrf();
     $action = $_POST['action'] ?? '';
 
@@ -85,10 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // A failed photo must never cost the admin the whole package — save the
+        // package anyway (without the photo) and explain what happened.
         if ($name === '') {
             $msg = 'error:Package name is required.';
-        } elseif ($photoErr) {
-            $msg = 'error:' . $photoErr;
         } elseif ($id) {
             if ($photo !== null) {
                 $old = $conn->query('SELECT photo FROM tour_packages WHERE id=' . (int)$id)->fetch_assoc()['photo'] ?? '';
@@ -110,6 +114,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $s->execute(); $s->close();
             audit_log('packages_save', "Added package: $name");
             $msg = 'ok:Package added.';
+        }
+        if ($name !== '' && $photoErr) {
+            $msg = 'warn:Package saved, but the photo was skipped — ' . $photoErr . ' Edit the package to try another photo.';
         }
     }
 
@@ -210,7 +217,7 @@ textarea.pk-input { height:auto; padding:12px 14px; resize:vertical; }
       </div>
 
       <?php if ($msg): [$type, $text] = explode(':', $msg, 2); ?>
-      <div class="alert alert-<?= $type==='ok'?'success':'danger' ?> alert-dismissible fade show py-2 mb-3">
+      <div class="alert alert-<?= $type==='ok'?'success':($type==='warn'?'warning':'danger') ?> alert-dismissible fade show py-2 mb-3">
         <?= htmlspecialchars($text) ?> <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
       <?php endif; ?>
@@ -335,7 +342,7 @@ textarea.pk-input { height:auto; padding:12px 14px; resize:vertical; }
             <label class="pk-label">Photo <span style="text-transform:none;font-weight:400">(JPG/PNG/WebP, saved under 400 KB)</span></label>
             <div class="d-flex align-items-center gap-3">
               <img id="pk_photo_prev" src="" alt="" class="pk-thumb" style="width:90px;height:60px;display:none">
-              <input class="pk-input" type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+              <input class="pk-input" type="file" name="photo" accept="image/jpeg,image/png,image/webp" data-shrink>
             </div>
           </div>
           <div>
@@ -374,5 +381,6 @@ function editPkg(p){
   pkgModal.show();
 }
 </script>
+<script src="assets/photo-shrink.js?v=<?php echo @filemtime(__DIR__ . '/assets/photo-shrink.js'); ?>"></script>
 </body>
 </html>

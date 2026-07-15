@@ -62,7 +62,11 @@ try {
 $csrf = admin_csrf_token();
 $msg  = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+    // Body exceeded PHP's post_max_size (a huge photo) — PHP dropped the whole
+    // form, so without this check the admin would see a baffling CSRF error.
+    $msg = 'error:That photo is too large for the server — nothing was saved. Please use a photo under 5 MB and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_admin_csrf();
     $action = $_POST['action'] ?? '';
 
@@ -100,8 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // A failed photo must never cost the admin the whole vehicle — save it
+        // anyway (without the photo) and explain what happened.
         if (!$name || !$seats) { $msg = 'error:Vehicle name and seating capacity are required.'; }
-        elseif ($photoErr)     { $msg = 'error:' . $photoErr; }
         else {
             $isNew = !$id;
             if ($id) {
@@ -125,7 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             veh_reindex($conn, $id, $order);
             audit_log('vehicles_save', ($isNew ? 'Added' : 'Updated') . " vehicle: $name");
-            $msg = 'ok:Vehicle saved successfully.';
+            $msg = $photoErr
+                ? 'warn:Vehicle saved, but the photo was skipped — ' . $photoErr . ' Edit the vehicle to try another photo.'
+                : 'ok:Vehicle saved successfully.';
         }
     }
 
@@ -191,7 +198,7 @@ $conn->close();
   </div>
 
   <?php if ($msg): [$type, $text] = explode(':', $msg, 2); ?>
-  <div class="alert alert-<?= $type==='ok'?'success':'danger' ?> alert-dismissible fade show py-2 mb-3">
+  <div class="alert alert-<?= $type==='ok'?'success':($type==='warn'?'warning':'danger') ?> alert-dismissible fade show py-2 mb-3">
     <?= h($text) ?> <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
   <?php endif; ?>
@@ -302,7 +309,7 @@ $conn->close();
           </div>
           <div>
             <label class="form-label" style="font-size:12px;font-weight:600;color:var(--muted)">Vehicle Photo <span style="font-weight:400">(shown on the website fleet)</span></label>
-            <input type="file" name="photo" id="veh_photo" class="form-control admin-input" accept="image/jpeg,image/png,image/webp">
+            <input type="file" name="photo" id="veh_photo" class="form-control admin-input" accept="image/jpeg,image/png,image/webp" data-shrink>
             <div id="veh_photo_preview" style="margin-top:8px"></div>
             <small style="color:var(--muted);font-size:11px">JPG/PNG/WebP, saved under 400 KB. Leave empty to keep the current photo. A clear side-on shot works best.</small>
           </div>
@@ -336,5 +343,6 @@ function openModal(v) {
   modal.show();
 }
 </script>
+<script src="assets/photo-shrink.js?v=<?php echo @filemtime(__DIR__ . '/assets/photo-shrink.js'); ?>"></script>
 </body>
 </html>
