@@ -317,8 +317,8 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
     <section class="lux-stats">
       <div class="lux-container lux-stats-grid">
         <?php foreach ([
-          ['12,000+', 'Guest Journeys',        '12000'],
-          ['200+',    'Partner Vehicles',      '200'],
+          ['5,000+',  'Guest Journeys',        '5000'],
+          ['80+',     'Partner Vehicles',      '80'],
           ['40+',     'Himachal Destinations', '40'],
           ['8+',      'Years of Experience',   '8'],
         ] as $st): ?>

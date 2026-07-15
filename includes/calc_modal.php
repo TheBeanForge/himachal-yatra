@@ -23,7 +23,7 @@
           <li><i class="fa-solid fa-shield-halved"></i> Verified mountain drivers</li>
         </ul>
         <div class="cq-rail-trust">
-          <span><strong>12,000+</strong> journeys</span>
+          <span><strong>5,000+</strong> journeys</span>
           <span class="cq-rail-dot"></span>
           <span><strong>4.9★</strong> guest rating</span>
         </div>

@@ -466,6 +466,31 @@ body {
   border-radius: 20px; text-transform: uppercase; letter-spacing: .06em;
   border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
 }
+/* ── NEW-LEAD BELL ── */
+.tb-bell {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--ink-2); font-size: 14.5px; text-decoration: none;
+  transition: color .2s, border-color .2s, background .2s;
+}
+.tb-bell:hover { color: var(--accent); border-color: var(--accent); }
+.tb-bell-badge {
+  position: absolute; top: -5px; right: -6px;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  display: grid; place-items: center; border-radius: 999px;
+  background: #EF4444; color: #fff;
+  font: 700 10.5px/1 'Inter', sans-serif; letter-spacing: 0;
+  border: 2px solid var(--bg); box-sizing: content-box;
+}
+.tb-bell.ringing i { animation: bellring .9s ease; transform-origin: top center; }
+@keyframes bellring {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(16deg); } 30% { transform: rotate(-13deg); }
+  45% { transform: rotate(9deg); }  60% { transform: rotate(-6deg); }
+  75% { transform: rotate(3deg); }
+}
+
 .topbar-site-btn {
   display: inline-flex; align-items: center; gap: 6px;
   height: 38px; padding: 0 15px; border-radius: 10px;

@@ -26,6 +26,10 @@ $_csrf    = admin_csrf_token();
   </nav>
 
   <div class="topbar-right">
+    <a href="enquiries.php?status=new" class="tb-bell" id="tbBell" title="New leads" aria-label="New leads">
+      <i class="fas fa-bell"></i>
+      <span class="tb-bell-badge" id="tbBellBadge" hidden></span>
+    </a>
     <?php
       $_themeMeta = [
         'light' => ['fa-sun',   'Ivory White'],
@@ -87,6 +91,34 @@ $_csrf    = admin_csrf_token();
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && dd.classList.contains('open')) { setOpen(false); btn.focus(); }
       });
+    })();
+
+    // ── New-lead bell: shows 1…5 then "5+", rings when the count rises ──
+    (function () {
+      var bell  = document.getElementById('tbBell');
+      var badge = document.getElementById('tbBellBadge');
+      if (!bell || !badge) return;
+      var last = -1;
+      function refresh() {
+        fetch('../api/admin_new_leads_count.php', { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            if (!d || typeof d.count !== 'number') return;
+            var n = d.count;
+            badge.hidden = n < 1;
+            badge.textContent = n > 5 ? '5+' : String(n);
+            bell.title = n === 1 ? '1 new lead' : n + ' new leads';
+            if (n > 0 && last >= 0 && n > last) {
+              bell.classList.remove('ringing');
+              void bell.offsetWidth;   // restart the animation
+              bell.classList.add('ringing');
+            }
+            last = n;
+          })
+          .catch(function () {});
+      }
+      refresh();
+      setInterval(refresh, 60000);
     })();
   </script>
 </header>

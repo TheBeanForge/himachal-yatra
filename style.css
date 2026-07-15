@@ -1577,6 +1577,17 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   transition: background .3s, color .3s, transform .3s, border-color .3s;
 }
 .footer-social a:hover { background: var(--grad-gold); border-color: transparent; color: #10151d; transform: translateY(-3px); }
+/* Original brand colours — instantly recognisable (YouTube red, Insta gradient, FB blue) */
+.footer-social a[aria-label="Facebook"],
+.footer-social a[aria-label="Facebook"]:hover { background: #1877F2; border-color: transparent; color: #fff; }
+.footer-social a[aria-label="Instagram"],
+.footer-social a[aria-label="Instagram"]:hover {
+  background: radial-gradient(circle at 28% 110%, #FEDA75 0%, #F58529 26%, #DD2A7B 56%, #8134AF 80%, #515BD4 100%);
+  border-color: transparent; color: #fff;
+}
+.footer-social a[aria-label="YouTube"],
+.footer-social a[aria-label="YouTube"]:hover { background: #FF0000; border-color: transparent; color: #fff; }
+.footer-social a[aria-label]:hover { transform: translateY(-3px); filter: brightness(1.12); }
 .footer-col h3 {
   font-family: var(--font-body); font-size: 11.5px; font-weight: 700;
   letter-spacing: .28em; text-transform: uppercase;
