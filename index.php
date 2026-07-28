@@ -93,7 +93,6 @@ if (!$lux_reviews) {
         ['name' => 'Priya Verma',   'city' => 'Chandigarh', 'text' => 'It felt less like booking a cab and more like having a friend in the hills plan everything for us. Quietly luxurious, exactly as promised.', 'rating' => 5, 'photo' => ''],
     ];
 }
-$lux_reviews = array_slice($lux_reviews, 0, 3);
 
 // Homepage decorative images — admin-replaceable via Photo Gallery (general bucket),
 // with mood fallbacks so the page is never bare.
@@ -140,6 +139,15 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=<?php echo @filemtime(__DIR__ . '/style.css'); ?>">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4GZDXE68YZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4GZDXE68YZ');
+  </script>
 </head>
 <body data-wa="<?php echo h($whatsappNumber); ?>">
 <?php require 'includes/nav.php'; ?>

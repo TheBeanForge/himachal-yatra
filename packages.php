@@ -45,6 +45,15 @@ function package_dummy_image(array $package, int $index): string {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=<?php echo @filemtime(__DIR__ . '/style.css'); ?>">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4GZDXE68YZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4GZDXE68YZ');
+  </script>
 </head>
 <body data-wa="<?php echo h($whatsappNumber); ?>">
 <?php require 'includes/nav.php'; ?>
@@ -54,7 +63,7 @@ function package_dummy_image(array $package, int $index): string {
     <div class="lux-container">
       <div class="lux-head reveal">
         <span class="lux-eyebrow">Curated Itineraries</span>
-        <h2 class="lux-h2">Tour Packages</h2>
+        <h1 class="lux-h2">Tour Packages</h1>
         <p class="lux-body" style="max-width:640px;margin:14px auto 0">Handpicked Himachal &amp; Ladakh journeys — private cabs, expert mountain drivers and routes planned around the season. Tap a package to plan it with our travel desk.</p>
       </div>
 
