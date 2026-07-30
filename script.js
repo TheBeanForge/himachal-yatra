@@ -11,6 +11,10 @@ const DEFAULT_THEME  = 'dark';
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Declared up front — the reveal, parallax, tilt, carousel and back-to-top
+  // handlers below all branch on it.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // ── Theme dropdown ──
   const THEME_META = {
     light: { icon: 'fa-sun',   label: 'Ivory White' },
@@ -49,8 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const theme = opt.dataset.setTheme;
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('site-theme', theme);
+      currentTheme = theme;          // keep the keyboard handler's starting point honest
       syncThemeDd(theme);
       setThemeDdOpen(false);
+      themeDdBtn?.focus();           // the option is now hidden — don't strand focus on it
     });
   });
   document.addEventListener('click', (e) => {
@@ -58,6 +64,36 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && themeDd?.classList.contains('open')) { setThemeDdOpen(false); themeDdBtn?.focus(); }
+  });
+
+  // ── Theme dropdown: keyboard support ──
+  // The control advertises role="listbox", so it has to behave like one —
+  // arrows to move, Home/End to jump, Enter/Space to choose. Previously only
+  // the mouse could reach these options.
+  const themeOpts = () => [...(themeDd?.querySelectorAll('.theme-opt') ?? [])];
+  const focusOpt = (i) => {
+    const o = themeOpts();
+    if (!o.length) return;
+    o[(i + o.length) % o.length].focus();
+  };
+  themeDdBtn?.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    setThemeDdOpen(true);
+    // Open onto the current selection so the active theme is the starting point.
+    const idx = themeOpts().findIndex((o) => o.dataset.setTheme === currentTheme);
+    focusOpt(e.key === 'ArrowUp' ? -1 : Math.max(0, idx));
+  });
+  themeDd?.addEventListener('keydown', (e) => {
+    if (!themeDd.classList.contains('open')) return;
+    const opts = themeOpts();
+    const i = opts.indexOf(document.activeElement);
+    if (i === -1) return;
+    if (e.key === 'ArrowDown')      { e.preventDefault(); focusOpt(i + 1); }
+    else if (e.key === 'ArrowUp')   { e.preventDefault(); focusOpt(i - 1); }
+    else if (e.key === 'Home')      { e.preventDefault(); focusOpt(0); }
+    else if (e.key === 'End')       { e.preventDefault(); focusOpt(opts.length - 1); }
+    else if (e.key === 'Tab')       { setThemeDdOpen(false); }
   });
 
   // ── Bright-background header contrast ──
@@ -150,11 +186,28 @@ document.addEventListener('DOMContentLoaded', () => {
   sections.forEach((s) => activeObserver.observe(s));
 
   // ── Reveal on scroll ──
+  // .will-animate is added just before the transition and dropped when it ends,
+  // so each element holds a compositor layer only while it is actually moving.
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
-      entry.target.classList.add('visible');
-      revealObserver.unobserve(entry.target);
+      const el = entry.target;
+      revealObserver.unobserve(el);
+      // Reduced motion kills the transition, so transitionend would never fire
+      // and the layer would never be released — just show the element.
+      if (reduceMotion) { el.classList.add('visible'); return; }
+      el.classList.add('will-animate');
+      const drop = (e) => {
+        if (e && (e.target !== el || e.propertyName !== 'opacity')) return;
+        clearTimeout(safety);
+        el.removeEventListener('transitionend', drop);
+        el.classList.remove('will-animate');
+      };
+      // Safety net: transitionend does not fire for an element that never
+      // became visible (e.g. an ancestor is display:none).
+      const safety = setTimeout(drop, 1600);
+      el.addEventListener('transitionend', drop);
+      requestAnimationFrame(() => el.classList.add('visible'));
     });
   }, { threshold: 0.10 });
   document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
@@ -187,8 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.openCalcModal === 'function') window.openCalcModal('');
   });
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   // ── Back to top ──
   const backTop = document.getElementById('backTop');
   if (backTop) {
@@ -210,6 +261,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el.className.includes('reveal')) el.style.transitionDelay = `${Math.min(i * 90, 450)}ms`;
     });
   });
+
+  // ── Hero fallback slides: load slides 2–4 only after the page has loaded ──
+  // The seasonal art is CSS background-image, so all four slides would other-
+  // wise be fetched before first paint. .slides-ready hands them their images
+  // once nothing is competing for bandwidth, and starts the cross-fade.
+  const heroFallback = document.querySelector('.hero-fallback');
+  if (heroFallback) {
+    const startSlides = () => heroFallback.parentElement?.classList.add('slides-ready');
+    if (document.readyState === 'complete') startSlides();
+    else window.addEventListener('load', startSlides, { once: true });
+  }
 
   // ── Hero parallax (scroll) ──
   const heroBg = document.querySelector('.lux-hero .hero-bg, .dest-hero-bg');
@@ -355,78 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'ArrowLeft') showAt(idx - 1);
       if (e.key === 'ArrowRight') showAt(idx + 1);
     });
-  }
-
-  // ── Horizontal Review Slider ──
-  const track    = document.getElementById('reviewTrack');
-  const prevBtn  = document.getElementById('reviewPrev');
-  const nextBtn  = document.getElementById('reviewNext');
-  const dotsRow  = document.getElementById('reviewDots');
-
-  if (track) {
-    const cards = [...track.querySelectorAll('.rv-card')];
-    const cardW = () => (cards[0]?.offsetWidth ?? 360) + 20; // card + gap
-
-    // Build dots
-    cards.forEach((_, i) => {
-      const dot = document.createElement('button');
-      dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
-      dot.setAttribute('role', 'tab');
-      dot.setAttribute('aria-label', `Review ${i + 1}`);
-      dot.addEventListener('click', () => { scrollTo(i); stopAuto(); });
-      dotsRow?.appendChild(dot);
-    });
-
-    const scrollTo = (idx) => {
-      track.scrollTo({ left: idx * cardW(), behavior: 'smooth' });
-    };
-
-    prevBtn?.addEventListener('click', () => {
-      const cur = Math.round(track.scrollLeft / cardW());
-      scrollTo(Math.max(0, cur - 1));
-      stopAuto();
-    });
-    nextBtn?.addEventListener('click', () => {
-      const cur = Math.round(track.scrollLeft / cardW());
-      scrollTo(Math.min(cards.length - 1, cur + 1));
-      stopAuto();
-    });
-
-    // Touch swipe support
-    let touchStartX = 0;
-    track.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      stopAuto();
-    }, { passive: true });
-    track.addEventListener('touchend', (e) => {
-      const delta = touchStartX - e.changedTouches[0].clientX;
-      if (Math.abs(delta) > 50) {
-        const cur = Math.round(track.scrollLeft / cardW());
-        scrollTo(delta > 0
-          ? Math.min(cards.length - 1, cur + 1)
-          : Math.max(0, cur - 1));
-      }
-      setTimeout(startAuto, 4000);
-    }, { passive: true });
-
-    // Update dots on scroll
-    track.addEventListener('scroll', () => {
-      const idx = Math.round(track.scrollLeft / cardW());
-      dotsRow?.querySelectorAll('.slider-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
-    }, { passive: true });
-
-    // Auto-slide every 5.5 s, pause on hover / touch
-    let autoTimer;
-    const startAuto = () => {
-      autoTimer = setInterval(() => {
-        const cur = Math.round(track.scrollLeft / cardW());
-        scrollTo(cur >= cards.length - 1 ? 0 : cur + 1);
-      }, 5500);
-    };
-    const stopAuto = () => clearInterval(autoTimer);
-    startAuto();
-    track.addEventListener('mouseenter', stopAuto);
-    track.addEventListener('mouseleave', startAuto);
   }
 
   // ── Star Rating Input ──

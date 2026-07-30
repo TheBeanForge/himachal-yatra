@@ -294,6 +294,14 @@ img { max-width: 100%; display: block; }
 .reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-blur {
   opacity: 0;
   transition: opacity .9s cubic-bezier(.22,1,.36,1), transform .9s cubic-bezier(.22,1,.36,1), filter .9s ease;
+}
+/* will-change promotes each element to its own compositor layer. Declared on
+   .reveal itself it would hold ~40 layers per page for the document's whole
+   life, long after they stop moving. script.js adds .will-animate just before
+   the reveal fires and removes it on transitionend, so a layer exists only
+   while it is earning its keep. */
+.reveal.will-animate, .reveal-left.will-animate, .reveal-right.will-animate,
+.reveal-scale.will-animate, .reveal-blur.will-animate {
   will-change: opacity, transform;
 }
 .reveal        { transform: translateY(34px); }
@@ -614,11 +622,38 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   will-change: opacity;
   animation: heroFade 20s linear infinite;
 }
-/* Local illustrated seasonal fallback art (spring · summer · autumn · winter). */
-.hero-slide:nth-child(1) { background-image: url('assets/photos/hero-spring.png'); animation-delay: 0s;  }
-.hero-slide:nth-child(2) { background-image: url('assets/photos/hero-summer.png'); animation-delay: 5s;  }
-.hero-slide:nth-child(3) { background-image: url('assets/photos/hero-autumn.png'); animation-delay: 10s; }
-.hero-slide:nth-child(4) { background-image: url('assets/photos/hero-winter.png'); animation-delay: 15s; }
+/* Local illustrated seasonal fallback art (spring · summer · autumn · winter).
+   Shown only when the admin has set no hero photos.
+
+   Weight: the four sources were 2.3–2.7 MB PNGs — ~10 MB fetched before the
+   first paint, since all four slides render at once. They are now WebP (87%
+   smaller), served at 900w below that viewport width, and only slide 1 is
+   fetched during load. Slides 2–4 get their image once script.js adds
+   .slides-ready on window load, so the hero costs one image, not four.
+   Browsers without WebP fall back to .lux-hero's solid navy ground. */
+.hero-slide:nth-child(1) { animation-delay: 0s;  }
+.hero-slide:nth-child(2) { animation-delay: 5s;  }
+.hero-slide:nth-child(3) { animation-delay: 10s; }
+.hero-slide:nth-child(4) { animation-delay: 15s; }
+
+/* .hero-fallback marks the local seasonal art, so none of the deferral below
+   can touch the admin-photo slideshow (which carries inline background-image
+   and its own generated keyframes). Until .slides-ready lands the fallback
+   holds a single static slide — which is also exactly what a no-JS visitor
+   gets, rather than a cycle through three blank frames. */
+.hero-fallback { animation: none; opacity: 0; }
+.hero-fallback:nth-child(1) { opacity: 1; background-image: url('assets/photos/hero-spring.webp'); }
+.slides-ready .hero-fallback { animation: heroFade 20s linear infinite; }
+.slides-ready .hero-fallback:nth-child(2) { background-image: url('assets/photos/hero-summer.webp'); }
+.slides-ready .hero-fallback:nth-child(3) { background-image: url('assets/photos/hero-autumn.webp'); }
+.slides-ready .hero-fallback:nth-child(4) { background-image: url('assets/photos/hero-winter.webp'); }
+
+@media (max-width: 900px) {
+  .hero-fallback:nth-child(1) { background-image: url('assets/photos/hero-spring-900.webp'); }
+  .slides-ready .hero-fallback:nth-child(2) { background-image: url('assets/photos/hero-summer-900.webp'); }
+  .slides-ready .hero-fallback:nth-child(3) { background-image: url('assets/photos/hero-autumn-900.webp'); }
+  .slides-ready .hero-fallback:nth-child(4) { background-image: url('assets/photos/hero-winter-900.webp'); }
+}
 @keyframes heroFade {
   0%   { opacity: 1; }
   25%  { opacity: 1; }
@@ -628,7 +663,8 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-bg { animation: none; }
-  .hero-slide { animation: none; }
+  .hero-slide,
+  .slides-ready .hero-fallback { animation: none; }
   .hero-slide:nth-child(1) { opacity: 1; }
 }
 .lux-hero-scrim {

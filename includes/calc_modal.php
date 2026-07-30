@@ -308,7 +308,8 @@
   position: relative; flex: 0 0 320px; overflow: hidden;
   background:
     linear-gradient(200deg, rgba(216,179,106,.16), transparent 45%),
-    url('assets/photos/hero-winter.png') center/cover no-repeat,
+    /* 900w WebP, not the 2.7 MB PNG — this rail is only 320px wide. */
+    url('assets/photos/hero-winter-900.webp') center/cover no-repeat,
     #0A1426;
   display: flex; align-items: flex-end;
 }
@@ -419,6 +420,14 @@
 }
 .cq-fab:hover { transform: translateY(-3px); box-shadow: 0 18px 44px rgba(200,167,93,.52); }
 .cq-fab i { font-size: 1rem; }
+/* The FAB shares the bottom-right rail with .back-top (style.css), which sits
+   at bottom:96px — inside the FAB's 100–154px band, and beneath it (z-index
+   90 vs 99), leaving back-to-top unclickable. Lift it clear of the FAB. This
+   rule lives here so it only applies on pages that actually render the FAB. */
+@media (min-width: 768px) {
+  .back-top { bottom: 166px; }
+}
+
 @media (max-width: 767px) {
   /* On mobile the WhatsApp float is hidden and the 3-up bottom CTA bar
      (Call · WhatsApp · Get Quote) takes over — so hide the FAB entirely. */
@@ -859,11 +868,35 @@ function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 let cqAutoOpened=false;   // this open was triggered by the engagement engine
 let cqSubmitted=false;    // an enquiry was submitted in this open
 
+/* ── Focus management ──
+   The dialog declares aria-modal="true", which promises assistive tech that the
+   rest of the page is inert. Without a trap that promise is broken: Tab walks
+   straight out into the page behind the backdrop. We keep focus inside while
+   open and hand it back to whatever opened the modal on close. */
+let cqLastFocus=null;
+const CQ_FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function cqFocusable(){
+  return Array.from(cqModal.querySelectorAll(CQ_FOCUSABLE))
+    .filter(el=>el.offsetWidth||el.offsetHeight||el.getClientRects().length);
+}
+function cqTrap(e){
+  if(e.key!=='Tab') return;
+  const f=cqFocusable();
+  if(!f.length) return;
+  const first=f[0], last=f[f.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+}
+
 function openModal(){
   if(!cqModal) return;
+  cqLastFocus = document.activeElement;
   cqModal.classList.add('open');
   cqModal.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';   // lock background scroll
+  document.addEventListener('keydown', cqTrap, true);
+  // Land on the first real control rather than leaving focus behind the backdrop.
+  requestAnimationFrame(()=>{ cqFocusable()[0]?.focus(); });
   try{ sessionStorage.setItem('cqShown','1'); }catch(e){}  // once per session
 }
 function closeModal(){
@@ -871,6 +904,10 @@ function closeModal(){
   cqModal.classList.remove('open');
   cqModal.setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  document.removeEventListener('keydown', cqTrap, true);
+  // Hand focus back to the trigger so keyboard users keep their place.
+  if(cqLastFocus && document.contains(cqLastFocus)) cqLastFocus.focus();
+  cqLastFocus=null;
   // Dismissing an AUTO-opened popup without submitting → stay quiet for 3 days.
   if(cqAutoOpened && !cqSubmitted){
     lsSet('cqSnoozeUntil', String(Date.now() + 3*24*60*60*1000));

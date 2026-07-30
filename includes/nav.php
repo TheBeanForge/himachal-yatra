@@ -58,11 +58,14 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
           <span class="theme-dd-txt">Midnight Blue</span>
           <i class="fa-solid fa-chevron-down theme-dd-arr" aria-hidden="true"></i>
         </button>
+        <?php /* role="presentation" on the <li> keeps the listbox → option
+                 relationship intact; a bare <li> reports as listitem, which is
+                 not a valid child of listbox and confuses screen readers. */ ?>
         <ul class="theme-dd-menu" role="listbox" aria-label="Colour theme">
-          <li><button type="button" class="theme-opt" role="option" data-set-theme="light"><i class="fa-solid fa-sun"></i> Ivory White</button></li>
-          <li><button type="button" class="theme-opt" role="option" data-set-theme="dark"><i class="fa-solid fa-moon"></i> Midnight Blue</button></li>
-          <li><button type="button" class="theme-opt" role="option" data-set-theme="pine"><i class="fa-solid fa-tree"></i> Pine Green</button></li>
-          <li><button type="button" class="theme-opt" role="option" data-set-theme="sky"><i class="fa-solid fa-cloud"></i> Ocean Blue</button></li>
+          <li role="presentation"><button type="button" class="theme-opt" role="option" aria-selected="false" tabindex="-1" data-set-theme="light"><i class="fa-solid fa-sun"></i> Ivory White</button></li>
+          <li role="presentation"><button type="button" class="theme-opt" role="option" aria-selected="false" tabindex="-1" data-set-theme="dark"><i class="fa-solid fa-moon"></i> Midnight Blue</button></li>
+          <li role="presentation"><button type="button" class="theme-opt" role="option" aria-selected="false" tabindex="-1" data-set-theme="pine"><i class="fa-solid fa-tree"></i> Pine Green</button></li>
+          <li role="presentation"><button type="button" class="theme-opt" role="option" aria-selected="false" tabindex="-1" data-set-theme="sky"><i class="fa-solid fa-cloud"></i> Ocean Blue</button></li>
         </ul>
       </div>
 

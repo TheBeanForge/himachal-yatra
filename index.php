@@ -177,11 +177,12 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
           <style>.hero-bg .hero-slide { animation: none; opacity: 1; }</style>
           <?php endif; ?>
         <?php else: ?>
-        <!-- Local illustrated seasonal fallback slides (spring · summer · autumn · winter). -->
-        <div class="hero-slide"></div>
-        <div class="hero-slide"></div>
-        <div class="hero-slide"></div>
-        <div class="hero-slide"></div>
+        <!-- Local illustrated seasonal fallback slides (spring · summer · autumn · winter).
+             Only slide 1 loads with the page; script.js reveals the rest after load. -->
+        <div class="hero-slide hero-fallback"></div>
+        <div class="hero-slide hero-fallback"></div>
+        <div class="hero-slide hero-fallback"></div>
+        <div class="hero-slide hero-fallback"></div>
         <?php endif; ?>
       </div>
       <div class="lux-hero-scrim" aria-hidden="true"></div>
