@@ -154,7 +154,7 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
 
   <main class="lux">
 
-    <!-- ═══ 1 · HERO ═══ -->
+    <!-- ═══ 1 · ARRIVAL — hero ═══ -->
     <section class="lux-hero" id="home">
       <div class="hero-bg" aria-hidden="true">
         <?php if (!empty($heroSlides)): $n = count($heroSlides); ?>
@@ -202,7 +202,7 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
       <a href="#about" class="lux-scroll-cue" aria-label="Scroll to explore"><span></span></a>
     </section>
 
-    <!-- ═══ 2 · STORY — local experts ═══ -->
+    <!-- ═══ 2 · THE PEOPLE WHO KNOW THE ROAD ═══ -->
     <section class="lux-story" id="about">
       <div class="lux-container lux-story-grid">
         <div class="lux-story-media reveal">
@@ -219,45 +219,7 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
       </div>
     </section>
 
-    <!-- ═══ 3 · FULL-WIDTH SCENIC BANNER ═══ -->
-    <section class="lux-banner reveal" style="background-image:url('<?= h($homeBannerImg) ?>')">
-      <div class="lux-banner-scrim" aria-hidden="true"></div>
-      <div class="lux-banner-inner">
-        <h2 class="lux-h2 light">The Mountains Are Waiting</h2>
-        <p class="lux-banner-sub">Travel stress-free with private transport, verified accommodations, and local expertise.</p>
-        <button type="button" class="lux-btn lux-btn-gold" data-open-quote="">Start Planning</button>
-      </div>
-    </section>
-
-    <!-- ═══ 4 · FEATURED DESTINATIONS ═══ -->
-    <section class="lux-section lux-dest" id="destinations">
-      <div class="lux-container">
-        <div class="lux-head reveal">
-          <span class="lux-eyebrow">Featured Destinations</span>
-          <h2 class="lux-h2">Places We Know Intimately</h2>
-        </div>
-        <div class="lux-dest-grid">
-          <?php foreach ($lux_dest as $d): ?>
-          <article class="lux-card reveal">
-            <div class="lux-card-media">
-              <img src="<?= h($d['img']) ?>" alt="<?= h($d['title']) ?>, Himachal Pradesh" loading="lazy" width="900" height="1100">
-            </div>
-            <div class="lux-card-body">
-              <h3 class="lux-card-title"><?= h($d['title']) ?></h3>
-              <p class="lux-card-desc"><?= h($d['desc']) ?></p>
-              <?php if ($d['href']): ?>
-              <a class="lux-textlink" href="<?= h($d['href']) ?>">Explore <span aria-hidden="true">→</span></a>
-              <?php else: ?>
-              <button type="button" class="lux-textlink" data-open-quote="">Explore <span aria-hidden="true">→</span></button>
-              <?php endif; ?>
-            </div>
-          </article>
-          <?php endforeach; ?>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ 4b · SIGNATURE ROUTES ═══ -->
+    <!-- ═══ 3 · THE ROAD — signature routes ═══ -->
     <section class="lux-section lux-routes" id="routes">
       <div class="lux-container">
         <div class="lux-head reveal">
@@ -305,43 +267,45 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
       </div>
     </section>
 
-    <!-- ═══ 5 · WHY TRAVEL WITH US ═══ -->
-    <section class="lux-section lux-why" id="why">
+    <!-- ═══ 4 · WHERE THE ROAD ARRIVES — destinations ═══ -->
+    <section class="lux-section lux-dest" id="destinations">
       <div class="lux-container">
         <div class="lux-head reveal">
-          <span class="lux-eyebrow light">The Concierge Difference</span>
-          <h2 class="lux-h2 light">Why Travel With Us</h2>
+          <span class="lux-eyebrow">Featured Destinations</span>
+          <h2 class="lux-h2">Places We Know Intimately</h2>
         </div>
-        <div class="lux-why-grid">
-          <?php foreach ($lux_why as $w): ?>
-          <div class="lux-why-card reveal">
-            <span class="lux-why-icon"><i class="fa-solid <?= h($w['icon']) ?>"></i></span>
-            <h3 class="lux-why-title"><?= h($w['title']) ?></h3>
-            <p class="lux-why-desc"><?= h($w['desc']) ?></p>
-          </div>
+        <div class="lux-dest-grid">
+          <?php foreach ($lux_dest as $d): ?>
+          <article class="lux-card reveal">
+            <div class="lux-card-media">
+              <img src="<?= h($d['img']) ?>" alt="<?= h($d['title']) ?>, Himachal Pradesh" loading="lazy" width="900" height="1100">
+            </div>
+            <div class="lux-card-body">
+              <h3 class="lux-card-title"><?= h($d['title']) ?></h3>
+              <p class="lux-card-desc"><?= h($d['desc']) ?></p>
+              <?php if ($d['href']): ?>
+              <a class="lux-textlink" href="<?= h($d['href']) ?>">Explore <span aria-hidden="true">→</span></a>
+              <?php else: ?>
+              <button type="button" class="lux-textlink" data-open-quote="">Explore <span aria-hidden="true">→</span></button>
+              <?php endif; ?>
+            </div>
+          </article>
           <?php endforeach; ?>
         </div>
       </div>
     </section>
 
-    <!-- ═══ 5a · STATS ═══ -->
-    <section class="lux-stats">
-      <div class="lux-container lux-stats-grid">
-        <?php foreach ([
-          ['5,000+',  'Guest Journeys',        '5000'],
-          ['80+',     'Partner Vehicles',      '80'],
-          ['40+',     'Himachal Destinations', '40'],
-          ['8+',      'Years of Experience',   '8'],
-        ] as $st): ?>
-        <div class="lux-stat reveal">
-          <strong data-count="<?= $st[2] ?>"><?= $st[0] ?></strong>
-          <span><?= $st[1] ?></span>
-        </div>
-        <?php endforeach; ?>
+    <!-- ═══ 5 · HOW YOU TRAVEL — scenic banner ═══ -->
+    <section class="lux-banner reveal" style="background-image:url('<?= h($homeBannerImg) ?>')">
+      <div class="lux-banner-scrim" aria-hidden="true"></div>
+      <div class="lux-banner-inner">
+        <h2 class="lux-h2 light">The Mountains Are Waiting</h2>
+        <p class="lux-banner-sub">Travel stress-free with private transport, verified accommodations, and local expertise.</p>
+        <button type="button" class="lux-btn lux-btn-gold" data-open-quote="">Start Planning</button>
       </div>
     </section>
 
-    <!-- ═══ 5b · FLEET — admin-managed vehicles only; hidden when none exist ═══ -->
+    <!-- ═══ 6 · HOW YOU TRAVEL — fleet — admin-managed vehicles only; hidden when none exist ═══ -->
     <?php if ($dbFleet): ?>
     <section class="lux-section lux-fleet" id="fleet">
       <div class="lux-container">
@@ -377,32 +341,43 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
     </section>
     <?php endif; ?>
 
-    <!-- ═══ 5c · HOW IT WORKS ═══ -->
-    <section class="lux-section lux-steps-sec" id="how">
+    <!-- ═══ 7 · WHY IT HOLDS TOGETHER ═══ -->
+    <section class="lux-section lux-why" id="why">
       <div class="lux-container">
         <div class="lux-head reveal">
-          <span class="lux-eyebrow">The Process</span>
-          <h2 class="lux-h2">A Simple Concierge Process</h2>
+          <span class="lux-eyebrow light">The Concierge Difference</span>
+          <h2 class="lux-h2 light">Why Travel With Us</h2>
         </div>
-        <ol class="lux-steps">
-          <?php foreach ([
-            ['fa-map-pin',        'Share Your Plan',       'Tell us pickup city, dates, destinations, group size and stay preferences.'],
-            ['fa-whatsapp',       'Receive a Clear Quote', 'We suggest the right vehicle and send inclusions, fare and timing on WhatsApp.', true],
-            ['fa-handshake',      'Confirm the Details',   'Once confirmed, we assign the vehicle, brief the driver and lock pickup coordination.'],
-            ['fa-mountain-sun',   'Travel with Support',   'Your driver and travel desk stay connected through the entire journey.'],
-          ] as $i => $sp): ?>
-          <li class="lux-step reveal">
-            <span class="lux-step-num"><?= $i + 1 ?></span>
-            <span class="lux-step-icon"><i class="<?= !empty($sp[3]) ? 'fa-brands' : 'fa-solid' ?> <?= h($sp[0]) ?>"></i></span>
-            <h3 class="lux-step-title"><?= h($sp[1]) ?></h3>
-            <p class="lux-step-desc"><?= h($sp[2]) ?></p>
-          </li>
+        <div class="lux-why-grid">
+          <?php foreach ($lux_why as $w): ?>
+          <div class="lux-why-card reveal">
+            <span class="lux-why-icon"><i class="fa-solid <?= h($w['icon']) ?>"></i></span>
+            <h3 class="lux-why-title"><?= h($w['title']) ?></h3>
+            <p class="lux-why-desc"><?= h($w['desc']) ?></p>
+          </div>
           <?php endforeach; ?>
-        </ol>
+        </div>
       </div>
     </section>
 
-    <!-- ═══ 6 · TESTIMONIALS ═══ -->
+    <!-- ═══ 8 · THE EVIDENCE — stats ═══ -->
+    <section class="lux-stats">
+      <div class="lux-container lux-stats-grid">
+        <?php foreach ([
+          ['5,000+',  'Guest Journeys',        '5000'],
+          ['80+',     'Partner Vehicles',      '80'],
+          ['40+',     'Himachal Destinations', '40'],
+          ['8+',      'Years of Experience',   '8'],
+        ] as $st): ?>
+        <div class="lux-stat reveal">
+          <strong data-count="<?= $st[2] ?>"><?= $st[0] ?></strong>
+          <span><?= $st[1] ?></span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </section>
+
+    <!-- ═══ 9 · WHAT OTHERS FOUND ═══ -->
     <section class="lux-section lux-quotes" id="reviews">
       <div class="lux-container">
         <div class="lux-head reveal">
@@ -439,7 +414,64 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
       </div>
     </section>
 
-    <!-- ═══ 6b · WRITE A REVIEW ═══ -->
+    <!-- ═══ 10 · WHAT HAPPENS NEXT — process ═══ -->
+    <section class="lux-section lux-steps-sec" id="how">
+      <div class="lux-container">
+        <div class="lux-head reveal">
+          <span class="lux-eyebrow">The Process</span>
+          <h2 class="lux-h2">A Simple Concierge Process</h2>
+        </div>
+        <ol class="lux-steps">
+          <?php foreach ([
+            ['fa-map-pin',        'Share Your Plan',       'Tell us pickup city, dates, destinations, group size and stay preferences.'],
+            ['fa-whatsapp',       'Receive a Clear Quote', 'We suggest the right vehicle and send inclusions, fare and timing on WhatsApp.', true],
+            ['fa-handshake',      'Confirm the Details',   'Once confirmed, we assign the vehicle, brief the driver and lock pickup coordination.'],
+            ['fa-mountain-sun',   'Travel with Support',   'Your driver and travel desk stay connected through the entire journey.'],
+          ] as $i => $sp): ?>
+          <li class="lux-step reveal">
+            <span class="lux-step-num"><?= $i + 1 ?></span>
+            <span class="lux-step-icon"><i class="<?= !empty($sp[3]) ? 'fa-brands' : 'fa-solid' ?> <?= h($sp[0]) ?>"></i></span>
+            <h3 class="lux-step-title"><?= h($sp[1]) ?></h3>
+            <p class="lux-step-desc"><?= h($sp[2]) ?></p>
+          </li>
+          <?php endforeach; ?>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ═══ 11 · THE INVITATION ═══ -->
+    <section class="lux-final reveal" id="contact" style="background-image:url('<?= h($homeContactImg) ?>')">
+      <div class="lux-final-scrim" aria-hidden="true"></div>
+      <div class="lux-final-inner">
+        <span class="lux-eyebrow light">Begin the Journey</span>
+        <h2 class="lux-h2 light">Let&rsquo;s Plan Your Himalayan Journey</h2>
+        <p class="lux-banner-sub">Share your dates and the kind of trip you dream of — our travel desk will craft the rest.</p>
+        <div class="lux-cta-row center">
+          <button type="button" class="lux-btn lux-btn-gold" data-open-quote="">Plan My Journey</button>
+          <a class="lux-btn lux-btn-ghost" href="<?= $waLink ?>" target="_blank" rel="noopener" data-wa-lead data-source="contact"><i class="fa-brands fa-whatsapp"></i> WhatsApp Concierge</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 12 · AFTER THE JOURNEY — faq ═══ -->
+    <section class="lux-section lux-faq" id="faq">
+      <div class="lux-container lux-faq-wrap">
+        <div class="lux-head reveal">
+          <span class="lux-eyebrow">Good to Know</span>
+          <h2 class="lux-h2">Himachal Travel Questions</h2>
+        </div>
+        <div class="lux-faq-list reveal">
+          <?php foreach ($faqs as $i => $f): ?>
+          <details class="lux-faq-item"<?= $i === 0 ? ' open' : '' ?>>
+            <summary><?= h($f[0]) ?><i class="fa-solid fa-plus" aria-hidden="true"></i></summary>
+            <p><?= h($f[1]) ?></p>
+          </details>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 13 · AFTER THE JOURNEY — review form ═══ -->
     <section class="lux-section lux-review" id="write-review">
       <div class="lux-container lux-review-grid">
         <div class="lux-review-intro reveal">
@@ -487,37 +519,6 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
       </div>
     </section>
 
-    <!-- ═══ 6c · FAQ ═══ -->
-    <section class="lux-section lux-faq" id="faq">
-      <div class="lux-container lux-faq-wrap">
-        <div class="lux-head reveal">
-          <span class="lux-eyebrow">Good to Know</span>
-          <h2 class="lux-h2">Himachal Travel Questions</h2>
-        </div>
-        <div class="lux-faq-list reveal">
-          <?php foreach ($faqs as $i => $f): ?>
-          <details class="lux-faq-item"<?= $i === 0 ? ' open' : '' ?>>
-            <summary><?= h($f[0]) ?><i class="fa-solid fa-plus" aria-hidden="true"></i></summary>
-            <p><?= h($f[1]) ?></p>
-          </details>
-          <?php endforeach; ?>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ 7 · FINAL CTA ═══ -->
-    <section class="lux-final reveal" id="contact" style="background-image:url('<?= h($homeContactImg) ?>')">
-      <div class="lux-final-scrim" aria-hidden="true"></div>
-      <div class="lux-final-inner">
-        <span class="lux-eyebrow light">Begin the Journey</span>
-        <h2 class="lux-h2 light">Let&rsquo;s Plan Your Himalayan Journey</h2>
-        <p class="lux-banner-sub">Share your dates and the kind of trip you dream of — our travel desk will craft the rest.</p>
-        <div class="lux-cta-row center">
-          <button type="button" class="lux-btn lux-btn-gold" data-open-quote="">Plan My Journey</button>
-          <a class="lux-btn lux-btn-ghost" href="<?= $waLink ?>" target="_blank" rel="noopener" data-wa-lead data-source="contact"><i class="fa-brands fa-whatsapp"></i> WhatsApp Concierge</a>
-        </div>
-      </div>
-    </section>
 
     <!-- Instant-quote popup form + floating button + WhatsApp pre-chat (page-level overlays) -->
     <?php require 'includes/calc_modal.php'; ?>
