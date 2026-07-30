@@ -735,6 +735,30 @@
 /* Success */
 .cq-success { text-align: center; padding: 2.5rem 1.75rem; }
 .cq-success-icon { font-size: 3.5rem; color: var(--lime); margin-bottom: 1rem; line-height: 1; }
+/* The enquiry landing is the end of the whole journey — give it a beat rather
+   than snapping a static tick onto the screen. Ring draws, mark settles. */
+.cq-success-icon { position: relative; display: inline-block; }
+.cq-success-icon i { display: block; animation: cqSealMark .5s var(--ease-out, cubic-bezier(.22,1,.36,1)) .18s both; }
+.cq-success-icon::before {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 4.6rem; height: 4.6rem; margin: -2.3rem 0 0 -2.3rem;
+  border: 2px solid color-mix(in srgb, var(--lime) 55%, transparent);
+  border-radius: 50%;
+  animation: cqSealRing .72s var(--ease-out, cubic-bezier(.22,1,.36,1)) both;
+}
+@keyframes cqSealRing {
+  from { transform: scale(.55); opacity: 0; }
+  60%  { opacity: 1; }
+  to   { transform: scale(1); opacity: .55; }
+}
+@keyframes cqSealMark {
+  from { transform: scale(.4); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cq-success-icon i, .cq-success-icon::before { animation: none; }
+  .cq-success-icon::before { opacity: .55; transform: scale(1); }
+}
 .cq-success-title { font-family: var(--font-display); font-size: 1.45rem; font-weight: 400; color: var(--charcoal); margin: 0 0 .6rem; }
 .cq-success-msg { font-size: .88rem; color: var(--text-2); margin: 0 0 1.25rem; line-height: 1.6; }
 .cq-success-summary {
@@ -1405,7 +1429,8 @@ document.getElementById('cqEstBtn').addEventListener('click',()=>{
     ['fa-calendar-days',   `${r.days} Day${r.days>1?'s':''}`],
   ].map(([ic,t])=>`<span class="cq-pill"><i class="fa-solid ${ic}"></i>${t}</span>`).join('');
 
-  document.getElementById('cqResRows').innerHTML=buildBdRows(r);
+  const rowsEl=document.getElementById('cqResRows');
+  rowsEl.innerHTML=buildBdRows(r);
   document.getElementById('cqResAmt').textContent=fmtINR(r.total);
   document.getElementById('cqResMeta').innerHTML=
     `${S.travelers} travelers · ${r.days} days · ${veh?.name||''}`+
@@ -1413,7 +1438,45 @@ document.getElementById('cqEstBtn').addEventListener('click',()=>{
 
   show('result');
   cqCard.scrollIntoView({behavior:'smooth',block:'start'});
+
+  /* ── Let the estimate assemble itself ──
+     A price that simply appears reads as looked-up; one that builds line by
+     line and settles on a total reads as calculated. This is the moment the
+     visitor decides whether to trust the number, so it is worth the 600ms. */
+  cqAnimateEstimate(rowsEl, r.total);
 });
+
+/* Stagger the breakdown rows in, then count the total up to its real value.
+   Honours prefers-reduced-motion by simply showing the finished state. */
+const cqReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function cqAnimateEstimate(rowsEl, total){
+  const amtEl = document.getElementById('cqResAmt');
+  if (!rowsEl || !amtEl) return;
+  if (cqReduceMotion) { amtEl.textContent = fmtINR(total); return; }
+
+  const rows = Array.from(rowsEl.children);
+  rows.forEach((row, i) => {
+    row.style.opacity = '0';
+    row.style.transform = 'translateY(6px)';
+    row.style.transition = 'opacity .34s var(--ease-out, ease), transform .34s var(--ease-out, ease)';
+    setTimeout(() => { row.style.opacity = ''; row.style.transform = ''; }, 60 * i);
+  });
+
+  // Total lands just after the last row, then counts.
+  const startAt = 60 * rows.length + 90;
+  const DUR = 620;
+  amtEl.textContent = fmtINR(0);
+  setTimeout(() => {
+    const t0 = performance.now();
+    const tick = (now) => {
+      const p = Math.min((now - t0) / DUR, 1);
+      const eased = 1 - Math.pow(1 - p, 3);           // ease-out cubic
+      amtEl.textContent = fmtINR(Math.round(total * eased));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, startAt);
+}
 
 /* ── Back to form ── */
 document.getElementById('cqBackBtn').addEventListener('click',()=>{ show('form'); });

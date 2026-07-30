@@ -81,6 +81,34 @@
   --band-2: #101F3A;
 }
 
+/* ── TOKENS · MOTION & FOCUS — theme-independent ──
+   cubic-bezier(.22,1,.36,1) was repeated 30+ times with ad-hoc durations from
+   .15s to .9s. Named here so timing is a decision made once, and so a future
+   change to the site's "feel" is one edit rather than thirty. */
+:root {
+  --ease-out:   cubic-bezier(.22, 1, .36, 1);   /* the house curve */
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --dur-quick:  .18s;   /* presses, chips, tiny state flips */
+  --dur-base:   .35s;   /* hovers, cards, most UI            */
+  --dur-slow:   .9s;    /* reveals, image scale, atmosphere  */
+
+  /* One ring, everywhere. Public pages and the modal had different ones. */
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+
+/* Site-wide keyboard focus. :focus-visible keeps it off mouse clicks. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* ── TOKENS · LIGHT — Ivory Summit (default UX theme) ── */
 [data-theme="light"] {
   --gold:    #A98330;
@@ -597,9 +625,23 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   font: 700 12.5px var(--font-body); letter-spacing: .18em; text-transform: uppercase; color: var(--gold-2);
   transition: gap .3s, color .3s;
 }
-.lux-textlink span { transition: transform .3s; }
+.lux-textlink span { transition: transform var(--dur-base) var(--ease-out); }
 .lux-textlink:hover { color: var(--ink); }
 .lux-textlink:hover span { transform: translateX(6px); }
+/* Underline wipes in from the left rather than fading — it reads as drawn,
+   which is the difference between "a link" and "a considered link". */
+.lux-textlink { position: relative; }
+.lux-textlink::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 1px;
+  background: currentColor;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.lux-textlink:hover::after, .lux-textlink:focus-visible::after { transform: scaleX(1); }
+
+/* Buttons acknowledge the press. 40ms is below conscious notice but the hand
+   feels it — the single cheapest "handcrafted" signal available. */
+.lux-btn:active { transform: translateY(-1px) scale(.985); transition-duration: var(--dur-quick); }
 
 /* ── 1 · HERO — cinematic full-bleed ── */
 .lux-hero {
@@ -1108,6 +1150,15 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
 }
 .lux-faq-item[open] summary i { transform: rotate(45deg); }
 .lux-faq-item p { margin: 0; padding: 0 26px 24px; color: var(--ink-2); line-height: 1.78; font-size: 1rem; }
+/* <details> cannot animate its own height without a wrapper, but easing the
+   answer in still removes the snap — the panel opens and the text arrives
+   a beat later, which is what makes it feel considered. */
+.lux-faq-item[open] p { animation: faqReveal .4s var(--ease-out) both; }
+@keyframes faqReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .lux-faq-item[open] p { animation: none; } }
 
 /* ── 7 · FINAL CTA (parallax) ── */
 .lux-final {

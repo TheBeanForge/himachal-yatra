@@ -316,10 +316,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Card tilt (pointer devices only, subtle) ──
+  // Tilt writes an inline `transform`, the same property .reveal.visible owns,
+  // so a card hovered mid-reveal used to jump. Guarding on "reveal finished"
+  // (visible, and no longer animating) keeps the two off each other's toes.
   if (!reduceMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    const settled = (el) =>
+      !el.classList.contains('reveal') ||
+      (el.classList.contains('visible') && !el.classList.contains('will-animate'));
+
     document.querySelectorAll('.lux-card, .pkg-card, .lux-fleet-card').forEach((card) => {
       let raf = 0;
       card.addEventListener('pointermove', (e) => {
+        if (!settled(card)) return;
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
           const r = card.getBoundingClientRect();
