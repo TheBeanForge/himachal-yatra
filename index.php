@@ -185,6 +185,8 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
         <div class="hero-slide hero-fallback"></div>
         <?php endif; ?>
       </div>
+      <!-- Drifting air over the ridge; purely atmospheric. -->
+      <div class="hero-veil" aria-hidden="true"><span></span><span></span></div>
       <div class="lux-hero-scrim" aria-hidden="true"></div>
 
       <div class="lux-hero-inner">

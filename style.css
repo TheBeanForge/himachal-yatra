@@ -667,10 +667,75 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   .slides-ready .hero-fallback { animation: none; }
   .hero-slide:nth-child(1) { opacity: 1; }
 }
+/* ═══ HERO ATMOSPHERE ═══
+   Two very low-opacity gradient sheets drifting across the hero at different
+   speeds and directions. Reads as high-altitude air moving over the valley —
+   the "peace" register the brand is built on. Transform-only, so it stays on
+   the compositor; no repaint, no layout. */
+.hero-veil {
+  position: absolute; inset: 0; z-index: 1;
+  overflow: hidden; pointer-events: none;
+}
+.hero-veil span {
+  position: absolute; top: -20%; left: -60%;
+  width: 220%; height: 140%;
+  will-change: transform;
+}
+.hero-veil span:nth-child(1) {
+  background:
+    radial-gradient(58% 34% at 22% 42%, rgba(255,255,255,.16), transparent 68%),
+    radial-gradient(46% 26% at 68% 30%, rgba(255,255,255,.11), transparent 70%);
+  filter: blur(14px);
+  animation: veilDriftA 78s linear infinite;
+}
+.hero-veil span:nth-child(2) {
+  background:
+    radial-gradient(52% 22% at 44% 66%, rgba(214,229,255,.13), transparent 72%),
+    radial-gradient(38% 20% at 80% 74%, rgba(255,255,255,.09), transparent 74%);
+  filter: blur(22px);
+  animation: veilDriftB 116s linear infinite;
+}
+@keyframes veilDriftA {
+  from { transform: translate3d(0,0,0); }
+  to   { transform: translate3d(28%, -3%, 0); }
+}
+@keyframes veilDriftB {
+  from { transform: translate3d(6%, 2%, 0); }
+  to   { transform: translate3d(-22%, -2%, 0); }
+}
+
 .lux-hero-scrim {
   position: absolute; inset: 0; z-index: 1;
   background:
     linear-gradient(180deg, rgba(7,15,30,.62) 0%, rgba(7,15,30,.28) 38%, rgba(7,15,30,.82) 100%);
+}
+/* Time-of-day light. script.js stamps data-daypart from the VISITOR's clock,
+   so the mountain is lit roughly as it would be when they are looking at it —
+   and a return visit at a different hour genuinely looks different.
+   Layered under the base scrim above, which keeps text contrast unchanged. */
+.lux-hero-scrim::before {
+  content: ""; position: absolute; inset: 0;
+  opacity: 0; transition: opacity 1.2s ease, background 1.2s ease;
+}
+[data-daypart="dawn"]  .lux-hero-scrim::before {
+  opacity: 1;
+  background: linear-gradient(170deg, rgba(255,196,120,.30) 0%, rgba(255,170,110,.10) 34%, transparent 62%);
+}
+[data-daypart="day"]   .lux-hero-scrim::before {
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(190,220,255,.14) 0%, transparent 48%);
+}
+[data-daypart="dusk"]  .lux-hero-scrim::before {
+  opacity: 1;
+  background: linear-gradient(165deg, rgba(255,150,90,.30) 0%, rgba(190,90,120,.16) 38%, transparent 68%);
+}
+[data-daypart="night"] .lux-hero-scrim::before {
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(10,26,58,.52) 0%, rgba(8,18,42,.26) 46%, rgba(6,12,30,.42) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-veil span { animation: none; }
 }
 .lux-hero-inner {
   position: relative; z-index: 2; width: 100%;

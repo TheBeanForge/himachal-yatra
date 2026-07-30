@@ -273,16 +273,43 @@ document.addEventListener('DOMContentLoaded', () => {
     else window.addEventListener('load', startSlides, { once: true });
   }
 
-  // ── Hero parallax (scroll) ──
-  const heroBg = document.querySelector('.lux-hero .hero-bg, .dest-hero-bg');
+  // ── Time-of-day hero lighting ──
+  // Uses the visitor's own clock, so the hero is lit roughly as the mountain
+  // would be while they're looking at it. CSS does the rest via [data-daypart].
+  const hour = new Date().getHours();
+  document.documentElement.dataset.daypart =
+    hour < 5  ? 'night' :
+    hour < 8  ? 'dawn'  :
+    hour < 17 ? 'day'   :
+    hour < 20 ? 'dusk'  : 'night';
+
+  // ── Hero depth parallax (scroll) ──
+  // The photo, the drifting veil and the headline travel at different rates.
+  // Real depth needs layered art we don't have, so differential speed between
+  // the planes does the work instead — the illusion holds because the eye
+  // reads relative motion, not absolute.
+  const heroBg    = document.querySelector('.lux-hero .hero-bg, .dest-hero-bg');
+  const heroVeil  = document.querySelector('.hero-veil');
+  const heroInner = document.querySelector('.lux-hero-inner');
   if (heroBg && !reduceMotion) {
     let ticking = false;
+    const limit = () => window.innerHeight * 1.2;
     window.addEventListener('scroll', () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
         const y = window.scrollY;
-        if (y < window.innerHeight * 1.2) heroBg.style.setProperty('translate', `0 ${y * 0.18}px`);
+        if (y < limit()) {
+          heroBg.style.setProperty('translate', `0 ${y * 0.18}px`);
+          // Veil drifts faster than the ridge behind it — nearer to the eye.
+          if (heroVeil) heroVeil.style.setProperty('translate', `0 ${y * 0.30}px`);
+          // Copy rises slightly and fades as it leaves, so the hero hands the
+          // page over rather than just scrolling off.
+          if (heroInner) {
+            heroInner.style.setProperty('translate', `0 ${y * -0.07}px`);
+            heroInner.style.opacity = String(Math.max(0, 1 - y / (window.innerHeight * 0.72)));
+          }
+        }
         ticking = false;
       });
     }, { passive: true });
