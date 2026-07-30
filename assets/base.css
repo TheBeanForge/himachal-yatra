@@ -16,6 +16,37 @@
    uses modals, alerts, tabs and data-bs-* wiring.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ── Reboot essentials ──────────────────────────────────────────────────────
+   Bootstrap also shipped Reboot, a reset. Most of it was already redundant:
+   style.css line 281 declares `* { box-sizing:border-box; margin:0; padding:0 }`,
+   which loads afterwards and wipes every margin Reboot set.
+
+   Three things it did NOT cover, and browsers do not do on their own:
+
+   1. Form controls default to the SYSTEM UI font, not the inherited one. The
+      review form, the newsletter input and the star selector set no font of
+      their own, so without this they render in Arial/Segoe instead of Manrope.
+   2. <summary> gets its pointer cursor from Reboot. The FAQ is built on
+      <details>, so losing it makes the questions look unclickable.
+   3. Buttons need cursor:pointer and the button appearance reset.
+
+   Everything else in Reboot was either redundant or unused here. */
+button, input, optgroup, select, textarea {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+button { border-radius: 0; }
+[type="button"], [type="reset"], [type="submit"], button { -webkit-appearance: button; }
+[type="button"]:not(:disabled), [type="reset"]:not(:disabled),
+[type="submit"]:not(:disabled), button:not(:disabled) { cursor: pointer; }
+summary { display: list-item; cursor: pointer; }
+b, strong { font-weight: bolder; }
+table { caption-side: bottom; border-collapse: collapse; }
+label { display: inline-block; }         /* star-rating label is bare */
+textarea { resize: vertical; }           /* review textarea would resize both ways */
+
 /* ── Layout container (Bootstrap .container; max-width set by style.css) ── */
 .container {
   width: 100%;
