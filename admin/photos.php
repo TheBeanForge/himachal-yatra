@@ -256,6 +256,7 @@ $page_title = 'Photo Gallery';
             'home_story'   => 'Story image',
             'home_banner'  => 'Scenic banner',
             'home_contact' => 'Contact background',
+            'tirthan_hero' => 'Tirthan Valley card',
           ];
         ?>
         <div class="ov-row">

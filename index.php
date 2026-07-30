@@ -105,7 +105,7 @@ $homeContactImg = slot_img_src($conn ?? null, 'home_contact', 'https://images.un
 $lux_dest = [
     ['title' => 'Shimla',        'href' => 'shimla.php', 'img' => slot_img_src($conn ?? null, 'shimla_hero', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?auto=format&fit=crop&w=900&q=80'), 'desc' => 'The colonial Queen of Hills — Mall Road evenings, cedar ridges and toy-train mornings.'],
     ['title' => 'Spiti Valley',  'href' => 'spiti.php',  'img' => slot_img_src($conn ?? null, 'spiti_hero',  'https://images.unsplash.com/photo-1504457047772-27faf1c00561?auto=format&fit=crop&w=900&q=80'), 'desc' => 'A high-desert wilderness of monasteries, cobalt skies and roads few ever travel.'],
-    ['title' => 'Tirthan Valley', 'href' => '',          'img' => 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?auto=format&fit=crop&w=900&q=80', 'desc' => 'Trout streams, slow mornings and forest stays on the quiet edge of the Great Himalayan National Park.'],
+    ['title' => 'Tirthan Valley', 'href' => '',          'img' => slot_img_src($conn ?? null, 'tirthan_hero', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?auto=format&fit=crop&w=900&q=80'), 'desc' => 'Trout streams, slow mornings and forest stays on the quiet edge of the Great Himalayan National Park.'],
 ];
 
 $lux_why = [

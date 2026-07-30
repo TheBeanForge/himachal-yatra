@@ -9,15 +9,26 @@ header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 
 /*
- * Local XAMPP configuration. For himachalsafar.in use vars-production.php
- * (saved in your Downloads folder) — upload it to the server as
- * includes/vars.php when deploying.
+ * Database credentials.
+ *
+ * The live server keeps its real credentials in includes/db-config.php, which
+ * is git-ignored and therefore never committed. When that file is absent —
+ * local XAMPP, or a fresh clone — we fall back to the local defaults below,
+ * so the project runs immediately after checkout with no secrets in the repo.
+ *
+ * Deploying: create includes/db-config.php on the server once. Being ignored,
+ * it survives every later git pull.
  */
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'tourismsite');
-define('DB_PORT', 3306);
+if (is_file(__DIR__ . '/db-config.php')) {
+    require __DIR__ . '/db-config.php';
+} else {
+    // Local XAMPP
+    define('DB_HOST', 'localhost');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+    define('DB_NAME', 'tourismsite');
+    define('DB_PORT', 3306);
+}
 
 define('AGENCY_WHATSAPP', '919876543210');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
@@ -121,7 +132,7 @@ const PHOTO_DESTS    = ['manali','shimla','dharamshala','dalhousie','spiti','gen
 const PHOTO_SLOT_CAP = ['home_hero' => 5];
 
 // Extra single-photo homepage slots (general bucket) — admin-replaceable decorative images.
-const PHOTO_HOME_EXTRA = ['home_story', 'home_banner', 'home_contact'];
+const PHOTO_HOME_EXTRA = ['home_story', 'home_banner', 'home_contact', 'tirthan_hero'];
 
 // Per-destination fallback covers — used ONLY when no admin photo is uploaded yet,
 // so destination pages never render a broken <img>.

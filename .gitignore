@@ -2,6 +2,9 @@
 uploads/*
 !uploads/.htaccess
 
+# Live DB credentials — created on the server, never committed
+includes/db-config.php
+
 # IDE
 .idea/
 *.iml
