@@ -138,5 +138,9 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
   <!-- Pre-chat WhatsApp lead popup (site-wide) -->
   <?php require __DIR__ . '/wa_lead_modal.php'; ?>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+  <?php /* Bootstrap's JS bundle (79 KB) was loaded on every public page but
+           nothing here used it: the navbar, hamburger and dropdowns are all
+           vanilla in script.js, and no public template contains a single
+           data-bs-* attribute. The admin panel still loads it — it genuinely
+           uses Bootstrap modals, alerts and tabs. */ ?>
   <script src="script.js?v=<?php echo @filemtime(__DIR__ . '/../script.js'); ?>" defer></script>
