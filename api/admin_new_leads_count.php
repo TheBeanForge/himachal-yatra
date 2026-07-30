@@ -16,9 +16,9 @@ require_once __DIR__ . '/../includes/vars.php';
 $count = 0;
 if ($conn instanceof mysqli) {
     try {
-        // is_read is added by enquiries.php's self-migration; until the admin
-        // first opens that page the column may not exist yet → badge stays 0.
-        $count = (int)($conn->query("SELECT COUNT(*) c FROM booking_enquiries WHERE is_read=0")->fetch_assoc()['c'] ?? 0);
+        // is_read / deleted_at are added by enquiries.php's self-migration; until the
+        // admin first opens that page the columns may not exist yet → badge stays 0.
+        $count = (int)($conn->query("SELECT COUNT(*) c FROM booking_enquiries WHERE is_read=0 AND deleted_at IS NULL")->fetch_assoc()['c'] ?? 0);
     } catch (mysqli_sql_exception) {}
 }
 echo json_encode(['count' => $count]);

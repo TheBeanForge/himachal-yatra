@@ -8,6 +8,7 @@ $csrf = admin_csrf_token();
 try { $conn->query("ALTER TABLE tour_packages ADD COLUMN destination_key VARCHAR(50) NULL"); } catch (Throwable) {}
 try { $conn->query("ALTER TABLE booking_enquiries MODIFY COLUMN status ENUM('new','contacted','quoted','confirmed','closed','cancelled') DEFAULT 'new'"); } catch (Throwable) {}
 try { $conn->query("ALTER TABLE booking_enquiries ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0"); } catch (Throwable) {}
+try { $conn->query("ALTER TABLE booking_enquiries ADD COLUMN deleted_at DATETIME NULL DEFAULT NULL"); } catch (Throwable) {}
 
 // Opening the leads inbox marks everything as read — the sidebar bell badge
 // counts unread leads only, so it clears here and re-lights on the next
@@ -97,9 +98,34 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='update_stat
     header('Content-Type: application/json'); echo json_encode(['ok'=>true]); exit;
 }
 
+// Bulk soft-delete / restore / permanent-purge — shared by the single-row trash
+// icon and the multi-select toolbar (both send an ids[] array).
+if ($_SERVER['REQUEST_METHOD']==='POST' && in_array($_POST['action']??'', ['bulk_delete','bulk_restore','bulk_purge'], true)) {
+    require_admin_csrf();
+    $action = $_POST['action'];
+    $ids = array_values(array_unique(array_filter(array_map('intval', (array)($_POST['ids']??[])))));
+    if (!$ids) { header('Content-Type: application/json'); echo json_encode(['ok'=>false,'error'=>'No leads selected.']); exit; }
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $types = str_repeat('i', count($ids));
+    if ($action === 'bulk_delete') {
+        $s = $conn->prepare("UPDATE booking_enquiries SET deleted_at=NOW() WHERE id IN ($placeholders) AND deleted_at IS NULL");
+        $s->bind_param($types, ...$ids); $s->execute(); $n=$s->affected_rows; $s->close();
+        audit_log('lead_soft_delete', 'ids='.implode(',',$ids));
+    } elseif ($action === 'bulk_restore') {
+        $s = $conn->prepare("UPDATE booking_enquiries SET deleted_at=NULL WHERE id IN ($placeholders)");
+        $s->bind_param($types, ...$ids); $s->execute(); $n=$s->affected_rows; $s->close();
+        audit_log('lead_restore', 'ids='.implode(',',$ids));
+    } else { // bulk_purge — only ever allowed on already-trashed rows
+        $s = $conn->prepare("DELETE FROM booking_enquiries WHERE id IN ($placeholders) AND deleted_at IS NOT NULL");
+        $s->bind_param($types, ...$ids); $s->execute(); $n=$s->affected_rows; $s->close();
+        audit_log('lead_purge', 'ids='.implode(',',$ids));
+    }
+    header('Content-Type: application/json'); echo json_encode(['ok'=>true,'affected'=>$n]); exit;
+}
+
 // CSV Export
 if (($_GET['export']??'')==='csv') {
-    $rows=$conn->query("SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id ORDER BY be.created_at DESC, be.id DESC")->fetch_all(MYSQLI_ASSOC);
+    $rows=$conn->query("SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,COALESCE(pl.city,be.pickup_custom) AS pickup_city,v.vehicle_name FROM booking_enquiries be LEFT JOIN tour_packages tp ON be.package_id=tp.id LEFT JOIN pickup_locations pl ON be.pickup_location_id=pl.id LEFT JOIN vehicles v ON be.vehicle_id=v.id WHERE be.deleted_at IS NULL ORDER BY be.created_at DESC, be.id DESC")->fetch_all(MYSQLI_ASSOC);
     $conn->close();
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="enquiries_'.date('Y-m-d').'.csv"');
@@ -110,11 +136,13 @@ if (($_GET['export']??'')==='csv') {
 }
 
 // Filters
+$trash_f   = ($_GET['trash']??'')==='1';
 $status_f  = $_GET['status']??'';
 $dest_f    = trim($_GET['dest']??'');
 $source_f  = $_GET['source']??'';
 $search_f  = trim($_GET['q']??'');
 $where=[]; $params=[]; $types='';
+$where[] = $trash_f ? 'be.deleted_at IS NOT NULL' : 'be.deleted_at IS NULL';
 if(in_array($status_f,['new','contacted','quoted','confirmed','closed'],true)){ $where[]='be.status=?'; $params[]=$status_f; $types.='s'; }
 if(in_array($source_f,['calculator','whatsapp','direct_call'],true)){ $where[]='be.source=?'; $params[]=$source_f; $types.='s'; }
 if($dest_f){ $where[]='tp.destination_key=?'; $params[]=$dest_f; $types.='s'; }
@@ -124,8 +152,9 @@ $sql="SELECT be.*,COALESCE(tp.package_name,be.trip_destination) AS package_name,
 $stmt=$conn->prepare($sql);
 if($params) $stmt->bind_param($types,...$params);
 $stmt->execute(); $rows=$stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
-$counts=$conn->query("SELECT status,COUNT(*) c FROM booking_enquiries GROUP BY status")->fetch_all(MYSQLI_ASSOC);
+$counts=$conn->query("SELECT status,COUNT(*) c FROM booking_enquiries WHERE deleted_at IS NULL GROUP BY status")->fetch_all(MYSQLI_ASSOC);
 $ct=array_column($counts,'c','status');
+$trashCount=(int)($conn->query("SELECT COUNT(*) c FROM booking_enquiries WHERE deleted_at IS NOT NULL")->fetch_assoc()['c']??0);
 try { $dests=array_column($conn->query("SELECT DISTINCT destination_key FROM tour_packages WHERE destination_key IS NOT NULL AND destination_key!='' ORDER BY destination_key")->fetch_all(MYSQLI_NUM), 0); }
 catch(mysqli_sql_exception){ $dests=[]; }
 
@@ -138,7 +167,7 @@ try {
     $r = $conn->query(
         "SELECT DATE(created_at) d, COUNT(*) c, COALESCE(SUM(estimated_price),0) s
            FROM booking_enquiries
-          WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
+          WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY) AND deleted_at IS NULL
           GROUP BY DATE(created_at)"
     )->fetch_all(MYSQLI_ASSOC);
     $byDay = array_column($r, null, 'd');
@@ -234,14 +263,28 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
 
   <!-- Header -->
   <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-    <div><h1 class="admin-page-title mb-0">Leads</h1><p class="admin-page-sub mb-0">Calculator, WhatsApp &amp; direct-call leads — <?= array_sum($ct) ?> total</p></div>
+    <div>
+      <h1 class="admin-page-title mb-0"><?= $trash_f ? 'Trash' : 'Leads' ?></h1>
+      <p class="admin-page-sub mb-0"><?= $trash_f
+        ? 'Deleted leads — restore or remove permanently.'
+        : 'Calculator, WhatsApp &amp; direct-call leads — ' . array_sum($ct) . ' total' ?></p>
+    </div>
     <div class="d-flex gap-2 flex-wrap">
+      <?php if (!$trash_f): ?>
       <button type="button" class="btn-primary-gold" data-bs-toggle="modal" data-bs-target="#addLeadModal">
         <i class="fas fa-phone-volume"></i> Log Call Lead
       </button>
       <a href="?export=csv<?=$status_f?"&status=$status_f":''?>" class="btn btn-sm d-inline-flex align-items-center" style="border:1.5px solid var(--border);color:var(--muted);font-size:12px">
         <i class="fas fa-download">&nbsp;</i> Export CSV
       </a>
+      <a href="?trash=1" class="btn btn-sm d-inline-flex align-items-center" style="border:1.5px solid var(--border);color:var(--muted);font-size:12px">
+        <i class="fas fa-trash">&nbsp;</i> Trash<?= $trashCount ? " ($trashCount)" : '' ?>
+      </a>
+      <?php else: ?>
+      <a href="enquiries.php" class="btn btn-sm d-inline-flex align-items-center" style="border:1.5px solid var(--border);color:var(--muted);font-size:12px">
+        <i class="fas fa-arrow-left">&nbsp;</i> Back to Leads
+      </a>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -249,6 +292,7 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
   <div class="alert alert-<?=$lt==='ok'?'success':'danger'?> alert-dismissible fade show py-2 mb-3"><?=h($ltx)?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
   <?php endif; ?>
 
+  <?php if (!$trash_f): ?>
   <!-- Stats -->
   <div class="d-flex gap-3 flex-wrap mb-4">
     <?php $total=array_sum($ct); ?>
@@ -286,14 +330,18 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
     </div>
     <div class="enq-tip" id="enqTip" hidden></div>
   </div>
+  <?php endif; ?>
 
   <!-- Filters -->
   <form method="get" class="d-flex gap-2 flex-wrap mb-3">
+    <?php if ($trash_f): ?><input type="hidden" name="trash" value="1"><?php endif; ?>
     <input type="text" name="q" value="<?=h($search_f)?>" placeholder="Search name, phone, package…" class="form-control admin-input" style="max-width:220px">
+    <?php if (!$trash_f): ?>
     <select name="status" class="form-select admin-input" style="max-width:140px">
       <option value="">All Status</option>
       <?php foreach($STATUS_LABELS as $k=>$v):?><option value="<?=$k?>" <?=$status_f===$k?'selected':''?>><?=$v?></option><?php endforeach;?>
     </select>
+    <?php endif; ?>
     <select name="dest" class="form-select admin-input" style="max-width:150px">
       <option value="">All Destinations</option>
       <?php foreach($dests as $dk):?><option value="<?=h($dk)?>" <?=$dest_f===$dk?'selected':''?>><?=ucfirst($dk)?></option><?php endforeach;?>
@@ -305,24 +353,37 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
       <option value="direct_call" <?=$source_f==='direct_call'?'selected':''?>>Direct Call</option>
     </select>
     <button class="btn btn-primary-gold btn-sm" type="submit"><i class="fas fa-search"></i> Filter</button>
-    <a href="enquiries.php" class="btn btn-sm" style="border:1px solid var(--border);color:var(--muted)">Clear</a>
+    <a href="<?= $trash_f ? '?trash=1' : 'enquiries.php' ?>" class="btn btn-sm" style="border:1px solid var(--border);color:var(--muted)">Clear</a>
   </form>
+
+  <!-- Bulk action toolbar — appears once at least one row is checked -->
+  <div id="bulkBar" class="d-flex align-items-center gap-2 mb-3" hidden style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px 14px">
+    <span id="bulkCount" style="font-size:12.5px;font-weight:700;color:var(--ink)"></span>
+    <?php if ($trash_f): ?>
+      <button type="button" id="bulkRestoreBtn" class="btn btn-sm btn-primary-gold"><i class="fas fa-trash-arrow-up"></i> Restore</button>
+      <button type="button" id="bulkPurgeBtn" class="btn btn-sm" style="border:1.5px solid #dc3545;color:#dc3545"><i class="fas fa-fire"></i> Delete Permanently</button>
+    <?php else: ?>
+      <button type="button" id="bulkDeleteBtn" class="btn btn-sm" style="border:1.5px solid #dc3545;color:#dc3545"><i class="fas fa-trash"></i> Delete Selected</button>
+    <?php endif; ?>
+  </div>
 
   <div class="admin-card">
     <div class="table-responsive">
       <table class="table mb-0" style="font-size:13px">
         <thead><tr>
+          <th style="width:34px"><input type="checkbox" id="selectAll" class="form-check-input"></th>
           <?php foreach(['#','Date','Source','Customer','Destination','Trip','Vehicle','Est. Total','Status','Actions'] as $h):?>
           <th style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted);white-space:nowrap<?= $h==='Actions'?';text-align:center':'' ?>"><?=$h?></th>
           <?php endforeach;?>
         </tr></thead>
         <tbody>
-        <?php if(!$rows):?><tr><td colspan="10" class="text-center py-5" style="color:var(--muted)">No enquiries found.</td></tr><?php endif;?>
+        <?php if(!$rows):?><tr><td colspan="11" class="text-center py-5" style="color:var(--muted)"><?= $trash_f ? 'Trash is empty.' : 'No enquiries found.' ?></td></tr><?php endif;?>
         <?php foreach($rows as $r):
           $bd=!empty($r['breakdown_json'])?json_decode($r['breakdown_json'],true):null;
           $st=$r['status']??'new';
         ?>
         <tr>
+          <td><input type="checkbox" class="form-check-input row-check" value="<?=(int)$r['id']?>"></td>
           <td style="color:var(--muted);font-size:12px"><?=(int)$r['id']?></td>
           <td style="white-space:nowrap;font-size:12px;color:var(--muted)"><?=date('d M Y',strtotime($r['created_at']))?><br><?=date('h:i A',strtotime($r['created_at']))?></td>
           <td>
@@ -359,14 +420,19 @@ $STATUS_COLORS=['new'=>'#B8A16A','contacted'=>'#f59e0b','quoted'=>'#8b5cf6','con
             <?php else:?><span style="color:var(--muted);font-weight:400">—</span><?php endif;?>
           </td>
           <td>
-            <select class="status-sel form-select admin-input" data-id="<?=(int)$r['id']?>" style="width:140px;font-size:12px">
+            <select class="status-sel form-select admin-input" data-id="<?=(int)$r['id']?>" style="width:140px;font-size:12px" <?= $trash_f ? 'disabled' : '' ?>>
               <?php foreach($STATUS_LABELS as $sk=>$sl):?>
               <option value="<?=$sk?>" <?=$st===$sk?'selected':''?>><?=$sl?></option>
               <?php endforeach;?>
             </select>
           </td>
-          <td class="text-center">
+          <td class="text-center text-nowrap">
             <button class="btn btn-sm btn-icon" title="View Breakdown" onclick='viewBreakdown(<?=json_encode($r)?>)'><i class="fas fa-eye"></i></button>
+            <?php if ($trash_f): ?>
+            <button class="btn btn-sm btn-icon" title="Restore" data-restore-id="<?=(int)$r['id']?>"><i class="fas fa-trash-arrow-up"></i></button>
+            <?php else: ?>
+            <button class="btn btn-sm btn-icon" title="Delete" style="color:#dc3545" data-delete-id="<?=(int)$r['id']?>"><i class="fas fa-trash"></i></button>
+            <?php endif; ?>
           </td>
         </tr>
         <?php endforeach;?>
@@ -492,6 +558,63 @@ document.querySelectorAll('.status-sel').forEach(sel=>{
     await fetch('enquiries.php',{method:'POST',body:fd});
   });
 });
+
+// ── Row selection + soft-delete / restore / purge ──
+(function(){
+  const isTrash    = <?= $trash_f ? 'true' : 'false' ?>;
+  const selectAll  = document.getElementById('selectAll');
+  const rowChecks  = () => Array.from(document.querySelectorAll('.row-check'));
+  const bulkBar    = document.getElementById('bulkBar');
+  const bulkCount  = document.getElementById('bulkCount');
+
+  function selectedIds(){ return rowChecks().filter(c=>c.checked).map(c=>c.value); }
+
+  function syncBulkBar(){
+    const n = selectedIds().length;
+    bulkBar.hidden = n === 0;
+    bulkCount.textContent = n + (n===1 ? ' lead selected' : ' leads selected');
+    if (selectAll) selectAll.checked = n>0 && n===rowChecks().length;
+  }
+
+  if (selectAll) selectAll.addEventListener('change', function(){
+    rowChecks().forEach(c => c.checked = selectAll.checked);
+    syncBulkBar();
+  });
+  rowChecks().forEach(c => c.addEventListener('change', syncBulkBar));
+
+  async function sendAction(action, ids){
+    const fd = new FormData();
+    fd.append('action', action);
+    fd.append('csrf_token', csrfToken);
+    ids.forEach(id => fd.append('ids[]', id));
+    const res = await fetch('enquiries.php', { method:'POST', body: fd });
+    const data = await res.json().catch(()=>({ok:false}));
+    if (data.ok) location.reload();
+    else alert(data.error || 'Something went wrong.');
+  }
+
+  document.getElementById('bulkDeleteBtn')?.addEventListener('click', function(){
+    const ids = selectedIds();
+    if (ids.length && confirm(`Delete ${ids.length} lead(s)? They'll move to Trash and can be restored later.`)) sendAction('bulk_delete', ids);
+  });
+  document.getElementById('bulkRestoreBtn')?.addEventListener('click', function(){
+    const ids = selectedIds();
+    if (ids.length) sendAction('bulk_restore', ids);
+  });
+  document.getElementById('bulkPurgeBtn')?.addEventListener('click', function(){
+    const ids = selectedIds();
+    if (ids.length && confirm(`Permanently delete ${ids.length} lead(s)? This cannot be undone.`)) sendAction('bulk_purge', ids);
+  });
+
+  document.querySelectorAll('[data-delete-id]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      if (confirm('Delete this lead? It will move to Trash and can be restored later.')) sendAction('bulk_delete', [this.dataset.deleteId]);
+    });
+  });
+  document.querySelectorAll('[data-restore-id]').forEach(btn=>{
+    btn.addEventListener('click', function(){ sendAction('bulk_restore', [this.dataset.restoreId]); });
+  });
+})();
 
 // Breakdown viewer
 function viewBreakdown(r){
