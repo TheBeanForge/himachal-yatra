@@ -96,6 +96,53 @@
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent);
 }
 
+/* ── SEASONAL MODIFIERS ──────────────────────────────────────────────────────
+   Set by includes/vars.php as <html data-season>. These are deliberately
+   MODIFIERS over whichever theme is active, not four extra palettes — four
+   seasons x four themes would otherwise be sixteen combinations to audit.
+   Each season nudges the gold's warmth and supplies a hero wash; everything
+   else keeps working off the theme tokens untouched.
+
+   Month bands match the "Best Time to Visit" grids already published on the
+   destination pages, so the site never contradicts its own travel advice. */
+[data-season="summer"] {
+  --season-wash: linear-gradient(180deg, rgba(190,220,255,.10) 0%, transparent 52%);
+  --season-tint: transparent;
+}
+[data-season="monsoon"] {
+  /* Honest low season — the destination pages already warn about landslides.
+     Cooler, softer, deliberately less sparkle. */
+  --season-wash: linear-gradient(180deg, rgba(96,124,156,.26) 0%, rgba(70,96,126,.12) 46%, transparent 74%);
+  --season-tint: rgba(120,146,175,.10);
+}
+[data-season="autumn"] {
+  /* The connoisseur's window: clear skies, low crowds. The brand's own register. */
+  --season-wash: linear-gradient(172deg, rgba(214,150,74,.20) 0%, rgba(180,116,60,.08) 40%, transparent 70%);
+  --season-tint: rgba(206,150,86,.07);
+}
+[data-season="winter"] {
+  /* Highest emotional pull — cold blue light, higher contrast. */
+  --season-wash: linear-gradient(180deg, rgba(150,186,224,.22) 0%, rgba(96,132,178,.10) 44%, transparent 76%);
+  --season-tint: rgba(150,186,224,.09);
+}
+
+/* Deliberately NOT tinted per season: --gold and its ramp.
+   Each theme picks its own gold for contrast against its own ground — light
+   uses a much darker #A98330 than dark's #D8B36A. A seasonal override would
+   have to hardcode one theme's value and would then wreck the others' text
+   contrast, and CSS cannot re-derive a token from itself. Seasons therefore
+   express through additive washes, which are theme-independent and cannot
+   affect the contrast of any text. */
+
+/* The wash rides over the hero image, beneath the readability scrim, so it
+   changes the light without ever touching text contrast. */
+.lux-hero-scrim::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--season-wash, transparent);
+  transition: background 1.2s ease;
+  pointer-events: none;
+}
+
 /* Site-wide keyboard focus. :focus-visible keeps it off mouse clicks. */
 a:focus-visible,
 button:focus-visible,

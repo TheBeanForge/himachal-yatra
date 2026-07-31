@@ -27,7 +27,7 @@ function package_dummy_image(array $package, int $index): string {
 }
 }
 ?><!doctype html>
-<html lang="en">
+<html lang="en" data-season="<?php echo h(current_season()); ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

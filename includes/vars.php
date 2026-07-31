@@ -131,6 +131,34 @@ function audit_log(string $action, string $details = ''): void {
 const PHOTO_DESTS    = ['manali','shimla','dharamshala','dalhousie','spiti','general'];
 const PHOTO_SLOT_CAP = ['home_hero' => 5];
 
+/*
+ * Which season the site is dressed in. One adaptive experience, not four
+ * separate sites: this resolves to a single token that CSS reads off
+ * <html data-season>, exactly as data-theme already works.
+ *
+ * The month bands match the ones the destination pages already publish in
+ * their "Best Time to Visit" grids, so the site never contradicts its own
+ * travel advice.
+ *
+ * Resolution order:
+ *   1. ?season= — for QA and campaign landing pages
+ *   2. visitor's date (server month)
+ * Destination-aware overrides (Spiti reading winter-closed in January
+ * regardless of date) come with the destination templating work.
+ */
+const SEASONS = ['summer', 'monsoon', 'autumn', 'winter'];
+
+function current_season(?int $month = null): string {
+    $q = strtolower(trim($_GET['season'] ?? ''));
+    if (in_array($q, SEASONS, true)) return $q;
+
+    $m = $month ?? (int) date('n');
+    if ($m >= 3  && $m <= 6)  return 'summer';   // Mar–Jun · passes open, peak
+    if ($m >= 7  && $m <= 9)  return 'monsoon';  // Jul–Sep · rain, landslide risk
+    if ($m >= 10 && $m <= 11) return 'autumn';   // Oct–Nov · clear, few crowds
+    return 'winter';                             // Dec–Feb · snow
+}
+
 // Extra single-photo homepage slots (general bucket) — admin-replaceable decorative images.
 const PHOTO_HOME_EXTRA = ['home_story', 'home_banner', 'home_contact', 'tirthan_hero'];
 

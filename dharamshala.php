@@ -8,7 +8,7 @@ if ($conn instanceof mysqli) {
     $conn->close();
 }
 ?><!doctype html>
-<html lang="en">
+<html lang="en" data-season="<?php echo h(current_season()); ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
