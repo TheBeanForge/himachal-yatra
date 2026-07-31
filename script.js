@@ -397,6 +397,17 @@ document.addEventListener('DOMContentLoaded', () => {
     lqTrack.addEventListener('scroll', syncLq, { passive: true });
     syncLq();
 
+    // With three or fewer reviews everything already fits, so the arrows and
+    // dots would be dead controls — hide them. Re-checked on resize, since the
+    // number of visible cards changes at the 992px and 700px breakpoints.
+    const syncLqControls = () => {
+      const scrollable = lqTrack.scrollWidth > lqTrack.clientWidth + 4;
+      lqTrack.closest('.lux-quotes-wrap')?.classList.toggle('lq-static', !scrollable);
+      syncLq();
+    };
+    syncLqControls();
+    window.addEventListener('resize', syncLqControls, { passive: true });
+
     document.getElementById('lqPrev')?.addEventListener('click', () => { stopLqAuto(); lqTrack.scrollBy({ left: -step() }); });
     document.getElementById('lqNext')?.addEventListener('click', () => { stopLqAuto(); lqTrack.scrollBy({ left: step() }); });
 

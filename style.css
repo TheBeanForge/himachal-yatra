@@ -997,23 +997,33 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
   flex: 0 0 calc((100% - 56px) / 3);
   scroll-snap-align: start;
 }
+/* Three reviews sit in view; the arrows page through the rest.
+   These used to be low-contrast glass sitting half outside the container, so
+   they read as decoration and the reviews behind them went unseen. Now they
+   are solid gold discs, fully inside the frame, and sized for touch. */
 .lq-nav {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
-  width: 46px; height: 46px; border-radius: 50%;
+  width: 52px; height: 52px; border-radius: 50%;
   display: grid; place-items: center; cursor: pointer;
-  background: var(--glass-grad);
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-  border: var(--glass-brd);
-  color: var(--charcoal); font-size: 14px;
-  box-shadow: var(--shadow);
-  transition: background .25s, color .25s, transform .25s, opacity .25s;
+  background: var(--grad-gold);
+  border: none;
+  color: #10151d; font-size: 16px;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--gold) 45%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.35);
+  transition: background var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out),
+              opacity var(--dur-base) var(--ease-out);
 }
-.lq-nav:hover { background: var(--grad-gold); color: #10151d; }
-.lq-prev { left: -14px; }
-.lq-next { right: -14px; }
-.lq-prev:hover { transform: translateY(-50%) scale(1.06); }
-.lq-next:hover { transform: translateY(-50%) scale(1.06); }
-.lq-nav[disabled] { opacity: .35; pointer-events: none; }
+.lq-nav:hover { transform: translateY(-50%) scale(1.09); }
+.lq-nav:active { transform: translateY(-50%) scale(.97); }
+.lq-prev { left: 6px; }
+.lq-next { right: 6px; }
+/* Nothing left to page to — fade back rather than vanish, so the control's
+   position stays predictable. */
+.lq-nav[disabled] { opacity: .28; pointer-events: none; box-shadow: none; }
+/* Fewer reviews than fit on screen: hide the arrows entirely (set by script.js). */
+.lux-quotes-wrap.lq-static .lq-nav,
+.lux-quotes-wrap.lq-static + .lq-dots { display: none; }
 .lq-dots { display: flex; justify-content: center; gap: 8px; margin-top: 18px; }
 .lq-dot {
   width: 7px; height: 7px; border-radius: 999px; border: 0; padding: 0; cursor: pointer;
@@ -1026,7 +1036,12 @@ body.bright-bg .site-nav > .container { background: rgba(255,255,255,.72); }
 }
 @media (max-width: 700px) {
   .lux-quotes-grid .lux-quote { flex-basis: 86%; }
-  .lq-nav { display: none; }
+  /* Arrows stay — they were hidden here, which is exactly where "there are more
+     reviews than I can see" bites hardest. Shrunk and tucked to the edges so
+     they clear the card's text. Swiping still works alongside them. */
+  .lq-nav { width: 40px; height: 40px; font-size: 13px; }
+  .lq-prev { left: 0; }
+  .lq-next { right: 0; }
 }
 .lux-quote {
   position: relative; margin: 0; padding: 48px 32px 34px;
