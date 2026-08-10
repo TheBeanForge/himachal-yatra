@@ -1495,6 +1495,9 @@ document.getElementById('cqSubmitBtn').addEventListener('click', async()=>{
     if(res.ok&&json.ok){
       cqSubmitted=true;
       lsSet('cqDone','1');            // enquiry submitted → never auto-open again
+      // Google Ads lead conversion — fires here, on a real submitted enquiry,
+      // rather than on every pageview. See trackLeadConversion in script.js.
+      window.trackLeadConversion?.('quote_form');
       fillSuccess(json);
       show('success');
       cqCard.scrollIntoView({behavior:'smooth',block:'start'});

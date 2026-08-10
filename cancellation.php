@@ -29,7 +29,8 @@ require_once 'includes/vars.php';
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-4GZDXE68YZ');
+    gtag('config', 'G-4GZDXE68YZ');   // GA4 — analytics
+    gtag('config', 'AW-18335368848');  // Google Ads — conversion tracking
   </script>
 </head>
 <body data-wa="<?php echo h($whatsappNumber); ?>">

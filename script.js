@@ -9,6 +9,26 @@ const DEFAULT_THEME  = 'dark';
   document.documentElement.setAttribute('data-theme', saved);
 })();
 
+/* ── Google Ads lead conversion ──────────────────────────────────────────────
+   Google generates this snippet for a "conversion page" — a dedicated thank-you
+   URL it can count once per lead. This site has no such page: enquiries submit
+   over AJAX and land on a success state inside the quote modal, so there is no
+   pageview to hang it on.
+
+   Dropping the raw snippet into every page's <head> would therefore fire on
+   every pageview and report every visitor as a lead, which corrupts
+   cost-per-conversion and anything Smart Bidding derives from it. Instead it
+   fires at the two moments a lead genuinely exists: a submitted enquiry, and a
+   captured WhatsApp lead.
+
+   Guarded so a repeat submission in the same page view is not counted twice. */
+window.trackLeadConversion = function (source) {
+  if (typeof gtag !== 'function' || window.__leadConversionSent) return;
+  window.__leadConversionSent = true;
+  gtag('event', 'conversion', { send_to: 'AW-18335368848/zMbhCIf-ldMcEJCN_qZE' });
+  if (source) gtag('event', 'generate_lead', { method: source });   // GA4 equivalent
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // Declared up front — the reveal, parallax, tilt, carousel and back-to-top

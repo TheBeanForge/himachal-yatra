@@ -177,6 +177,9 @@ form.addEventListener('submit', async function(e){
     if (res.ok && json.ok) {
       localStorage.setItem('waLeadDone','1');
       localStorage.setItem('waLeadName', name);
+      // Google Ads lead conversion — a captured WhatsApp lead is a real lead.
+      // Fired before go(), which navigates away to WhatsApp.
+      if (window.trackLeadConversion) window.trackLeadConversion('whatsapp');
       closeModal();
       go(waUrl(name, dest));
     } else {
