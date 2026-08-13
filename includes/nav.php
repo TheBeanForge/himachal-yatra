@@ -46,7 +46,6 @@ $al         = fn(string $id) => $base ? "index.php#{$id}" : "#{$id}";
         <li class="nav-item"><a class="nav-link <?php echo basename($_SERVER['PHP_SELF'])==='packages.php'?'active':''; ?>" href="packages.php">Packages</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('fleet'); ?>">Fleet</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('about'); ?>">Experiences</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?php echo $al('reviews'); ?>">Reviews</a></li>
         <li class="nav-item"><a class="nav-link" href="<?php echo $al('contact'); ?>">Contact</a></li>
       </ul>
 

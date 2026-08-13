@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Honeypot — silently accept and discard bot submissions.
 if (!empty($_POST['website'] ?? '')) { echo json_encode(['ok' => true]); exit; }
 
-// Same per-session token as the lead/review forms.
+// Same per-session token as the lead form.
 $sent = $_POST['csrf_token'] ?? '';
 $sess = $_SESSION['lead_form_token'] ?? '';
 if ($sess === '' || !hash_equals($sess, $sent)) {

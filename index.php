@@ -20,17 +20,6 @@ if ($conn instanceof mysqli) {
     }
 }
 
-// Load approved reviews (newest first). Falls back to a curated seed array when the table is empty / DB is down.
-$db_reviews = [];
-if ($conn instanceof mysqli) {
-    try {
-        $res = $conn->query("SELECT name, city, route, rating, review_text, photo FROM reviews WHERE status = 'approved' ORDER BY submitted_at DESC LIMIT 20");
-        if ($res) $db_reviews = $res->fetch_all(MYSQLI_ASSOC);
-    } catch (mysqli_sql_exception) {
-        // table may not exist yet — fall through to seed data
-    }
-}
-
 // FAQ content — retained for potential reuse, but the luxury homepage does not
 // render an FAQ block, so we DON'T emit FAQPage schema (no orphan rich snippet).
 $faqs = [
@@ -41,23 +30,6 @@ $faqs = [
   ['Do drivers know mountain and snow routes?', 'Our drivers are familiar with Himachal hill roads, long transfers, high-altitude routes and seasonal route changes. For snow or Spiti routes, we plan more carefully around access and weather.'],
 ];
 $seoFaq = $faqs; // FAQ restored in the luxury layout — emit FAQPage rich-snippet schema.
-
-// Honest aggregate rating for rich snippets — only from real approved reviews
-// that are actually shown on the page (avoids Google's fake-review penalties).
-$seoRatingValue = null; $seoRatingCount = 0; $seoReviews = [];
-if (!empty($db_reviews)) {
-    $sum = 0; foreach ($db_reviews as $r) $sum += (int) $r['rating'];
-    $seoRatingCount = count($db_reviews);
-    $seoRatingValue = round($sum / max(1, $seoRatingCount), 1);
-    // Up to 5 real approved reviews for honest Review rich-snippet markup.
-    foreach (array_slice($db_reviews, 0, 5) as $r) {
-        $seoReviews[] = [
-            'author' => $r['name'],
-            'rating' => (int) $r['rating'],
-            'text'   => $r['review_text'],
-        ];
-    }
-}
 
 // Load per-route photos from routes table
 $route_photos = [];
@@ -79,19 +51,6 @@ if ($conn instanceof mysqli) {
     } catch (mysqli_sql_exception) {
         // table may not exist yet
     }
-}
-
-// ── Testimonials: real approved reviews (editorial), else a curated fallback. ──
-$lux_reviews = [];
-foreach ($db_reviews as $r) {
-    $lux_reviews[] = ['name' => $r['name'], 'city' => $r['city'], 'text' => $r['review_text'], 'rating' => (int)($r['rating'] ?? 5), 'photo' => $r['photo'] ?? ''];
-}
-if (!$lux_reviews) {
-    $lux_reviews = [
-        ['name' => 'Anjali Kapoor', 'city' => 'Gurugram',   'text' => 'From the moment we landed, every detail was handled — a calm driver who knew the mountains, a stay with a view we still talk about, and an itinerary that never once felt rushed.', 'rating' => 5, 'photo' => ''],
-        ['name' => 'Vikash Gupta',  'city' => 'Lucknow',    'text' => 'Spiti demands real expertise. Our guide read the roads, the weather and the altitude perfectly. Nine days, and not a single anxious moment — only the landscape.', 'rating' => 5, 'photo' => ''],
-        ['name' => 'Priya Verma',   'city' => 'Chandigarh', 'text' => 'It felt less like booking a cab and more like having a friend in the hills plan everything for us. Quietly luxurious, exactly as promised.', 'rating' => 5, 'photo' => ''],
-    ];
 }
 
 // Homepage decorative images — admin-replaceable via Photo Gallery (general bucket),
@@ -396,91 +355,6 @@ $waLink = 'https://wa.me/' . h($whatsappNumber) . '?text=' . h($defaultMessage);
           </li>
           <?php endforeach; ?>
         </ol>
-      </div>
-    </section>
-
-    <!-- ═══ 6 · TESTIMONIALS ═══ -->
-    <section class="lux-section lux-quotes" id="reviews">
-      <div class="lux-container">
-        <div class="lux-head reveal">
-          <span class="lux-eyebrow">Guest Stories</span>
-          <h2 class="lux-h2">In Their Words</h2>
-        </div>
-        <div class="lux-quotes-wrap">
-          <button type="button" class="lq-nav lq-prev" id="lqPrev" aria-label="Previous reviews"><i class="fa-solid fa-arrow-left"></i></button>
-          <div class="lux-quotes-grid" id="lqTrack" tabindex="0" aria-label="Guest reviews">
-          <?php foreach ($lux_reviews as $rv):
-            $rvRating = max(0, min(5, (int)($rv['rating'] ?? 0))); ?>
-          <figure class="lux-quote reveal">
-            <span class="lux-quote-mark" aria-hidden="true">&ldquo;</span>
-            <blockquote><?= h($rv['text']) ?></blockquote>
-            <?php if (!empty($rv['photo'])): ?>
-            <div class="lux-quote-photo">
-              <img src="uploads/reviews/<?= h($rv['photo']) ?>" alt="Photo shared by <?= h($rv['name']) ?>" loading="lazy" decoding="async">
-            </div>
-            <?php endif; ?>
-            <?php if ($rvRating): ?>
-            <div class="lux-quote-stars" aria-label="<?= $rvRating ?> out of 5 stars">
-              <?php for ($s = 1; $s <= 5; $s++): ?>
-              <i class="fa-<?= $s <= $rvRating ? 'solid' : 'regular' ?> fa-star"></i>
-              <?php endfor; ?>
-            </div>
-            <?php endif; ?>
-            <figcaption><span><?= h($rv['name']) ?></span><?= $rv['city'] ? ' · ' . h($rv['city']) : '' ?></figcaption>
-          </figure>
-          <?php endforeach; ?>
-          </div>
-          <button type="button" class="lq-nav lq-next" id="lqNext" aria-label="Next reviews"><i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-        <div class="lq-dots" id="lqDots" aria-hidden="true"></div>
-      </div>
-    </section>
-
-    <!-- ═══ 6b · WRITE A REVIEW ═══ -->
-    <section class="lux-section lux-review" id="write-review">
-      <div class="lux-container lux-review-grid">
-        <div class="lux-review-intro reveal">
-          <span class="lux-eyebrow">Share Your Story</span>
-          <h2 class="lux-h2">Travelled With Us?</h2>
-          <p class="lux-body">Tell us about your route, your driver and the experience. Every review is read by our team and helps future travellers plan with confidence.</p>
-          <ul class="lux-review-perks">
-            <li><i class="fa-solid fa-circle-check"></i> Reviewed &amp; published within 24 hours</li>
-            <li><i class="fa-solid fa-circle-check"></i> Helps future travellers plan</li>
-            <li><i class="fa-solid fa-circle-check"></i> Your phone &amp; email stay private</li>
-          </ul>
-        </div>
-        <div class="lux-review-form reveal reveal-delay-1">
-          <p class="lux-review-q">How was your experience?</p>
-          <div class="star-rating-input">
-            <label>Your Rating <span>*</span></label>
-            <div class="star-selector" id="starSelector">
-              <i class="fa-regular fa-star" data-val="1"></i>
-              <i class="fa-regular fa-star" data-val="2"></i>
-              <i class="fa-regular fa-star" data-val="3"></i>
-              <i class="fa-regular fa-star" data-val="4"></i>
-              <i class="fa-regular fa-star" data-val="5"></i>
-            </div>
-          </div>
-          <form class="wr-form" id="writeReviewForm" action="api/submit_review.php" method="post" enctype="multipart/form-data">
-            <input type="hidden" id="selectedRating" name="rating" value="0">
-            <input type="hidden" name="csrf_token" value="<?php echo h($_SESSION['lead_form_token']); ?>">
-            <input class="hp-field" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
-            <div class="lux-form-row">
-              <input type="text" id="wrName" name="name" placeholder="Your Full Name *" required aria-label="Your full name">
-              <input type="text" id="wrCity" name="city" placeholder="Your City *" required aria-label="Your city">
-            </div>
-            <div class="lux-form-row">
-              <input type="text" id="wrTrip" name="route" placeholder="Route Travelled (e.g. Delhi-Manali) *" required aria-label="Route travelled">
-              <label class="photo-upload-label" for="wrPhoto">
-                <i class="fa-solid fa-camera"></i> <span id="photoLabel">Upload Photo (optional)</span>
-                <input type="file" id="wrPhoto" name="photo" accept="image/jpeg,image/png,image/webp" class="sr-only">
-              </label>
-            </div>
-            <textarea id="wrText" name="text" placeholder="Tell us about your driver, the cab, the route and the real experience... *" required rows="4" aria-label="Your review"></textarea>
-            <p id="wrStatus" class="form-status" role="status" aria-live="polite"></p>
-            <button type="submit" class="wr-submit lux-btn lux-btn-gold"><i class="fa-solid fa-paper-plane"></i> Submit Review</button>
-          </form>
-        </div>
       </div>
     </section>
 

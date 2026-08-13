@@ -63,7 +63,6 @@ $fAl   = fn(string $id) => $fBase ? "index.php#{$id}" : "#{$id}";
             <?php /* href is the no-modal fallback (deep-links to the homepage calculator);
                      on pages that include calc_modal.php, JS intercepts and opens the popup. */ ?>
             <a href="index.php?calc=" data-open-quote=""><i class="fa-solid fa-chevron-right"></i> Plan a Custom Trip</a>
-            <a href="<?php echo $fAl('reviews'); ?>"><i class="fa-solid fa-chevron-right"></i> Reviews</a>
             <a href="<?php echo $fAl('contact'); ?>"><i class="fa-solid fa-chevron-right"></i> Contact Us</a>
           </div>
 

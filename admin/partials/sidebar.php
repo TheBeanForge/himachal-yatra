@@ -65,11 +65,6 @@
       </a>
     </li>
     <li>
-      <a href="reviews.php" class="sidebar-link <?= $cur==='reviews.php'?'active':'' ?>">
-        <i class="fas fa-star fa-fw"></i> Reviews
-      </a>
-    </li>
-    <li>
       <a href="routes.php" class="sidebar-link <?= $cur==='routes.php'?'active':'' ?>">
         <i class="fas fa-road fa-fw"></i> Route Photos
       </a>

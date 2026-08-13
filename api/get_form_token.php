@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 // Returns the session's public-form CSRF token (minting one if needed).
-// Lets the review/lead forms recover automatically when the page was loaded
+// Lets the lead forms recover automatically when the page was loaded
 // long ago and the session expired — common on mobile, where the browser
 // restores a days-old tab. No DB needed, so it also works while MySQL is down.
 session_start();

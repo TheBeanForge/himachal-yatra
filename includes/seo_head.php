@@ -1,8 +1,7 @@
 <?php
 /**
  * Shared SEO / social head tags. Set $seoTitle, $seoDesc, $seoPath before including.
- * Optional: $seoImage, $seoCrumb, $seoFaq (array of [question, answer]),
- *           $seoRatingValue + $seoRatingCount (real review aggregate).
+ * Optional: $seoImage, $seoCrumb, $seoFaq (array of [question, answer]).
  * Domain comes from the SITE_URL env var in production, with a sensible local fallback.
  */
 $SITE_URL  = rtrim(getenv('SITE_URL') ?: 'https://himachalsafar.com', '/');
@@ -75,30 +74,11 @@ $agency = [
   // Social profiles are admin-editable in Settings (see vars.php); empty ones are dropped.
   'sameAs' => array_values($socialLinks ?? []),
 ];
-// Only emit an aggregate rating when it reflects real reviews shown on the page.
-if (!empty($seoRatingValue) && !empty($seoRatingCount)) {
-  $agency['aggregateRating'] = [
-    '@type'       => 'AggregateRating',
-    'ratingValue' => (string) $seoRatingValue,
-    'reviewCount' => (string) $seoRatingCount,
-    'bestRating'  => '5',
-    'worstRating' => '1',
-  ];
-}
-// Individual Review markup — only real approved reviews shown on the page.
-if (!empty($seoReviews)) {
-  $agency['review'] = array_map(fn($r) => [
-    '@type'        => 'Review',
-    'author'       => ['@type' => 'Person', 'name' => $r['author']],
-    'reviewRating' => [
-      '@type'       => 'Rating',
-      'ratingValue' => (string) $r['rating'],
-      'bestRating'  => '5',
-      'worstRating' => '1',
-    ],
-    'reviewBody'   => $r['text'],
-  ], $seoReviews);
-}
+/* AggregateRating and Review markup were emitted here from the reviews table.
+   The review feature has been removed, so they are gone too — deliberately.
+   Google treats rating markup with no visible reviews on the page as a
+   structured-data violation, so leaving it behind would risk a manual action
+   rather than just showing nothing. */
 echo json_encode($agency, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ?>
 </script>

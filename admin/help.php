@@ -66,7 +66,7 @@ $page_title = 'Help & Guide';
 
       <div class="guide-hero">
         <h1><i class="fas fa-hand-sparkles" style="color:var(--accent)"></i> Welcome, <?= h($name) ?> 👋</h1>
-        <p>This is your control panel for the Himachal Safar website. Everything customers see — enquiries you receive, the photos on each page, the fleet, prices and reviews — is managed from the menu on the left. This page explains what each section does and how your changes show up on the live site.</p>
+        <p>This is your control panel for the Himachal Safar website. Everything customers see — enquiries you receive, the photos on each page, the fleet and prices — is managed from the menu on the left. This page explains what each section does and how your changes show up on the live site.</p>
       </div>
 
       <!-- Lead lifecycle -->
@@ -128,13 +128,6 @@ $page_title = 'Help & Guide';
             <div><div class="gc-title">Pricing Rules</div><div class="gc-where">Sidebar → Pricing Rules</div></div></div>
           <p>Rates, taxes and seasonal pricing that drive the automatic quote estimates.</p>
           <a class="gc-open" href="pricing.php">Open Pricing <i class="fas fa-arrow-right"></i></a>
-        </div>
-
-        <div class="guide-card">
-          <div class="gc-head"><div class="gc-icon"><i class="fas fa-star"></i></div>
-            <div><div class="gc-title">Reviews</div><div class="gc-where">Sidebar → Reviews</div></div></div>
-          <p>Customer reviews submitted on the website. Approve the good ones to show them publicly, or hide/delete spam.</p>
-          <a class="gc-open" href="reviews.php">Open Reviews <i class="fas fa-arrow-right"></i></a>
         </div>
 
         <div class="guide-card">
